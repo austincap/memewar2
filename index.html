@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<title>Meme War 2</title>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
+  <link rel="stylesheet" href="index.css"></link>
+  <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
+</head>
+<body>
+  <button id="back-to-main-page" class="raise">Home</button>
+  <button id="sort-by-time-only">Sort by new only</button>
+  <button id="sort-by-mv-only">Sort by top only</button>
+
+  <div id="big-container">
+  
+    <div id="header-container">
+      <div id="room-container">
+        <h1>INFODRUG FEED</h1>
+        <h4>Just one more scroll...</h4>
+        <input type="text" id="roomId" placeholder="dimension name here"/>
+        <div id="adjacent-rooms">Adjacent dimensions:&nbsp;</div>
+      </div>
+    </div>
+
+    <div id="entryContainer">
+
+      <div class="post">
+        <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
+          <div>
+            <div class="post-header"><p>34 votes</p><p>3/4/2020</p></div>
+            <div class="post-maintext">Hot pic of tifa cosplay</div>
+            <div class="post-buttons"><button>&#128151;</button><button>&#128169;</button><button>&#128142;</button><button>&#128163;</button></div>
+          </div>
+      </div>
+
+    </div>
+
+    <div id="replyContainer">
+      <textarea id='comment-input'></textarea>
+      <div><button id="submit-reply" class="raise" onclick="submitReply();">Submit reply</button><button id="cancel-reply" class="raise" onclick="document.getElementById('replyContainer').style.display='none';">Cancel</button></div>
+      <input id="replyX"></input>
+      <input id="replyY"></input>
+      <input id="replyto"></input>
+    </div>
+
+  </div>
+  <script type="text/javascript" src="infodrug.js"></script>
+</body>
+</html>

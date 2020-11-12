@@ -1,0 +1,28 @@
+{
+  "name": "memewar2",
+  "version": "0.1.0",
+  "description": "Twitter but users can censor other users... for a price.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/austincap/memewar2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/austincap/memewar2/issues"
+  },
+  "homepage": "https://github.com/austincap/memewar2#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mustache": "^4.0.1",
+    "neo4j-driver": "^4.1.2",
+    "node-time-uuid": "^0.1.5",
+    "path": "^0.12.7",
+    "sanitize-html": "^2.1.2",
+    "socket.io": "^3.0.1"
+  }
+}
