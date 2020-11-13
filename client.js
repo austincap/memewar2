@@ -6,6 +6,14 @@ var socket = io();
     socket.emit('requestInfodrugFeedData', sessionStorage.getItem('currentRoom'));
   }
 
+
+function showReplyBox(){
+  
+}
+
+
+
+
 function convertLinkBlocks(linkblocksIterable){
   var linkBlocks = [];
   console.log(linkblocksIterable);

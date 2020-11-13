@@ -5,14 +5,16 @@
 <head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="client.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
   <link rel="stylesheet" href="index.css"></link>
   <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
 </head>
 <body>
   <button id="back-to-main-page" class="raise">Home</button>
-  <button id="sort-by-time-only">Sort by new only</button>
-  <button id="sort-by-mv-only">Sort by top only</button>
+  <button id="sort-by-time-only">Time</button>
+  <button id="sort-by-mv-only">Upvotes</button>
+  <button id="sort-by-views-only">Views</button> 
 
   <div id="big-container">
   
@@ -20,21 +22,31 @@
       <div id="room-container">
         <h1>INFODRUG FEED</h1>
         <h4>Just one more scroll...</h4>
-        <input type="text" id="roomId" placeholder="dimension name here"/>
-        <div id="adjacent-rooms">Adjacent dimensions:&nbsp;</div>
+        
+        <div id="popular-tags"><!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"></input>&nbsp;<button class="fill"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button></div>
+
       </div>
     </div>
 
     <div id="entryContainer">
 
-      <div class="post">
-        <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
-          <div>
-            <div class="post-header"><p>34 votes</p><p>3/4/2020</p></div>
-            <div class="post-maintext">Hot pic of tifa cosplay</div>
-            <div class="post-buttons"><button>&#128151;</button><button>&#128169;</button><button>&#128142;</button><button>&#128163;</button></div>
-          </div>
-      </div>
+      
+        <div class="post-container">
+          <a class="post" href="fullpost">
+            <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
+            <div>
+              <div class="post-maintext">Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf hdf</div>
+              <div class="post-header">
+                <span class="upvotes-tooltip"><span class="tooltiptext">the number of +'s minus the number of -'s this post received</span><span class="upvotecount">34</span>&nbsp;profit</span>
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">100</span>&nbsp;clicks</span>
+                &nbsp;&nbsp;|&nbsp;&nbsp;<span>3/4/2020</span>
+              </div>
+            </div>
+          </a>
+          <div class="post-buttons"><button class="raise" onclick="upvoteAndShowVoteStats();"><span class="tooltiptext">upvote</span>&#10133;</button><button class="raise" onclick="downvoteAndShowVoteStats();"><span class="tooltiptext">downvote</span>&#10134;</button><button class="raise" onclick="showShieldBox();"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button><button class="raise" onclick="showCensorBox();"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button><button class="raise" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button><button class="raise" onclick="showReplyBox();"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button><div class="statusdiv">ertere</div></div>
+        </div>
+
 
     </div>
 
