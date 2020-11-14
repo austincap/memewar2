@@ -10,6 +10,7 @@ socket.emit('requestTop50Posts');
 function showReplyBox(){
   returnTagBox();
   returnNewPostBox();
+  returnNewStatsBox();
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#statusdiv');
@@ -26,6 +27,7 @@ function returnReplyBox(){
 function showTagBox(){
   returnNewPostBox();
   returnReplyBox();
+  returnNewStatsBox();
   var tagContainer = $('#tagContainer');
   tagContainer.detach();
   tagContainer.appendTo('#statusdiv');
@@ -40,6 +42,7 @@ function returnTagBox(){
 }
 
 function showNewPostBox(){
+  returnNewStatsBox();
   returnTagBox();
   returnReplyBox();
   var newPostContainer = $('#newPostContainer');
@@ -62,7 +65,7 @@ function upvoteAndShowStats(element){
   returnNewPostBox();
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
-  newStatsContainer.appendTo('#divStorage');
+  newStatsContainer.appendTo('#statusdiv');
   newStatsContainer.css('display', 'block');
 }
 
@@ -72,8 +75,15 @@ function downvoteAndShowStats(element){
   returnNewPostBox();
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
-  newStatsContainer.appendTo('#divStorage');
+  newStatsContainer.appendTo('#statusdiv');
   newStatsContainer.css('display', 'block');
+}
+
+function returnNewStatsBox(){
+  var newStatsContainer = $('#newStatsContainer');
+  newStatsContainer.detach();
+  newStatsContainer.appendTo('#divStorage');
+  newStatsContainer.css('display', 'none');
 }
 
 function submitNewPost(){
@@ -83,12 +93,30 @@ function submitNewPost(){
     type: 'text_post',
     title: document.getElementById('title-of-new-post').value,
     content: document.getElementById('new-text-post-data').value,
-    upvotes: 1,
-    downvotes: 0,
     userID: "ANON",
     file: '/uploaded/'+document.getElementById('')
   };
   socket.emit('addNewPost', postData);
+  $("#new-text-post-data").empty();
+  $("#tagForNewPost").empty();
+  $("#title-of-new-post").empty();
+  returnNewPostBox();
+}
+
+
+function upvoteThisTagForThisPost(tagname, postID){
+  console.log(element);
+  socket.emit("upvoteTag", tagname, postID);
+}
+
+
+function getAllPostsWithThisTag(tagname){
+  socket.emit("requestPostsWithTag", tagname);
+}
+
+
+function viewPost(postID){
+  socket.emit('viewpost', postID);
 }
 
 function processSelectedFiles(fileInput) {
@@ -148,29 +176,24 @@ function getRandomInt(min, max) {
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
-function submitReply(){
-  console.log(parseInt(document.getElementById('replyX').value));
-  document.getElementById('replyContainer').style.display = "none";
-  //so the replies aren't too close to each other in the game world
-  if(Math.floor((Math.random()*2))==1){ var newX = parseInt(document.getElementById('replyX').value)+getRandomInt(-110,-20); }
-  else{ var newX = parseInt(document.getElementById('replyX').value)+getRandomInt(20,110); }
-  if(Math.floor((Math.random()*2))==1){ var newY = parseInt(document.getElementById('replyY').value)+getRandomInt(-110,-20); }
-  else{ var newY = parseInt(document.getElementById('replyY').value)+getRandomInt(20,110); }
-  var blockData = {
-    x: newX,
-    y: newY,
+function submitReply(postElement){
+  
+  var postData = {
+    title: $(postElement).children('.post').children('.posthelper').children('a').children('.post-maintext').html(),
+    tag: document.getElementById('tagForNewReply').value,
     type: 'text_post',
-    url: document.getElementById('comment-input').value,
-    currentRoom: document.getElementById('roomId').value,
-    mv: 1,
-    replyto: parseInt(document.getElementById('replyto').value)
+    content: document.getElementById('comment-input').value,
+    replyToPostID: parseInt($(postElement).attr('postID'))
   };
-  socket.emit('addBlock', blockData);
+  document.getElementById('replyContainer').style.display = "none";
+  socket.emit('reply', postData);
+  $('#comment-input').empty();
   $("#entryContainer").empty();
-  $(" #adjacent-rooms").empty();
+  $('#tagForNewReply').empty();
   setTimeout(function(){
     socket.emit('requestInfodrugFeedData', document.getElementById('roomId').value);
   }, 700);
+
   //location.reload();
 }
 
@@ -208,6 +231,8 @@ function submitReply(){
   }
 
 
+
+
 // "<div class='container'>
 //   <div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+">
 //     <div class='metadata-container'>
@@ -233,6 +258,10 @@ function submitReply(){
 
 socket.on('receiveData', function(posts){
   console.log(posts);
+});
+
+socket.on('receiveSinglePostData', function(post, replies){
+
 });
 
 socket.on('sendServerDataToFeed', function(nodeData, replyData){  
@@ -326,6 +355,10 @@ socket.on('sendServerDataToFeed', function(nodeData, replyData){
   $(".container").remove();
   $.each(sortedDivs, function (index, value) {$('#entryContainer').append(value);} );
 
+
+  window.onunload = function() {
+      
+  }
 
   window.addEventListener('load', function() {
     document.querySelector('input[type="file"]').addEventListener('change', function() {

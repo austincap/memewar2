@@ -55,6 +55,9 @@ h4 {
     float: right;
     color: #dfe09d;
   }
+  #temptitle{
+    display:none;
+  }
   #tagContainer {
     display:none;
     background-color: rgba(0,0,0,0.5);
@@ -65,6 +68,9 @@ h4 {
   }
   #cancelTag {
     margin-right:0%;
+  }
+  #newStatsContainer {
+    display:none;
   }
   #newPostContainer {
     display:none;
@@ -435,9 +441,11 @@ h4 {
   .raise {
     --color: #dfe09d;
     --hover: #e5ff60;
-    margin-left: 4%;
-    margin-right: 4%;
-    width: 8%;
+    margin-left: 1%;
+    margin-right: 1%;
+    width: 10%;
+    min-width:50px;
+    vertical-align: middle;
   }
   .up {
     --color: #e4cb58;
@@ -468,3 +476,4 @@ h4 {
     line-height: 1;
     padding: 0.5em 1em;
   }
+

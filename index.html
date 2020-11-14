@@ -30,22 +30,39 @@
 
     <div id="entryContainer">
 
-      
-        <div class="post-container" id="3432523">
-          <div class="post"><a href="fullpost">
-            <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
-            <div>
-              <div class="post-maintext">Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf hdf</div></a>
+     
+        <div class="post-container" postID="675675667"> 
+          <div class="post">
+            <a onclick="viewPost($(this).parent().parent().attr('postID'));" href="#">
+              <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
+              <div class="posthelper"><div class="post-maintext">Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf hdf</div>
+            </a>
               <div class="post-header">
                 <span class="upvotes-tooltip"><span class="tooltiptext">the number of +'s minus the number of -'s this post received</span><span class="upvotecount">34</span>&nbsp;profit</span>
                 &nbsp;&nbsp;|&nbsp;&nbsp;
                 <span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">100</span>&nbsp;clicks</span>
                 &nbsp;&nbsp;|&nbsp;&nbsp;<span>3/4/2020</span>
+                &nbsp;&nbsp;|&nbsp;&nbsp;<span><span class="numreplies">3</span>&nbsp;replies</span>
+                &nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class="replyToId">TITLKE</span></span>
               </div>
+          </div>
+          </div>
+          <div class="post-buttons">
+            &nbsp;
+            <button class="raise" onclick="upvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">upvote</span>&#10133;</button>
+            <button class="raise" onclick="downvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">downvote</span>&#10134;</button>
+            <button class="raise" onclick="showShieldBox();"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
+            <button class="raise" onclick="showCensorBox();"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
+            <button class="raise" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button>
+            <button class="raise" onclick="showReplyBox();"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
+            <button class="raise" onclick="harvestPost($(this));"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
+            <button class="raise" onclick="sharePost($(this));"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
+            <div id="statusdiv">
+              
+
             </div>
           </div>
-          <div class="post-buttons"><button class="raise" onclick="upvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">upvote</span>&#10133;</button><button class="raise" onclick="downvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">downvote</span>&#10134;</button><button class="raise" onclick="showShieldBox();"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button><button class="raise" onclick="showCensorBox();"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button><button class="raise" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button><button class="raise" onclick="showReplyBox();"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button><div id="statusdiv">ertere</div></div>
-        </div>
+         </div> 
 
 
     </div>
@@ -54,33 +71,37 @@
 
       <div id="newPostContainer">
         <textarea id="title-of-new-post" placeholder="Title of your new post"></textarea>
-        <br/><textarea id="new-text-post-data"></textarea>
-        <br/><input type="file"/>
+        <br/><textarea id="new-text-post-data" placeholder="Can be a link, a goddamn essay, or nothing at all"></textarea>
         <br/><input id="tagForNewPost" type="text" maxlength="64"/>
-        <br/><img id="myImg" src="#" alt="your image" height=200 width=100/>
         <br/><input id="fileuploader" type="file" multiple onchange="previewFile();"/>
-        <br/><img id="myimg" src="" height="200" alt="Image preview...">
+        <br/><img id="myimg" src="" height="150" alt="Image preview...">
         <br/><button id="submitNewPost" class="raise" onclick="submitNewPost();">Submit</button><button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
       </div>
 
       <div id="replyContainer">
-        <textarea id='comment-input'></textarea>
-        <div><button id="submit-reply" class="raise" onclick="submitReply();">Submit this reply</button><button id="cancel-reply" class="raise" onclick="returnReplyBox();">Cancel</button></div>
-        <input id="replyX"/>
-        <input id="replyY"/>
-        <input id="replyto"/>
+        <br/><textarea id='comment-input'></textarea>
+        <br/><input id="tagForNewReply" type="text" maxlength="64"/>
+        <br/><input id="fileuploader-reply" type="file" multiple onchange="previewFile();"/>
+        <br/><img id="myimg-reply" src="" height="150" alt="Image preview...">
+        <div><button id="submit-reply" class="raise" onclick="submitReply($(this).parent().parent().parent().parent().parent());">Submit this reply</button><button id="cancel-reply" class="raise" onclick="returnReplyBox();">Cancel</button></div>
+        <input id="temptitle" type="text"/>
       </div>
 
       <div id="tagContainer">
         <div id="existingTagsForThisPost">
           Existing tags for this post:&nbsp;
-          <button class="postTag">(<span class="upvotes-for-tag-for-this-post">44</span>)&nbsp;-&nbsp;<span class="tagName">ff7</span>&nbsp;-&nbsp;(<span class="other-posts-with-this-tag">37</span>)</button>
+          <div class="postTag" data-tag-id="ff7">(<a href="#" title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost($(this).parent().attr('data-tag-id'));">44</a>)&nbsp;-&nbsp;<span class="tagName">ff7</span>&nbsp;-&nbsp;(<a href="#" title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag($(this).parent().attr('data-tag-id'));">37</a>)</div>
         </div>
         <div id="addNewTag">
           <input id="newTagSuggestion" type="text" maxlength="64"/><button id="submitTag" onclick="submitTag();">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
         </div>
       </div>
 
+      <div id="newStatsContainer">
+        <div>
+          <span id="upvotestat">84</span>&nbsp;&#10133;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="downvotestat">50</span>&nbsp;&#10134;
+        </div>
+      </div>
 
     </div>
 
