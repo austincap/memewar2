@@ -18,7 +18,9 @@
   "homepage": "https://github.com/austincap/memewar2#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "http": "0.0.1-security",
     "mustache": "^4.0.1",
+    "neo4j": "^2.0.0-RC2",
     "neo4j-driver": "^4.1.2",
     "node-time-uuid": "^0.1.5",
     "path": "^0.12.7",

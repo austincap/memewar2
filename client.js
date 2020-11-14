@@ -8,10 +8,86 @@ var socket = io();
 
 
 function showReplyBox(){
-  
+  returnTagBox();
+  returnNewPostBox();
+  var replyContainer = $('#replyContainer');
+  replyContainer.detach();
+  replyContainer.appendTo('#statusdiv');
+  replyContainer.css('display', 'block');
 }
 
+function returnReplyBox(){
+  var replyContainer = $('#replyContainer');
+  replyContainer.detach();
+  replyContainer.appendTo('#divStorage');
+  replyContainer.css('display', 'none');
+}
 
+function showTagBox(){
+  returnNewPostBox();
+  returnReplyBox();
+  var tagContainer = $('#tagContainer');
+  tagContainer.detach();
+  tagContainer.appendTo('#statusdiv');
+  tagContainer.css('display', 'block');
+}
+
+function returnTagBox(){
+  var tagContainer = $('#tagContainer');
+  tagContainer.detach();
+  tagContainer.appendTo('#divStorage');
+  tagContainer.css('display', 'none');
+}
+
+function showNewPostBox(){
+  returnTagBox();
+  returnReplyBox();
+  var newPostContainer = $('#newPostContainer');
+  newPostContainer.detach();
+  newPostContainer.appendTo('body');
+  newPostContainer.css('display', 'block');
+}
+
+function returnNewPostBox(){
+  var newPostContainer = $('#newPostContainer');
+  newPostContainer.detach();
+  newPostContainer.appendTo('#divStorage');
+  newPostContainer.css('display', 'none');
+}
+
+function upvoteAndShowStats(element){
+  console.log(element);
+  returnTagBox();
+  returnReplyBox();
+  returnNewPostBox();
+  var newStatsContainer = $('#newStatsContainer');
+  newStatsContainer.detach();
+  newStatsContainer.appendTo('#divStorage');
+  newStatsContainer.css('display', 'block');
+}
+
+function downvoteAndShowStats(element){
+  returnTagBox();
+  returnReplyBox();
+  returnNewPostBox();
+  var newStatsContainer = $('#newStatsContainer');
+  newStatsContainer.detach();
+  newStatsContainer.appendTo('#divStorage');
+  newStatsContainer.css('display', 'block');
+}
+
+function submitNewPost(){
+  var postData = {
+    tag: document.getElementById('tagForNewPost').value
+    type: 'text_post',
+    title: document.getElementById('title-of-new-post').value,
+    content: document.getElementById('new-text-post-data').value,
+    upvotes: 1,
+    downvotes: 0,
+    userID: "ANON"
+  };
+  socket.emit('addNewPost', postData);
+}
 
 
 function convertLinkBlocks(linkblocksIterable){
@@ -207,17 +283,45 @@ socket.on('sendServerDataToFeed', function(nodeData, replyData){
       $('#id'+replyData[i]['orig']+' > .metadata-container > .replylinks').attr('data-hasreplyto', '');
     }
   }
-
+  $("input#newTagSuggestion").on({
+    keydown: function(e) {
+      print(e);
+      if (e.which === 32){
+        return false;
+      }
+    },
+    change: function() {
+      this.value = this.value.replace(/\s/g, "");
+    }
+  });
   var sortedDivs = $(".block").toArray().sort(sorter);
   //console.log(sortedDivs);
   $(".container").remove();
   $.each(sortedDivs, function (index, value) {$('#entryContainer').append(value);} );
+
+
+  window.addEventListener('load', function() {
+    document.querySelector('input[type="file"]').addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            var img = document.querySelector('img');  // $('img')[0]
+            img.src = URL.createObjectURL(this.files[0]); // set src to blob url
+            img.onload = imageIsLoaded;
+        }
+    });
+  });
+
+  function imageIsLoaded() { 
+    alert(this.src);  // blob url
+    // update width and height ...
+  }
 
   $(document).ready(function(){
     // $('.activeimage').mouseleave(function(){
     //   $(this).animate({})
     // });
     //}
+
+
     $('.replylinks').each(function (index, e){
       var replies = e.getAttribute('data-hasreplyto');
       if(replies !== null){
