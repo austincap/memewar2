@@ -5,7 +5,7 @@ var socket = io();
   } else {
     socket.emit('requestInfodrugFeedData', sessionStorage.getItem('currentRoom'));
   }
-
+socket.emit('requestTop50Posts');
 
 function showReplyBox(){
   returnTagBox();
@@ -77,18 +77,43 @@ function downvoteAndShowStats(element){
 }
 
 function submitNewPost(){
+  console.log("submit");
   var postData = {
-    tag: document.getElementById('tagForNewPost').value
+    tag: document.getElementById('tagForNewPost').value,
     type: 'text_post',
     title: document.getElementById('title-of-new-post').value,
     content: document.getElementById('new-text-post-data').value,
     upvotes: 1,
     downvotes: 0,
-    userID: "ANON"
+    userID: "ANON",
+    file: '/uploaded/'+document.getElementById('')
   };
   socket.emit('addNewPost', postData);
 }
 
+function processSelectedFiles(fileInput) {
+  var files = fileInput.files;
+
+  for (var i = 0; i < files.length; i++) {
+    alert("Filename " + files[i].name);
+  }
+}
+
+function previewFile() {
+  var preview = document.querySelector('#myimg');
+  var file    = document.querySelector('input[type=file]').files[0];
+  var reader  = new FileReader();
+
+  reader.onloadend = function () {
+    preview.src = reader.result;
+  }
+
+  if (file) {
+    reader.readAsDataURL(file);
+  } else {
+    preview.src = "";
+  }
+}
 
 function convertLinkBlocks(linkblocksIterable){
   var linkBlocks = [];
@@ -206,7 +231,9 @@ function submitReply(){
         //var onclickText = "showReplyBox("+replyPackage+")";
 
 
-
+socket.on('receiveData', function(posts){
+  console.log(posts);
+});
 
 socket.on('sendServerDataToFeed', function(nodeData, replyData){  
   var linkblockArray = convertLinkBlocks(nodeData);  
