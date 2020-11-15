@@ -11,6 +11,10 @@ function showReplyBox(){
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
+  var fileuploader = $('#fileuploader');
+  fileuploader.detach();
+  fileuploader.appendTo('#replyuploaderholder');
+  fileuploader.css('display', 'block');
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#statusdiv');
@@ -18,6 +22,10 @@ function showReplyBox(){
 }
 
 function returnReplyBox(){
+  var fileuploader = $('#fileuploader');
+  fileuploader.detach();
+  fileuploader.appendTo('#divStorage');
+  fileuploader.css('display', 'none');
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#divStorage');
@@ -45,6 +53,10 @@ function showNewPostBox(){
   returnNewStatsBox();
   returnTagBox();
   returnReplyBox();
+  var fileuploader = $('#fileuploader');
+  fileuploader.detach();
+  fileuploader.appendTo('#newpostuploaderholder');
+  fileuploader.css('display', 'block');
   var newPostContainer = $('#newPostContainer');
   newPostContainer.detach();
   newPostContainer.appendTo('body');
@@ -52,6 +64,10 @@ function showNewPostBox(){
 }
 
 function returnNewPostBox(){
+  var fileuploader = $('#fileuploader');
+  fileuploader.detach();
+  fileuploader.appendTo('#divStorage');
+  fileuploader.css('display', 'none');
   var newPostContainer = $('#newPostContainer');
   newPostContainer.detach();
   newPostContainer.appendTo('#divStorage');
@@ -88,21 +104,61 @@ function returnNewStatsBox(){
 
 function submitNewPost(){
   console.log("submit");
+  var potentialimage = document.getElementById('myimg').src;
+  var filedata = potentialimage == "" ? "NONE" : potentialimage;
+  var userIdNumber = "ANON";
   var postData = {
     tag: document.getElementById('tagForNewPost').value,
     type: 'text_post',
     title: document.getElementById('title-of-new-post').value,
     content: document.getElementById('new-text-post-data').value,
-    userID: "ANON",
-    file: '/uploaded/'+document.getElementById('')
+    userID: userIdNumber,
+    file: filedata
   };
+  console.log(postData);
   socket.emit('addNewPost', postData);
   $("#new-text-post-data").empty();
   $("#tagForNewPost").empty();
   $("#title-of-new-post").empty();
+  potentialimage = "";
   returnNewPostBox();
+  // if( document.getElementById('pageID').value=="main page"){
+  //   setTimeout(function(){
+  //     socket.emit('requestTop50Posts');
+  //   }, 700);
+  // }
 }
 
+
+function submitReply(postElement){
+  var userIdNumber = "ANON";
+  var potentialimage = document.getElementById('myimg').src;
+  var filedata = potentialimage == "" ? "NONE" : potentialimage;
+  var postData = {
+    title: $(postElement).children('.post').children('.posthelper').children('a').children('.post-maintext').html(),
+    tag: document.getElementById('tagForNewReply').value,
+    type: 'text_post',
+    content: document.getElementById('comment-input').value,
+    replyToPostID: parseInt($(postElement).attr('postID')),
+    userID: userIdNumber,
+    file: filedata
+  };
+  document.getElementById('replyContainer').style.display = "none";
+
+  socket.emit('reply', postData);
+  $('#comment-input').empty();
+  $("#entryContainer").empty();
+  $('#tagForNewReply').empty();
+  potentialimage = "";
+  returnReplyBox()
+  // if( document.getElementById('pageID').value=="main page"){
+  //   setTimeout(function(){
+  //     socket.emit('requestTop50Posts');
+  //   }, 700);
+  // }
+
+  //location.reload();
+}
 
 function upvoteThisTagForThisPost(tagname, postID){
   console.log(element);
@@ -119,13 +175,6 @@ function viewPost(postID){
   socket.emit('viewpost', postID);
 }
 
-function processSelectedFiles(fileInput) {
-  var files = fileInput.files;
-
-  for (var i = 0; i < files.length; i++) {
-    alert("Filename " + files[i].name);
-  }
-}
 
 function previewFile() {
   var preview = document.querySelector('#myimg');
@@ -143,59 +192,13 @@ function previewFile() {
   }
 }
 
-function convertLinkBlocks(linkblocksIterable){
-  var linkBlocks = [];
-  console.log(linkblocksIterable);
-  for(var i = 0; i < Object.keys(linkblocksIterable).length; i++){
-    var singleLinkblock = linkblocksIterable[i];
-    linkBlocks.push(singleLinkblock);
-  }
-  return linkBlocks;
-}
-
-function newRoom(roomId){
-  document.getElementById('roomId').value = roomId;
-}
-
-function showReplyBoxX(blockData){
-  document.getElementById('replyX').value = blockData;
-}
-function showReplyBoxY(blockData){
-  document.getElementById('replyY').value = blockData;
-}
-function showReplyBoxID(blockData){
-  document.getElementById('comment-input').focus();
-  document.getElementById('replyto').value = blockData;
-  $('.active').removeClass('active');
-  $('#id'+blockData).addClass('active');
-  document.getElementById('replyContainer').style.display = "inline-block";
-}
 
 function getRandomInt(min, max) {
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
 }
-function submitReply(postElement){
-  
-  var postData = {
-    title: $(postElement).children('.post').children('.posthelper').children('a').children('.post-maintext').html(),
-    tag: document.getElementById('tagForNewReply').value,
-    type: 'text_post',
-    content: document.getElementById('comment-input').value,
-    replyToPostID: parseInt($(postElement).attr('postID'))
-  };
-  document.getElementById('replyContainer').style.display = "none";
-  socket.emit('reply', postData);
-  $('#comment-input').empty();
-  $("#entryContainer").empty();
-  $('#tagForNewReply').empty();
-  setTimeout(function(){
-    socket.emit('requestInfodrugFeedData', document.getElementById('roomId').value);
-  }, 700);
 
-  //location.reload();
-}
 
 //NEED BETTER SORTER
 //NEED SORTER OPTIONS
