@@ -31,19 +31,8 @@ io.on('connection', function(socket) {
       console.log("UPLOAD POST");
       var blockId = new ObjectId();
       postData.postId = blockId.getTimestamp();
-
-
-      if(postData.file.substr(0,11)=='data:image/') {
-
-
-        base64Img.img(postData.file, 'uploaded', postData.postID, function(err, filepath) {
-
-
-          //need all this bullshit because of how filepath is returned and how neo4j interprets forward slashes
-          var rawstring = String.raw`${filepath}`;
-          console.log(rawstring);
-
-          var params = {
+      postData.file = "officialunofficialplaceholderlogo.jpg";
+      var params = {
               postID: parseInt(postData.postId),
               upvotes: 1,
               downvotes: 0,
@@ -52,88 +41,41 @@ io.on('connection', function(socket) {
               content: sanitizeHtml(postData.content),
               userID: postData.userID,
               tag: postData.tag,
-              file: rawstring.substr(0,19).replace(/\\/,"/")+"/"+rawstring.slice(20),
+              file: postData.file,
               clicks: 1
-          };
-
-          if(postData.userID=="ANON"){
-            var query = `
-            MATCH (whichtag:Tag {name:$tag})
-            MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
-            MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
-            RETURN (newpost), (whichtag)
-            `;
-          }else{
-            var query = `
-            MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID})
-            MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
-            MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
-            RETURN (newpost), (whichtag)
-            `;
-          }
-          session
-            .run(query, params)
-            .then(function(result){
-              result.records.forEach(function(record){
-                console.log(record);
-              });
-              // session.close();
-            })
-            .catch(function(error){
-              console.log(error);
-            }); 
-
-        });
-      }
-      else{
-
-      var params = {
-          postID: parseInt(postData.postId),
-          upvotes: 1,
-          downvotes: 0,
-          type: postData.type,
-          title: sanitizeHtml(postData.title),
-          content: sanitizeHtml(postData.content),
-          userID: postData.userID,
-          tag: postData.tag,
-          file: "officialunofficialplaceholderlogo.jpg",
-          clicks: 1
       };
-         // postData.file = "officialunofficialplaceholderlogo.jpg";
-          if(postData.userID=="ANON"){
-            var query = `
-            MATCH (whichtag:Tag {name:$tag})
-            MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
-            MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
-            RETURN (newpost), (whichtag)
-            `;
-          }else{
-            var query = `
-            MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID})
-            MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
-            MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
-            RETURN (newpost), (whichtag)
-            `;
-          }
-
-      session
-        .run(query, params)
-        .then(function(result){
-          result.records.forEach(function(record){
-            console.log(record);
-          });
-          // session.close();
-        })
-        .catch(function(error){
-          console.log(error);
-        }); 
-
-
-
-
+      if(postData.userID=="ANON"){
+        var query = `
+        MATCH (whichtag:Tag {name:$tag})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
+        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
+        RETURN (newpost), (whichtag)
+        `;
+      }else{
+        var query = `
+        MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
+        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
+        RETURN (newpost), (whichtag)
+        `;
       }
-  
+      session
+      .run(query, params)
+      .then(function(result){
+        result.records.forEach(function(record){
+          console.log(record);
+        });
+        // session.close();
+      })
+      .catch(function(error){
+        console.log(error);
+      }); 
   });
+
+
+
+
+
 
   socket.on('requestTop50Posts', function(){
       var query = `
@@ -178,11 +120,84 @@ io.on('connection', function(socket) {
       });
   });
 
+  socket.on('viewpost', function(postID){
+    var query = `
+      MATCH (n:Post {postID:$postID}), (t:Tag), (f:User)
+      OPTIONAL MATCH (m:Post)-[r:REPLYTO]->(n)
+      OPTIONAL MATCH (n)-[ra:TAGGEDAS]->(t)
+      OPTIONAL MATCH (n)<-["j:FAVORITED"]-(f)
+      RETURN n, m, t
+      `;
+      session
+        .run(query, {postID: parseInt(postID)})
+        .then(function(result){
+          console.log(result);
+          socket.emit('receiveSinglePostData', result);
+          console.log(result.records[0]["_fields"][1]);
+          //session.close();
+        })
+        .catch(function(error){
+          console.log(error);
+        });  
+  });
+
   socket.on('upvoteTag', function(tagname, postID){
 
   });
 
+  socket.on('voteOnPost', function(upIfTrue, postID){
+    var query;
+    if(upIfTrue==true){
+      query = "MATCH (n:Post {postID:$postID} SET n.upvotes = n.upvotes + 1";
+    }else{
+      query = "MATCH (n:Post {postID:$postID} SET n.downvotes = n.downvotes + 1";
+    }
+      session
+        .run(query, {postID: parseInt(postID)})
+        .then(function(result){
+          console.log(result);
+          socket.emit('receiveSinglePostData', result);
+          console.log(result.records[0]["_fields"][1]);
+          //session.close();
+        })
+        .catch(function(error){
+          console.log(error);
+        });  
+    
+  });
 
+  socket.on('deletePost', function(postID){
+
+  });
+
+
+  socket.on('shieldPost', function(postID){
+
+  });
+
+  socket.on('favoritePost', function(postID, userID){
+    var query = `
+      MATCH (n:Post {postID:$postID}), (m:User {userID:$userID})
+      MERGE (n)<-[r:FAVORITED]-(m)
+      RETURN n, m
+      `;
+      session
+        .run(query, {postID: parseInt(postID), userID: userID})
+        .then(function(result){
+          console.log(result);
+          socket.emit('receiveSinglePostData', result);
+          console.log(result.records[0]["_fields"][1]);
+          //session.close();
+        })
+        .catch(function(error){
+          console.log(error);
+        });  
+  });
+
+
+  socket.on('harvestPost', function(postID, userID){
+
+  });
 
   socket.on('reply', function(postData){
       var blockId = new ObjectId();
@@ -230,24 +245,7 @@ io.on('connection', function(socket) {
         });        
   });
 
-  socket.on('viewpost', function(postID){
-    var query = `
-      MATCH (n:Post {postID:$postID})
-      OPTIONAL MATCH (m:Post)-[r:REPLYTO]->(n)
-      RETURN n, m
-      `;
-      session
-        .run(query, {postID: parseInt(postID)})
-        .then(function(result){
-          console.log(result);
-          socket.emit('receiveSinglePostData', result);
-          console.log(result.records[0]["_fields"][1]);
-          //session.close();
-        })
-        .catch(function(error){
-          console.log(error);
-        });  
-  });
+
 
 });
 
