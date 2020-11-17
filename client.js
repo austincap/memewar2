@@ -194,6 +194,33 @@ function returnNewPostBox(){
   newPostContainer.css('display', 'none');
 }
 
+function showVoteBox(upIfTrue){
+  var postID = parseInt($(this).parent().attr("postID"));
+  var userID = sessionStorage.getItem('userID');
+    returnTagBox();
+    returnReplyBox();
+    returnNewPostBox();
+    returnShieldCensorHarvestBox();
+    returnShareBox();
+    var newStatsContainer = $('#newStatsContainer');
+    newStatsContainer.detach();
+    newStatsContainer.appendTo('#statusdiv');
+    newStatsContainer.css('display', 'block');
+    socket.emit('check', {userID:userID, taskToCheck:'upvote', postToCheck:postID});
+  //upvote
+  if(upIfTrue){
+    socket.emit('voteOnPost', {upIfTrue:true, postID:postID, userID:userID});
+  }
+  //downvote
+  else{
+
+  }
+}
+
+socket.on('userChecked', function(resultOfCheck){
+
+});
+
 function upvoteAndShowStats(element){
   returnTagBox();
   returnReplyBox();
@@ -204,6 +231,7 @@ function upvoteAndShowStats(element){
   newStatsContainer.detach();
   newStatsContainer.appendTo('#statusdiv');
   newStatsContainer.css('display', 'block');
+  socket.emit('check')
 }
 
 function downvoteAndShowStats(element){

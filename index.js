@@ -44,19 +44,22 @@ io.on('connection', function(socket) {
               userID: postData.userID,
               tag: postData.tag,
               file: postData.file,
-              clicks: 1
+              clicks: 1,
+              censorattempts: 0,
+              shields: 0,
+              memecoinsspent: 0
       };
       if(postData.userID=="ANON"){
         var query = `
         MATCH (whichtag:Tag {name:$tag})
-        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
         RETURN (newpost), (whichtag)
         `;
       }else{
         var query = `
         MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID})
-        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
         RETURN (newpost), (whichtag)
         `;
@@ -71,13 +74,8 @@ io.on('connection', function(socket) {
       })
       .catch(function(error){
         console.log(error);
-      }); 
+      });
   });
-
-
-
-
-
 
   socket.on('requestTop50Posts', function(){
       var query = `
@@ -122,9 +120,41 @@ io.on('connection', function(socket) {
       });
   });
 
+  socket.on('viewuser', function(userID){
+    var query = `
+      MATCH (n:User {userID:$userID})
+      OPTIONAL MATCH (m:Post)<-[r:CREATED]-(n)
+      OPTIONAL MATCH (n)-[ra:TAGGEDAS]->(t)
+      OPTIONAL MATCH (n)-[j:FAVORITED]->(f)
+      OPTIONAL MATCH (n)-[v:VOTEDON]->(l)
+      RETURN n, m, t, f, v
+      `;
+      session
+        .run(query, {postID: parseInt(postID)})
+        .then(function(result){
+            console.log(result.records);
+            if(result.records[0]==null){
+
+              console.log('NULL');
+            }else{
+              console.log("NOT null");
+                result.records[3]["_fields"].forEach(function(record){
+                  console.log(record);
+                  //newResult.push(record.properties);
+                });
+            }
+            //socket.emit('receiveSinglePostData', result);   
+          //session.close();
+        })
+        .catch(function(error){
+          console.log(error);
+        });  
+  });
+
   socket.on('viewpost', function(postID){
     var query = `
       MATCH (n:Post {postID:$postID}), (t:Tag), (f:User)
+      SET n.clicks = n.clicks + 1
       OPTIONAL MATCH (m:Post)-[r:REPLYTO]->(n)
       OPTIONAL MATCH (n)-[ra:TAGGEDAS]->(t)
       OPTIONAL MATCH (n)<-[j:FAVORITED]-(f)
@@ -152,38 +182,119 @@ io.on('connection', function(socket) {
         });  
   });
 
+
+
   socket.on('upvoteTag', function(tagname, postID){
-
   });
 
-  socket.on('voteOnPost', function(upIfTrue, postID){
+  socket.on('voteOnPost', function(postVoteData){
     var query;
-    if(upIfTrue==true){
-      query = "MATCH (n:Post {postID:$postID} SET n.upvotes = n.upvotes + 1";
+    var params = {
+      postID: postVoteData.postID,
+      userID: postVoteData.userID
+    };
+    if(postVoteData.upIfTrue==true){
+      query = `
+      MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
+      SET n.upvotes = n.upvotes + 1
+      MERGE (n)<-[r:VOTEDON]-(m)
+      SET r.upvotes = r.upvotes + 1
+      RETURN m, n, r
+      `;
     }else{
-      query = "MATCH (n:Post {postID:$postID} SET n.downvotes = n.downvotes + 1";
+      query = `
+      MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
+      SET n.downvotes = n.downvotes + 1
+      MERGE (n)<-[r:VOTEDON]-(m)
+      SET r.downvotes = r.downvotes + 1
+      RETURN m, n, r
+      `;
     }
-      session
-        .run(query, {postID: parseInt(postID)})
-        .then(function(result){
-          console.log(result);
-          socket.emit('receiveSinglePostData', result);
-          console.log(result.records[0]["_fields"][1]);
-          //session.close();
-        })
-        .catch(function(error){
-          console.log(error);
-        });  
-    
+    session
+      .run(query, params)
+      .then(function(result){
+        console.log(result);
+        socket.emit('receiveSinglePostData', result);
+        console.log(result.records[0]["_fields"][1]);
+        //session.close();
+      })
+      .catch(function(error){
+        console.log(error);
+      });  
   });
 
-  socket.on('deletePost', function(postID){
-
+  socket.on('check', function(stuffToCheck){
+    switch(stuffToCheck.task) {
+      case 'upvote':
+        // code block
+        break;
+      case 'downvote':
+        // code block
+        break;
+      case 'harvest':
+        //code
+        break;
+      case 'shield':
+        //code
+      case 'censor':
+        //code
+        break;
+      case 'favorite':
+        //code
+        break;
+      default:
+        // code block
+    } 
   });
 
+
+  socket.on('harvestPost', function(postID, userID){
+  });
+
+  socket.on('censorPost', function(postID, userID){
+    console.log("CENSOR POST");
+    var query = `
+    MATCH (n:Post {postID:$postID})
+    DETACH DELETE (n)
+    `;
+      // console.log(postData.postId);
+      // postData.file = "officialunofficialcensor.jpg";
+      // var params = {
+      //         upvotes: 0,
+      //         downvotes: 0,
+      //         type: "censored",
+      //         title: "CENSORED BY "+userID,
+      //         content: "post content deleted from server",
+      //         tag: postData.tag,
+      //         file: postData.file,
+      //         clicks: 1,
+      //         censorattempts: 0,
+      //         shields: 0,
+      //         memecoinsspent: 0
+      // };
+
+      //   var query = `
+      //   MATCH (n:Post {postID:$postID)
+      //   SET n.upvotes = $upvotes
+      //    (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+      //   MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
+      //   RETURN (newpost), (whichtag)
+      //   `;
+      
+      // session
+      // .run(query, params)
+      // .then(function(result){
+      //   result.records.forEach(function(record){
+      //     console.log(record);
+      //   });
+      //   // session.close();
+      // })
+      // .catch(function(error){
+      //   console.log(error);
+      // }); 
+  });
 
   socket.on('shieldPost', function(postID){
-
   });
 
   socket.on('favoritePost', function(postID, userID){
@@ -205,11 +316,6 @@ io.on('connection', function(socket) {
         });  
   });
 
-
-  socket.on('harvestPost', function(postID, userID){
-
-  });
-
   socket.on('reply', function(postData){
       var blockId = new ObjectId();
       postData.postId = blockId.getTimestamp();
@@ -226,12 +332,15 @@ io.on('connection', function(socket) {
           tag: postData.tag,
           file: postData.file,
           replyToId: postData.replyToPostID,
-          clicks: 1
+          clicks: 1,
+          shields: 0,
+          censorattempts: 0,
+          memecoinsspent: 0
       };
       if(postData.userID=="ANON"){
         var query = `
         MATCH (whichtag:Tag {name:$tag}), (n:Post {postID:$replyToId})
-        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, replyToId:$replyToId})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent, replyToId:$replyToId})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[rb:REPLYTO]->(n)
         RETURN (newpost), (whichtag)
         `;
@@ -304,11 +413,6 @@ io.on('connection', function(socket) {
         .catch(function(error){
           console.log(error);
         });
-  });
-
-
-  socket.on('censorAttempt', function(postID){
-
   });
 
 
