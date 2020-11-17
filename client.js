@@ -8,6 +8,19 @@ var socket = io();
 socket.emit('requestTop50Posts');
 
 
+function onloadFunction(){
+   if(sessionStorage.getItem('userID') !== null){
+    console.log(sessionStorage.getItem('userID'));
+    $('#signinstuff').css('display', 'none');
+    $('#accountButton').css('display', 'none');
+    $('#userprofilestuff').css('display', 'inline-block');
+    $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+  }else{
+    console.log(sessionStorage.getItem('userID'));
+  } 
+}
+
+
 function generateUUID(){
     var d = new Date().getTime();
     var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
@@ -43,33 +56,77 @@ function loginUser(){
   socket.emit('login', logindata);
 }
 
-function showCensorBox(){
+function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest){
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
   returnReplyBox();
-  var censorShieldContainer = $('#censorShieldContainer');
-  censorShieldContainer.detach();
-  censorShieldContainer.appendTo('#statusdiv');
-  censorShieldContainer.css('display', 'block');
+  returnShareBox();
+  if(zeroIsCensorOneIsShieldTwoIsHarvest==1){
+    $('.censormessage').css('display', 'none');
+    $('.shieldmessage').css('display', 'block');  
+     $('.harvestmessage').css('display', 'none');
+  }else if(zeroIsCensorOneIsShieldTwoIsHarvest==0){
+    $('.censormessage').css('display', 'block');
+    $('.shieldmessage').css('display', 'none');
+     $('.harvestmessage').css('display', 'none');
+  }else{
+    $('.censormessage').css('display', 'none');
+    $('.shieldmessage').css('display', 'none');
+    $('.harvestmessage').css('display', 'block');
+  }
+  var censorShieldHarvestContainer = $('#censorShieldHarvestContainer');
+  censorShieldHarvestContainer.detach();
+  censorShieldHarvestContainer.appendTo('#statusdiv');
+  censorShieldHarvestContainer.css('display', 'block');
+}
+
+
+function returnShieldCensorHarvestBox(){
+  var censorShieldHarvestContainer = $('#censorShieldHarvestContainer');
+  censorShieldHarvestContainer.detach();
+  censorShieldHarvestContainer.appendTo('#divStorage');
+  censorShieldHarvestContainer.css('display', 'none');
 }
 
 function confirmCensor(postElement){
+  console.log(postElement.attr('postID'));
   if(sessionStorage.getItem('memecoin') > 50){
     var dataPacket = {
       userID: sessionStorage.getItem('userID'),
       postID: parseInt($(postElement).attr('postID'))
     };
     socket.emit('censorAttempt', dataPacket);
-    $('#censorShieldContainer').css('display', 'none');
+    $('#censorShieldHarvestContainer').css('display', 'none');
   }
   console.log("insufficient memecoin");
+}
+
+function showShareBox(postElement){
+  returnTagBox();
+  returnNewPostBox();
+  returnNewStatsBox();
+  returnShieldCensorHarvestBox();
+  returnReplyBox();
+  var shareButtonContainer = $('#shareButtonContainer');
+  shareButtonContainer.detach();
+  shareButtonContainer.appendTo('#statusdiv');
+  shareButtonContainer.css('display', 'block');
+}
+
+function returnShareBox(){
+  var shareButtonContainer = $('#shareButtonContainer');
+  shareButtonContainer.detach();
+  shareButtonContainer.appendTo('#divStorage');
+  shareButtonContainer.css('display', 'none');
 }
 
 function showReplyBox(){
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
+  returnShieldCensorHarvestBox();
+  returnShareBox();
   var fileuploader = $('#fileuploader');
   fileuploader.detach();
   fileuploader.appendTo('#replyuploaderholder');
@@ -95,6 +152,8 @@ function showTagBox(){
   returnNewPostBox();
   returnReplyBox();
   returnNewStatsBox();
+  returnShieldCensorHarvestBox();
+  returnShareBox();
   var tagContainer = $('#tagContainer');
   tagContainer.detach();
   tagContainer.appendTo('#statusdiv');
@@ -112,6 +171,8 @@ function showNewPostBox(){
   returnNewStatsBox();
   returnTagBox();
   returnReplyBox();
+  returnShieldCensorHarvestBox();
+  returnShareBox();
   var fileuploader = $('#fileuploader');
   fileuploader.detach();
   fileuploader.appendTo('#newpostuploaderholder');
@@ -134,10 +195,11 @@ function returnNewPostBox(){
 }
 
 function upvoteAndShowStats(element){
-  console.log(element);
   returnTagBox();
   returnReplyBox();
   returnNewPostBox();
+  returnShieldCensorHarvestBox();
+  returnShareBox();
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
   newStatsContainer.appendTo('#statusdiv');
@@ -148,6 +210,8 @@ function downvoteAndShowStats(element){
   returnTagBox();
   returnReplyBox();
   returnNewPostBox();
+  returnShieldCensorHarvestBox();
+  returnShareBox();
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
   newStatsContainer.appendTo('#statusdiv');
@@ -231,6 +295,7 @@ function getAllPostsWithThisTag(tagname){
 
 
 function viewPost(postID){
+  console.log(postID);
   socket.emit('viewpost', postID);
 }
 
@@ -521,5 +586,8 @@ socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('username', loginData.name);
   sessionStorage.setItem('memecoin', loginData.memecoin);
   $('#signinstuff').css('display', 'none');
-  $('#signinbutton').html(sessionStorage.getItem('username'));
+  $('#accountButton').css('display', 'none');
+  $('#userprofilestuff').css('display', 'inline-block');
+  $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+
 });

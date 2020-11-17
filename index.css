@@ -107,7 +107,7 @@ h4 {
     position:relative;
   }
 
-/* signin registration stuff */
+/* signin registration profile stuff */
   #signinstuff {
     display:none;
     position:relative;
@@ -122,6 +122,20 @@ h4 {
   #signInName {
     width:300px;
   }
+  #userprofilestuff{
+    display:none;
+    color:white;
+  }
+  #userProfileButton {
+    width:300px;
+  }
+
+
+  #shareButtonContainer {
+    display:none;
+  }
+
+
 /* header stuff */
   .header-container {
     display:flex;
@@ -131,10 +145,8 @@ h4 {
   .header-container > div {
     flex: 1;
   }
-  #room-container{
-    margin-top:20px;
-    text-align: center;
-    display:block;
+  #tag-filter {
+    width:50%;
   }
   #back-to-main-page {
     position: fixed;
@@ -292,8 +304,6 @@ h4 {
     -ms-transform: scale(2);
     -webkit-transform: scale(2);
   }
-
-
   .activeimage:not( :hover ){
     -webkit-transition: all .6s ease-in;
     -moz-transition: all .6s ease-in;
@@ -304,6 +314,18 @@ h4 {
     transform: scale(1);
     -ms-transform: scale(1); /* IE 9 */
     -webkit-transform: scale(1); /* Safari and Chrome */
+  }
+
+
+/*shield censor stuff */
+  .shieldmessage {
+    display:none;
+  }
+  .censormessage {
+    display:none;
+  }
+  #censorShieldContainer {
+    display:none;
   }
 
 

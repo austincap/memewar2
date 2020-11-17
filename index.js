@@ -127,15 +127,24 @@ io.on('connection', function(socket) {
       MATCH (n:Post {postID:$postID}), (t:Tag), (f:User)
       OPTIONAL MATCH (m:Post)-[r:REPLYTO]->(n)
       OPTIONAL MATCH (n)-[ra:TAGGEDAS]->(t)
-      OPTIONAL MATCH (n)<-["j:FAVORITED"]-(f)
+      OPTIONAL MATCH (n)<-[j:FAVORITED]-(f)
       RETURN n, m, t
       `;
       session
         .run(query, {postID: parseInt(postID)})
         .then(function(result){
-          console.log(result);
-          socket.emit('receiveSinglePostData', result);
-          console.log(result.records[0]["_fields"][1]);
+            console.log(result.records);
+            if(result.records[0]==null){
+
+              console.log('NULL');
+            }else{
+              console.log("NOT null");
+                result.records[3]["_fields"].forEach(function(record){
+                  console.log(record);
+                  //newResult.push(record.properties);
+                });
+            }
+            //socket.emit('receiveSinglePostData', result);   
           //session.close();
         })
         .catch(function(error){
