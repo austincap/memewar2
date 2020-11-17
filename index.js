@@ -31,6 +31,8 @@ io.on('connection', function(socket) {
       console.log("UPLOAD POST");
       var blockId = new ObjectId();
       postData.postId = blockId.getTimestamp();
+      //postData.postId = blockId.toString("hex").substr(15);
+      console.log(postData.postId);
       postData.file = "officialunofficialplaceholderlogo.jpg";
       var params = {
               postID: parseInt(postData.postId),
@@ -202,6 +204,7 @@ io.on('connection', function(socket) {
   socket.on('reply', function(postData){
       var blockId = new ObjectId();
       postData.postId = blockId.getTimestamp();
+      //postData.postId = blockId.toString("hex").substr(0,15);
       console.log(postData);
       var params = {
           postID: parseInt(postData.postId),
@@ -242,7 +245,61 @@ io.on('connection', function(socket) {
         })
         .catch(function(error){
           console.log(error);
-        });        
+        });
+  });
+
+  socket.on('registerNewUser', function(registrationData){
+      var newuserID = new ObjectId();
+      newuserID = newuserID.getTimestamp();
+      //newuserID = newuserID.toString("hex").substr(0,15);
+      var query = `
+      CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin})
+      RETURN newuser
+      `;
+      var params = {
+          username: registrationData.username,
+          userID: parseInt(newuserID),
+          password: registrationData.password,
+          memecoin: 0
+        };
+      session
+        .run(query, params)
+        .then(function(result){
+          console.log("REGISTERED USER");
+          var logindata = result.records[0]["_fields"][0]["properties"];
+          socket.emit('loggedIn', logindata);
+          //console.log(result.records[0]["_fields"][0]);
+          //session.close();
+        })
+        .catch(function(error){
+          console.log(error);
+        });
+  });
+
+  socket.on('login', function(loginData){
+      var query = `
+      MATCH (newuser:User {name:$username, password:$password})
+      RETURN newuser
+      `;
+      var params = {
+          username: loginData.username,
+          password: loginData.password
+      };
+      session
+        .run(query, params)
+        .then(function(result){
+          console.log("LOGGED IN USER");
+          var loginresult = result.records[0]["_fields"][0]["properties"];
+          socket.emit('loggedIn', loginresult);
+        })
+        .catch(function(error){
+          console.log(error);
+        });
+  });
+
+
+  socket.on('censorAttempt', function(postID){
+
   });
 
 

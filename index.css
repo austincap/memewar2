@@ -22,7 +22,7 @@ h4 {
 /* temp containers */
   #replyto {
     display:none !important;
-}
+  }
   #replyContainer {
     display:none;
     background-color: rgba(0,0,0,0.5);
@@ -107,22 +107,34 @@ h4 {
     position:relative;
   }
 
-
+/* signin registration stuff */
+  #signinstuff {
+    display:none;
+    position:relative;
+    float:left;
+  }
+  #signinbutton {
+    color:white;
+  }
+  #passwordvalue {
+    width:300px;
+  }
+  #signInName {
+    width:300px;
+  }
 /* header stuff */
-  #header-container {
-    display:inline;
+  .header-container {
+    display:flex;
+    color:white;
+    padding:2px;
+  }
+  .header-container > div {
+    flex: 1;
   }
   #room-container{
     margin-top:20px;
     text-align: center;
     display:block;
-  }
-  #roomId {
-    margin: 30px;
-    font-size: 30px;
-    text-align: center;
-    color: #551A8B;
-    background-color: #dfe09d;
   }
   #back-to-main-page {
     position: fixed;
@@ -131,15 +143,20 @@ h4 {
   }
   #sort-by-mv-only {
     /*position: fixed;*/
-    display:none;
-    top: 60px;
-    left: 20px;
+    display:inline-block;
+    color: white;
   }
   #sort-by-time-only {
     /*position: fixed;*/
-    display:none;
-    top: 40px;
-    left: 20px;
+    display:inline-block;
+    color: white;
+  }
+  #store {
+    float:right !important;
+  }
+  #make-new-post {
+    float:right !important;
+    min-width: 200px;
   }
   #adjacent-rooms {
     font-family: 'Cute Font', cursive;
@@ -357,8 +374,6 @@ h4 {
 
 
 /* tooltips */
-
-
   .tooltiptext {
     visibility: hidden;
     width: 120px;
@@ -413,7 +428,7 @@ h4 {
     transition: 0.6s;
     top:0;
   }
-/*  #popular-tags:hover .tooltiptext {
+  /*  #popular-tags:hover .tooltiptext {
     visibility: visible;
     transform: translateY(3em);
     transition: 0.6s;

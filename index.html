@@ -11,22 +11,50 @@
   <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
 </head>
 <body>
-  <button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button>
-  <button id="sort-by-time-only">Time</button>
-  <button id="sort-by-mv-only">Upvotes</button>
-  <button id="sort-by-views-only">Views</button> 
+  <div class="header-container">
+
+    <div id="leftist-buttons">
+      <div>
+        <button>protips</button>
+        <div><button id="signinbutton" onclick="$('#signinstuff').css('display','inline-block');">sign up</button></div>
+      </div>
+      <div id="signinstuff">
+        <div id="signInBox">
+          <div><input id="signInName" placeholder="username" type="text"/></div>
+          <div><input id="passwordvalue" placeholder="password" type="text"/></div>
+          <button id="submitSignInDetails" class="raise" onclick="loginUser();">Sign in</button><button class="raise" id="registerNewUser" onclick="registerNewUser();">Sign up</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="centerstage">
+      <h1>Meme War 2</h1>
+      <h4 id="pageID">main page</h4>
+    </div>
+
+    <div id="right-buttons">
+      <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
+      <div><button id="store">store</button></div>
+    </div>
+
+  </div>
+  <div class="header-container">
+    <div>
+      <button id="sort-by-time-only">Time</button>
+      <button id="sort-by-mv-only">Upvotes</button>
+      <button id="sort-by-views-only">Views</button> 
+    </div>
+    <div id="popular-tags">
+      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<button class="fill"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button>
+    </div>
+    <div></div>
+  </div>
+
+
 
   <div id="big-container">
   
-    <div id="header-container">
-      <div id="room-container">
-        <h1>Meme War 2</h1>
-        <h4 id="pageID">main page</h4>
-        
-        <div id="popular-tags"><!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"></input>&nbsp;<button class="fill"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button></div>
 
-      </div>
-    </div>
 
     <div id="entryContainer">
 
@@ -82,7 +110,7 @@
             <button class="raise" onclick="showReplyBox();"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
             <button class="raise" onclick="upvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">upvote</span>&#10133;</button>
             <button class="raise" onclick="downvoteAndShowStats($(this).parent().parent());"><span class="tooltiptext">downvote</span>&#10134;</button>
-            <button class="raise" onclick="harvestPost($(this));"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
+            <button class="raise" onclick="harvestPost($(this).parent().parent());"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
             <button class="raise" onclick="showShieldBox();"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
             <button class="raise" onclick="showCensorBox();"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
             <button class="raise" onclick="sharePost($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
@@ -131,6 +159,11 @@
 
       <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div>
 
+
+      <div id="censorShieldContainer">
+        <div>are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoins...</div>
+        <div><button id="confirmCensor" onclick="confirmCensor($(this).parent().parent());">CENSOR</button><button onclick="$('#censorShieldContainer').css('display', 'none');" id="cancelCensor">CANCEL</button></div>
+      </div>
 
 
     </div>

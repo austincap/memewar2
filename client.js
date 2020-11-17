@@ -27,6 +27,45 @@ function generateUUID(){
 
 
 
+function registerNewUser(){
+  var registrationData = {
+    username: $('#signInName').val(),
+    password: $('#passwordvalue').val()
+  };
+  socket.emit('registerNewUser', registrationData);
+}
+
+function loginUser(){
+  var logindata = {
+    username: $('#signInName').val(),
+    password: $('#passwordvalue').val() 
+  };
+  socket.emit('login', logindata);
+}
+
+function showCensorBox(){
+  returnTagBox();
+  returnNewPostBox();
+  returnNewStatsBox();
+  returnReplyBox();
+  var censorShieldContainer = $('#censorShieldContainer');
+  censorShieldContainer.detach();
+  censorShieldContainer.appendTo('#statusdiv');
+  censorShieldContainer.css('display', 'block');
+}
+
+function confirmCensor(postElement){
+  if(sessionStorage.getItem('memecoin') > 50){
+    var dataPacket = {
+      userID: sessionStorage.getItem('userID'),
+      postID: parseInt($(postElement).attr('postID'))
+    };
+    socket.emit('censorAttempt', dataPacket);
+    $('#censorShieldContainer').css('display', 'none');
+  }
+  console.log("insufficient memecoin");
+}
+
 function showReplyBox(){
   returnTagBox();
   returnNewPostBox();
@@ -474,4 +513,13 @@ socket.on('sendServerDataToFeed', function(nodeData, replyData){
       socket.emit('requestInfodrugFeedData', this.id);
     });
 
+});
+
+
+socket.on('loggedIn', function(loginData){
+  sessionStorage.setItem('userID', loginData.userID);
+  sessionStorage.setItem('username', loginData.name);
+  sessionStorage.setItem('memecoin', loginData.memecoin);
+  $('#signinstuff').css('display', 'none');
+  $('#signinbutton').html(sessionStorage.getItem('username'));
 });
