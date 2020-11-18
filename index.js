@@ -197,17 +197,17 @@ io.on('connection', function(socket) {
       query = `
       MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
       SET n.upvotes = n.upvotes + 1
-      MERGE (n)<-[r:VOTEDON]-(m)
+      MERGE (n)<-[r:VOTEDON]-(u)
       SET r.upvotes = r.upvotes + 1
-      RETURN m, n, r
+      RETURN u, n, r
       `;
     }else{
       query = `
       MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
       SET n.downvotes = n.downvotes + 1
-      MERGE (n)<-[r:VOTEDON]-(m)
+      MERGE (n)<-[r:VOTEDON]-(u)
       SET r.downvotes = r.downvotes + 1
-      RETURN m, n, r
+      RETURN u, n, r
       `;
     }
     session
@@ -223,16 +223,114 @@ io.on('connection', function(socket) {
       });  
   });
 
-  socket.on('check', function(stuffToCheck){
-    switch(stuffToCheck.task) {
+  socket.on('makevote', function(makevotestuff){
+    var query;
+    var params = {
+      userID: makevotestuff.userID,
+      postID: makevotestuff.postID
+    };
+    switch(makevotestuff.voteType) {
+      case 'firstvote':
+        query = `
+        MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
+        MERGE (u)-[v:VOTEDON {upvotes:0, downvotes:0}]->(p)
+        `;
+        session.run(query, params).then(function(result){
+            console.log(result);
+            //socket.emit('receiveSinglePostData', result);
+            //console.log(result.records[0]["_fields"][1]);
+            //session.close();
+        })
+        .catch(function(error){
+            console.log(error);
+        });  
+        break;
       case 'upvote':
-        // code block
+        query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+        SET p.upvotes = p.upvotes + 1
+        SET v.upvotes = v.upvotes + 1
+        RETURN u, p, v
+        `;  
+        session.run(query, params).then(function(result){
+            console.log(result);
+            //socket.emit('receiveSinglePostData', result);
+            //console.log(result.records[0]["_fields"][1]);
+            //session.close();
+        })
+        .catch(function(error){
+            console.log(error);
+        });  
         break;
       case 'downvote':
-        // code block
+        query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+        SET p.downvotes = p.downvotes + 1
+        SET v.downvotes = v.downvotes + 1
+        RETURN u, p, v
+        `;
+        session.run(query, params).then(function(result){
+            console.log(result);
+            //socket.emit('receiveSinglePostData', result);
+            //console.log(result.records[0]["_fields"][1]);
+            //session.close();
+        })
+        .catch(function(error){
+            console.log(error);
+        }); 
+        break;
+      }
+  });
+
+  socket.on('check', function(stuffToCheck){
+    console.log("CHECKING TASK");
+    var params = {
+      userID: stuffToCheck.userID,
+      postID: stuffToCheck.postID
+    };
+    var query;
+    switch(stuffToCheck.taskToCheck){
+      case 'makevote':
+        query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:userID})
+        RETURN v
+        `;
+        session
+        .run(query, params)
+        .then(function(result){
+          if(result.records[0] == null){
+            socket.emit('userChecked', {task:'firstvote', postID:params.postID, cost:null});
+            console.log("NULL");
+          }else{
+            console.log(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]);
+            socket.emit('userChecked', {task:'additionalvote', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]+result.records[0]["_fields"][0]["properties"]["downvotes"]["low"]))});
+          }
+        })
+        .catch(function(error){
+          socket.emit()
+          console.log(error);
+        });  
         break;
       case 'harvest':
-        //code
+        query = `
+        MATCH (p:Post {postID:333333333})<-[c:CREATEDBY]-(u:User {userID:0})
+        RETURN c
+        `;
+        session
+        .run(query, params)
+        .then(function(result){
+          if(result.records[0] == null){
+            socket.emit('userChecked', {task:'failedHarvest', postID:params.postID, cost:null});
+            console.log("user doesnt own it");
+          }else{
+            console.log(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]);
+            socket.emit('userChecked', {task:'additionalvote', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]+result.records[0]["_fields"][0]["properties"]["downvotes"]["low"]))});
+          }
+        })
+        .catch(function(error){
+          socket.emit()
+          console.log(error);
+        });  
         break;
       case 'shield':
         //code
