@@ -15,20 +15,20 @@ function onloadFunction(){
 }
 
 function generateUUID(){
-    var d = new Date().getTime();
-    var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-    var uuid = 'xxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16;
-        if(d > 0){
-            var r = (d + r)%16 | 0;
-            d = Math.floor(d/16);
-        } else {
-            var r = (d2 + r)%16 | 0;
-            d2 = Math.floor(d2/16);
-        }
-        return (c=='x' ? r : (r&0x7|0x8));
-    });
-    return uuid;
+  var d = new Date().getTime();
+  var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+  var uuid = 'xxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16;
+    if(d > 0){
+      var r = (d + r)%16 | 0;
+      d = Math.floor(d/16);
+    } else {
+      var r = (d2 + r)%16 | 0;
+      d2 = Math.floor(d2/16);
+    }
+    return (c=='x' ? r : (r&0x7|0x8));
+  });
+  return uuid;
 }
 
 
@@ -210,17 +210,31 @@ socket.on('userChecked', function(resultOfCheck){
     case 'firstvote':
       socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
       break;
-    case 'failedHarvest':
-      console.log('you cant harvest posts you dont own!');
-      break;
     case 'failedAdditionalVote':
       console.log('you need more memecoins to vote on this post, but posting on a different one is free!');
       break;
+    case 'ableToHarvestPost':
+      socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+    case 'failedHarvest':
+      console.log('you cant harvest posts you dont own!');
+      break;
+    case 'ableToCensorPost':
+      socket.emit('censorPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+      break;
     case 'failedCensoringCauseTooPoor':
+      console.log('you need more memecoins to censor this post. consider just getting over it?');
+      break;
+    case 'ableToApplyShield':
+      socket.emit('shieldPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
       break;
     case 'failedShieldingCauseTooPoor':
+      console.log('you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!');
       break;
+    case 'successfulTagUpvote':
+      //socket.emit('upvoteTag', )
+      break; 
     case 'failedTagUpvote':
+      console.log('you need at least 1 memecoin to upvote a tag, but you can make a new one for free');
       break;
     default:
       break;
@@ -302,7 +316,6 @@ function submitNewPost(){
   // }
 }
 
-
 function submitReply(postElement){
   var userIdNumber = "ANON";
   var potentialimage = document.getElementById('myimg').src;
@@ -333,13 +346,31 @@ function submitReply(postElement){
   //location.reload();
 }
 
+
+
+
 function upvoteThisTagForThisPost(tagname, postID){
-  console.log(element);
-  socket.emit("upvoteTag", tagname, postID);
+  console.log(tagname);
+  console.log(postID);
+  //socket.emit("upvoteTag", tagname, postID);
 }
 
 
+
+function submitTag(tagname, postID){
+  console.log(tagname);
+  console.log(postID);
+  var tagPostOrUser = {
+    tagname:tagname,
+    postID:postID,
+    userID:sessionStorage.getItem("userID"),
+    postIfTrue:true
+  };
+  socket.emit('tagPostOrUser', tagPostOrUser);
+}
+
 function getAllPostsWithThisTag(tagname){
+  console.log(tagname);
   socket.emit("requestPostsWithTag", tagname);
 }
 
