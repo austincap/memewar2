@@ -8,6 +8,7 @@ function onloadFunction(){
     $('#signinstuff').css('display', 'none');
     $('#accountButton').css('display', 'none');
     $('#userprofilestuff').css('display', 'inline-block');
+    $('.profallow').css('display', 'inline');
     $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
   }else{
     console.log(sessionStorage.getItem('userID'));
@@ -669,6 +670,7 @@ socket.on('loggedIn', function(loginData){
   $('#signinstuff').css('display', 'none');
   $('#accountButton').css('display', 'none');
   $('#userprofilestuff').css('display', 'inline-block');
+  $('.profallow').css('display','inline');
   $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
 
 });

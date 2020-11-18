@@ -129,6 +129,9 @@ h4 {
   #userProfileButton {
     width:300px;
   }
+  .profallow {
+    display:none;
+  }
 
 
   #shareButtonContainer {

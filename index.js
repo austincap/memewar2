@@ -3,7 +3,7 @@ const base64Img = require('base64-img');
 const uri = 'bolt://localhost:7687';
 const dbuser = 'neo4j';
 const dbpassword = 'fucksluts';
-const driver = neo4j.driver(uri, neo4j.auth.basic(dbuser, dbpassword));
+const driver = neo4j.driver(uri, neo4j.auth.basic(dbuser, dbpassword), { disableLosslessIntegers: true });
 const session = driver.session();
 // {
 //   database: 'memewar2',
@@ -98,6 +98,7 @@ io.on('connection', function(socket) {
         .run(query, params)
         .then(function(result){
           console.log("LOGGED IN USER");
+          console.log(result.records[0]["_fields"][0]["properties"]);
           var loginresult = result.records[0]["_fields"][0]["properties"];
           socket.emit('loggedIn', loginresult);
         })
@@ -137,7 +138,7 @@ io.on('connection', function(socket) {
         break;
       case 'harvest':
         query = `
-        MATCH (p:Post {postID:333333333})<-[c:CREATEDBY]-(u:User {userID:0})
+        MATCH (p:Post {postID:$postID})<-[c:CREATEDBY]-(u:User {userID:$userID})
         RETURN c
         `;
         session
@@ -208,11 +209,16 @@ io.on('connection', function(socket) {
     session
       .run(query, {tagname: tagname})
       .then(function(result){
+        if(result.records[0]==null){
+          console.log('NULL');
+          socket.emit('noDataFound');
+        }else{
           var newResult = [];
           result.records[0]["_fields"][0].forEach(function(record){
             newResult.push(record.properties);
           });
           socket.emit('receiveData', newResult);
+        }
       })
       .catch(function(error){
         console.log(error);
@@ -222,18 +228,18 @@ io.on('connection', function(socket) {
   socket.on('viewuser', function(userID){
     var query = `
       MATCH (n:User {userID:$userID})
-      OPTIONAL MATCH (m:Post)<-[r:CREATED]-(n)
-      OPTIONAL MATCH (n)-[ra:TAGGEDAS]->(t)
-      OPTIONAL MATCH (n)-[j:FAVORITED]->(f)
-      OPTIONAL MATCH (n)-[v:VOTEDON]->(l)
-      RETURN n, m, t, f, v
+      OPTIONAL MATCH (u)-[:TAGGEDAS]->(t:Tag)
+      WITH COLLECT(t.name) AS tags
+      OPTIONAL MATCH (u)<-[:CREATEDBY]-(p:Post)
+      OPTIONAL MATCH (u)-[:FAVORITED]->(f:Post)
+      RETURN u, tags, p, f
       `;
       session
         .run(query, {postID: parseInt(postID)})
         .then(function(result){
             console.log(result.records);
             if(result.records[0]==null){
-
+              socket.emit('noDataFound');
               console.log('NULL');
             }else{
               console.log("NOT null");
@@ -293,7 +299,7 @@ io.on('connection', function(socket) {
       console.log(postData.postId);
       postData.file = "officialunofficialplaceholderlogo.jpg";
       var params = {
-              postID: parseInt(postData.postId),
+              postID: postData.postId,
               upvotes: 1,
               downvotes: 0,
               type: postData.type,
@@ -309,16 +315,17 @@ io.on('connection', function(socket) {
       };
       if(postData.userID=="ANON"){
         var query = `
-        MATCH (whichtag:Tag {name:$tag})
+        MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
         RETURN (newpost), (whichtag)
         `;
       }else{
         var query = `
-        MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID})
+        MATCH (whomadeit:User {userID:$userID})
+        MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
+        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
         RETURN (newpost), (whichtag)
         `;
       }
@@ -358,16 +365,18 @@ io.on('connection', function(socket) {
       };
       if(postData.userID=="ANON"){
         var query = `
-        MATCH (whichtag:Tag {name:$tag}), (n:Post {postID:$replyToId})
+        MATCH (n:Post {postID:$replyToId})
+        MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent, replyToId:$replyToId})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[rb:REPLYTO]->(n)
         RETURN (newpost), (whichtag)
         `;
       }else{
         var query = `
-        MATCH (whichtag:Tag {name:$tag}), (whomadeit:User {userID:$userID}), (n:Post {postID:$replyToId})
+        MATCH (whomadeit:User {userID:$userID}), (n:Post {postID:$replyToId})
+        MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, replyToId:$replyToId})
-        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
+        MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
         MERGE (newpost)-[rb:REPLYTO]->(n)
         RETURN (newpost), (whichtag)
         `;
@@ -493,7 +502,7 @@ io.on('connection', function(socket) {
   ////////////////
   //TAGGING
   ////////////
-  socket.on('tagPostOrUser', function(tagPostOrUserData){
+  socket.on('tagPostOrUser', function(tagPostOrUserData){  
     var query;
     var params;
     if(tagPostOrUserData.postIfTrue==true){
@@ -508,11 +517,9 @@ io.on('connection', function(socket) {
       `;
     }else{
       params = {
-      params = {
         userID: tagPostOrUserData.userID,
         tagname: tagPostOrUserData.tagname
       };
-      }
       query = `
       MATCH (n:User {userID:$userID})
       MERGE (m:Tag {name:$tagname})<-[:TAGGEDAS]-(n)
@@ -570,7 +577,7 @@ io.on('connection', function(socket) {
       //   MATCH (n:Post {postID:$postID)
       //   SET n.upvotes = $upvotes
       //    (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-      //   MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)<-[ra:CREATED]-(whomadeit)
+      //   MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
       //   RETURN (newpost), (whichtag)
       //   `;
       
