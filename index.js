@@ -294,34 +294,38 @@ io.on('connection', function(socket) {
   socket.on('addNewPost', function(postData){
       console.log("UPLOAD POST");
       var blockId = new ObjectId();
+      var query;
       postData.postId = blockId.getTimestamp();
       //postData.postId = blockId.toString("hex").substr(15);
       console.log(postData.postId);
-      postData.file = "officialunofficialplaceholderlogo.jpg";
       var params = {
-              postID: postData.postId,
-              upvotes: 1,
-              downvotes: 0,
-              type: postData.type,
-              title: sanitizeHtml(postData.title),
-              content: sanitizeHtml(postData.content),
-              userID: postData.userID,
-              tag: postData.tag,
-              file: postData.file,
-              clicks: 1,
-              censorattempts: 0,
-              shields: 0,
-              memecoinsspent: 0
-      };
+                postID: parseInt(postData.postId),
+                upvotes: 1,
+                downvotes: 0,
+                type: postData.type,
+                title: sanitizeHtml(postData.title),
+                content: sanitizeHtml(postData.content),
+                userID: postData.userID,
+                tag: postData.tag,
+                file: "officialunofficialplaceholderlogo.jpg",
+                clicks: 1,
+                censorattempts: 0,
+                shields: 0,
+                memecoinsspent: 0
+        };
+      // if(postData.file.substr(0,11)=='data:image/'){
+      //   base64Img.imgSync(postData.file,'',postData.postId);
+      //   params.file = toString(params.postID);
+      // }
       if(postData.userID=="ANON"){
-        var query = `
+        query = `
         MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
         MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
         RETURN (newpost), (whichtag)
         `;
       }else{
-        var query = `
+        query = `
         MATCH (whomadeit:User {userID:$userID})
         MERGE (whichtag:Tag {name:$tag})
         MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
@@ -332,6 +336,7 @@ io.on('connection', function(socket) {
       session
       .run(query, params)
       .then(function(result){
+        console.log(result);
         result.records.forEach(function(record){
           console.log(record);
         });
@@ -340,7 +345,10 @@ io.on('connection', function(socket) {
       .catch(function(error){
         console.log(error);
       });
+
+
   });
+
 
   socket.on('reply', function(postData){
       var blockId = new ObjectId();
@@ -512,7 +520,8 @@ io.on('connection', function(socket) {
       };
       query = `
       MATCH (n:Post {postID:$postID})
-      MERGE (m:Tag {name:$tagname})<-[:TAGGEDAS]-(n)
+      MERGE (m:Tag {name:$tagname})
+      MERGE (m)<-[:TAGGEDAS]-(n)
       RETURN m, n
       `;
     }else{
@@ -522,7 +531,8 @@ io.on('connection', function(socket) {
       };
       query = `
       MATCH (n:User {userID:$userID})
-      MERGE (m:Tag {name:$tagname})<-[:TAGGEDAS]-(n)
+      MERGE (m:Tag {name:$tagname})
+      MERGE (m)<-[:TAGGEDAS]-(n)
       RETURN m, n
       `;
     }
