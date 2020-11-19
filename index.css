@@ -37,6 +37,23 @@ h4 {
     margin-right: 20%;
      vertical-align: middle;
   }
+  #uploadTitle {
+    min-width:70%;
+    min-height:20%;
+    margin: auto 0;
+    overflow:wrap;
+  }
+  #uploadContent {
+    min-width: 70%;
+    min-height: 60% !important;
+    height: 50%;
+    margin: auto 0;
+    resize:both;
+  }
+  #sampleFile {
+    color: white;
+
+  }
   .not-button {
     border: none !important;
     padding:3px;
@@ -86,6 +103,9 @@ h4 {
     min-width:90%;
     min-height:250px;
     height:40%;
+  }
+  #tagForNewPost {
+    min-width:70%;
   }
 
 /* links */
@@ -526,3 +546,6 @@ h4 {
     padding: 0.5em 1em;
   }
 
+  .disabled{
+    pointer-events: none;
+  }

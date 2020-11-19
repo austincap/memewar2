@@ -107,23 +107,36 @@
             onsubmit='submitNewPost();'
             method='post' 
             encType='multipart/form-data'>
-            <input type="text" placeholder="EOTIJEOITJE" name="title"/>
-            <input type="text" placeholder="content" name="content"/>
- <!--            <textarea id="title-of-new-post" placeholder="title of your new post"></textarea>
-            <textarea id="new-text-post-data" placeholder="your post content can be a link, a goddamn essay, or nothing at all"></textarea>
-      -->       <input id="tagForNewPost" name="tag" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
-              <input type="file" id="sampleFile" name="sampleFile" />
-              <input type='submit' value='Submit!' />
+            <input required id="tagForNewPost" name="tag" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
+            <br/>
+            <input type="text" style='height:50px;' placeholder="you can treat this field like a title or a tweet" id="uploadTitle" name="title" maxlength="320"/>
+            <br/>
+            <input type="text" style='height:300px;' placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"/>
+            <br/>
+            <img id="myimg" src="" height="150" alt="Image preview...">
+            <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
+            <input class="raise" type='submit' value='Submit!' />
+            <button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
           </form>     
-        <br/><button id="submitNewPost" class="raise" onclick="submitNewPost();">Submit</button><button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
+          
       </div>
 
       <div id="replyContainer">
-        <br/><textarea id='comment-input'></textarea>
-        <br/><input id="tagForNewReply" type="text" placeholder="optional tag" maxlength="64"/>
-        <br/><div id="replyuploaderholder">tyjrturt</div>        
-        <div><button id="submit-reply" class="raise" onclick="submitReply($(this).parent().parent().parent().parent().parent());">Submit this reply</button><button id="cancel-reply" class="raise" onclick="returnReplyBox();">Cancel</button></div>
-        <input id="temptitle" type="text"/>
+        <form ref='uploadFormReply' 
+            id='uploadFormReply' 
+            action='/uploadreply' 
+            onsubmit='submitNewPost();'
+            method='post' 
+            encType='multipart/form-data'>
+            <input id="tagForNewReply" name="tag" placeholder="you may provide a tag for your post" type="text" maxlength="64"/>
+            <br/>
+            <input type="text" style='height:300px;' placeholder="your reply content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"/>
+            <br/>
+            <img id="myimg" src="" height="150" alt="Image preview...">
+            <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
+            <input class="raise" type='submit' value='Submit!' />
+            <button id="cancelNewPost" class="raise" onclick="returnNewReplyBox();">Cancel</button>
+          </form>     
       </div>
 
       <div id="tagContainer" data-tag-id="ff7">
@@ -161,6 +174,11 @@
         <div>
           <a href="https://twitter.com/share?ref_src=twsrc%5Etfw/+463634643" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
         </div>
+      </div>
+
+
+      <div id="warningFloater">
+
       </div>
 
 

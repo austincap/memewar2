@@ -290,21 +290,6 @@ function confirmCensor(postElement){
 
 
 
-function postNewPost(){
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", "/upload", true);
-  xhr.setRequestHeader('Content-Type', 'application/json');
-  xhr.send(JSON.stringify({
-      value: 'value'
-  }));
-  xhr.onload = function() {
-    console.log("HELLO")
-    console.log(this.responseText);
-    var data = JSON.parse(this.responseText);
-    console.log(data);
-  }
-}
-
 function submitNewPost(){
   console.log("submit");
   console.log(document.getElementById("sampleFile").value);
@@ -326,6 +311,7 @@ function submitNewPost(){
   $("#tagForNewPost").empty();
   $("#title-of-new-post").empty();
   $("#sampleFile").empty();
+  document.querySelector('#myimg').src = "";
   //potentialimage = "";
   returnNewPostBox();
   // if( document.getElementById('pageID').value=="main page"){
@@ -396,6 +382,7 @@ function getAllPostsWithThisTag(tagname){
 
 function viewPost(postID){
   console.log(postID);
+
   socket.emit('viewpost', postID);
 }
 
@@ -404,14 +391,12 @@ function previewFile() {
   var preview = document.querySelector('#myimg');
   var file    = document.querySelector('input[type=file]').files[0];
   var reader  = new FileReader();
-
   reader.onloadend = function () {
+    console.log("onlined");
     preview.src = reader.result;
   }
-
   if (file) {
     reader.readAsDataURL(file);
-
   } else {
     preview.src = "";
   }
