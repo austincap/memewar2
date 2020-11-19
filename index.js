@@ -12,17 +12,55 @@ const session = driver.session();
 const express = require('express');
 const path = require('path');
 var ObjectId = require('node-time-uuid');
-var sanitizeHtml = require('sanitize-html');
+const sanitizeHtml = require('sanitize-html');
+//const fileUpload = require('express-fileupload');
+var multer  = require('multer');
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, __dirname+'/uploaded');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg');
+  }
+});
+var upload = multer({storage:storage});
+
 
 const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 app.use(express.static(__dirname));
 
+// app.use(fileUpload({
+//   limits: { fileSize: 50 * 1024 * 1024 },
+//   useTempFiles : true,
+//   tempFileDir : '/tmp/'
+// }));
+
+
 ///////
 //CODE FOLDING LEVEL 3
 ///////
 
+// app.post('/upload', function(req, res){
+//   if (!req.files || Object.keys(req.files).length === 0) { return res.status(400); }
+//   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+//   let sampleFile = req.files.sampleFile;
+//   // Use the mv() method to place the file somewhere on your server
+//   sampleFile.mv('filename.jpg', function(err){
+//     if(err){ return res.status(500).send(err); }
+//     res.redirect('/');
+//   });
+// });
+
+app.post('/upload', upload.single('sampleFile'), function (req, res, next) {
+  // req.file is the `avatar` file
+  // req.body will hold the text fields, if there were any
+  console.log(req.body);
+  res.redirect('/');
+  //res.sendFile(req.file);
+});
 
 
 
@@ -307,7 +345,7 @@ io.on('connection', function(socket) {
                 content: sanitizeHtml(postData.content),
                 userID: postData.userID,
                 tag: postData.tag,
-                file: "officialunofficialplaceholderlogo.jpg",
+                file: (postData.fileexists) ? String(postData.postId) : "officialunofficialplaceholderlogo.jpg",
                 clicks: 1,
                 censorattempts: 0,
                 shields: 0,
@@ -337,7 +375,8 @@ io.on('connection', function(socket) {
       .run(query, params)
       .then(function(result){
         console.log(result);
-        result.records.forEach(function(record){
+        console.log(result.records[0]["_fields"]);
+        result.records[0]["_fields"].forEach(function(record){
           console.log(record);
         });
         // session.close();

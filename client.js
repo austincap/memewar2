@@ -290,10 +290,27 @@ function confirmCensor(postElement){
 
 
 
+function postNewPost(){
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "/upload", true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.send(JSON.stringify({
+      value: 'value'
+  }));
+  xhr.onload = function() {
+    console.log("HELLO")
+    console.log(this.responseText);
+    var data = JSON.parse(this.responseText);
+    console.log(data);
+  }
+}
+
 function submitNewPost(){
   console.log("submit");
-  var potentialimage = document.getElementById('myimg').src;
-  var filedata = potentialimage == "" ? "NONE" : potentialimage;
+  console.log(document.getElementById("sampleFile").value);
+  var fileupload = (document.getElementById("sampleFile").value=="") ? false : true;
+  //var potentialimage = document.getElementById('myimg').src;
+  //var filedata = potentialimage == "" ? "NONE" : potentialimage;
   var userIdNumber = "ANON";
   var postData = {
     tag: document.getElementById('tagForNewPost').value,
@@ -301,14 +318,15 @@ function submitNewPost(){
     title: document.getElementById('title-of-new-post').value,
     content: document.getElementById('new-text-post-data').value,
     userID: userIdNumber,
-    file: filedata
+    fileexists: fileupload
   };
   console.log(postData);
-  socket.emit('addNewPost', postData);
+  //socket.emit('addNewPost', postData);
   $("#new-text-post-data").empty();
   $("#tagForNewPost").empty();
   $("#title-of-new-post").empty();
-  potentialimage = "";
+  $("#sampleFile").empty();
+  //potentialimage = "";
   returnNewPostBox();
   // if( document.getElementById('pageID').value=="main page"){
   //   setTimeout(function(){
@@ -393,6 +411,7 @@ function previewFile() {
 
   if (file) {
     reader.readAsDataURL(file);
+
   } else {
     preview.src = "";
   }

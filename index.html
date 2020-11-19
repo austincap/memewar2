@@ -97,10 +97,24 @@
     <div id="divStorage">
 
       <div id="newPostContainer">
-        <textarea id="title-of-new-post" placeholder="title of your new post"></textarea>
+     <!--     <textarea id="title-of-new-post" placeholder="title of your new post"></textarea>
         <br/><textarea id="new-text-post-data" placeholder="your post content can be a link, a goddamn essay, or nothing at all"></textarea>
-        <br/><input id="tagForNewPost" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
-        <br/><div id="newpostuploaderholder">tyuturrturt</div>
+       <br/><input id="tagForNewPost" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
+        <br/><div id="newpostuploaderholder">tyuturrturt</div> -->
+        <form ref='uploadForm' 
+            id='uploadForm' 
+            action='/upload' 
+            onsubmit='submitNewPost();'
+            method='post' 
+            encType='multipart/form-data'>
+            <input type="text" placeholder="EOTIJEOITJE" name="title"/>
+            <input type="text" placeholder="content" name="content"/>
+ <!--            <textarea id="title-of-new-post" placeholder="title of your new post"></textarea>
+            <textarea id="new-text-post-data" placeholder="your post content can be a link, a goddamn essay, or nothing at all"></textarea>
+      -->       <input id="tagForNewPost" name="tag" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
+              <input type="file" id="sampleFile" name="sampleFile" />
+              <input type='submit' value='Submit!' />
+          </form>     
         <br/><button id="submitNewPost" class="raise" onclick="submitNewPost();">Submit</button><button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
       </div>
 
@@ -131,7 +145,7 @@
       </div>
 
 
-      <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div>
+ <!--      <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div> -->
 
 
       <div id="censorShieldHarvestContainer">
