@@ -17,12 +17,12 @@ const sanitizeHtml = require('sanitize-html');
 var multer  = require('multer');
 var storage = multer.diskStorage({
   destination: function (req, file, cb){
-    cb(null, __dirname+'/uploaded');
+    cb(null, __dirname+'\\uploaded');
   },
   filename: function (req, file, cb) {
-    //const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    //cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg');
-    cb(null, file.originalname);
+    const uniqueSuffix = Date.now() + '-';
+    //cb(null, file.fieldname + '-' + uniqueSuffix + '.jpg');  + Math.round(Math.random() * 1E9)
+    cb(null, uniqueSuffix+file.originalname);
   }
 });
 var upload = multer({storage:storage});
@@ -56,70 +56,112 @@ app.use(express.static(__dirname));
 // });
 
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
-  console.log(res.file);
-  console.log(req.body);
-  // req.file is the `avatar` file
-  // req.body will hold the text fields, if there were any
-  // console.log("UPLOAD POST");
-  // var blockId = new ObjectId();
-  // var query;
-  // postData.postId = blockId.getTimestamp();
-  // //postData.postId = blockId.toString("hex").substr(15);
-  // console.log(postData.postId);
-  // var params = {
-  //           postID: parseInt(postData.postId),
-  //           upvotes: 1,
-  //           downvotes: 0,
-  //           type: postData.type,
-  //           title: sanitizeHtml(postData.title),
-  //           content: sanitizeHtml(postData.content),
-  //           userID: postData.userID,
-  //           tag: postData.tag,
-  //           file: (postData.fileexists) ? String(postData.postId) : "officialunofficialplaceholderlogo.jpg",
-  //           clicks: 1,
-  //           censorattempts: 0,
-  //           shields: 0,
-  //           memecoinsspent: 0
-  //   };
-  // // if(postData.file.substr(0,11)=='data:image/'){
-  // //   base64Img.imgSync(postData.file,'',postData.postId);
-  // //   params.file = toString(params.postID);
-  // // }
-  // if(postData.userID=="ANON"){
-  //   query = `
-  //   MERGE (whichtag:Tag {name:$tag})
-  //   MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-  //   MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
-  //   RETURN (newpost), (whichtag)
-  //   `;
-  // }else{
-  //   query = `
-  //   MATCH (whomadeit:User {userID:$userID})
-  //   MERGE (whichtag:Tag {name:$tag})
-  //   MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-  //   MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
-  //   RETURN (newpost), (whichtag)
-  //   `;
-  // }
-  // session
-  // .run(query, params)
-  // .then(function(result){
-  //   console.log(result);
-  //   console.log(result.records[0]["_fields"]);
-  //   result.records[0]["_fields"].forEach(function(record){
-  //     console.log(record);
-  //   });
-  //   // session.close();
-  // })
-  // .catch(function(error){
-  //   console.log(error);
-  // });
-  // console.log(req.body);
+  console.log("UPLOAD POST");
+  var blockId = new ObjectId();
+  var query;
+  var fileName = null;
+  var postId = parseInt(blockId.getTimestamp());
+  if (typeof req.file === 'object'){ fileName = req.file.filename; }
+  var params = {
+            postID: postId,
+            upvotes: 1,
+            downvotes: 0,
+            type: req.type,
+            title: sanitizeHtml(req.body.title),
+            content: sanitizeHtml(req.body.content),
+            userID: req.body.userID,
+            tag: req.body.tag,
+            file: (fileName = null) ? "officialunofficialplaceholderlogo.jpg" : filename,
+            clicks: 1,
+            censorattempts: 0,
+            shields: 0,
+            memecoinsspent: 0
+  };
+  if(req.userID=="ANON"){
+    query = `
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
+    RETURN (newpost), (whichtag)
+    `;
+  }else{
+    query = `
+    MATCH (whomadeit:User {userID:$userID})
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
+    RETURN (newpost), (whichtag)
+    `;
+  }
+  session
+  .run(query, params)
+  .then(function(result){
+    //console.log(result);
+    //console.log(result.records[0]["_fields"]);
+    result.records[0]["_fields"].forEach(function(record){
+      console.log(record);
+    });
+    // session.close();
+  })
+  .catch(function(error){
+    console.log(error);
+  });
   res.redirect('/');
-  //res.sendFile(req.file);
 });
 
-
+app.post('/upload', upload.single('sampleFile'), function (req, res, next){
+  console.log("UPLOAD POST");
+  var blockId = new ObjectId();
+  var query;
+  var fileName = null;
+  var postId = parseInt(blockId.getTimestamp());
+  if (typeof req.file === 'object'){ fileName = req.file.filename; }
+  var params = {
+            postID: postId,
+            upvotes: 1,
+            downvotes: 0,
+            type: req.type,
+            title: sanitizeHtml(req.body.title),
+            content: sanitizeHtml(req.body.content),
+            userID: req.body.userID,
+            tag: req.body.tag,
+            file: (fileName = null) ? "officialunofficialplaceholderlogo.jpg" : filename,
+            clicks: 1,
+            censorattempts: 0,
+            shields: 0,
+            memecoinsspent: 0
+  };
+  if(req.userID=="ANON"){
+    query = `
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)
+    RETURN (newpost), (whichtag)
+    `;
+  }else{
+    query = `
+    MATCH (whomadeit:User {userID:$userID})
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[r:TAGGEDAS]-(newpost)-[ra:CREATEDBY]->(whomadeit)
+    RETURN (newpost), (whichtag)
+    `;
+  }
+  session
+  .run(query, params)
+  .then(function(result){
+    //console.log(result);
+    //console.log(result.records[0]["_fields"]);
+    result.records[0]["_fields"].forEach(function(record){
+      console.log(record);
+    });
+    // session.close();
+  })
+  .catch(function(error){
+    console.log(error);
+  });
+  res.redirect('/');
+});
 
 io.on('connection', function(socket) {
   console.log("connection");
@@ -136,7 +178,7 @@ io.on('connection', function(socket) {
         .then(function(result){
           var newResult = [];
           result.records[0]["_fields"][0].forEach(function(record){
-            console.log(record.properties);
+            //console.log(record.properties);
             newResult.push(record.properties);
           });
           socket.emit('receiveData', result);

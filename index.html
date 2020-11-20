@@ -76,7 +76,7 @@
           </div>
           </div>
           <div class="post-buttons">
-            <button class="raise anonallow" onclick="showReplyBox();"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
+            <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
             <button class="raise profallow" onclick="showVoteBox(true);"><span class="tooltiptext">upvote</span>&#10133;</button>
             <button class="raise profallow" onclick="showVoteBox(false);"><span class="tooltiptext">downvote</span>&#10134;</button>
             <button class="raise profallow" onclick="showShieldCensorHarvestBox(2);"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
@@ -107,6 +107,10 @@
             onsubmit='submitNewPost();'
             method='post' 
             encType='multipart/form-data'>
+            <input class="permahidden" id="userID-newpost" name="userID"/>
+            <br/>
+            <input class="permahidden" id="posttype-newpost" name="type"/>
+            <br/>
             <input required id="tagForNewPost" name="tag" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
             <br/>
             <input type="text" style='height:50px;' placeholder="you can treat this field like a title or a tweet" id="uploadTitle" name="title" maxlength="320"/>
@@ -116,27 +120,30 @@
             <img id="myimg" src="" height="150" alt="Image preview...">
             <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
             <input class="raise" type='submit' value='Submit!' />
-            <button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
-          </form>     
-          
+          </form>
+          <button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
       </div>
 
       <div id="replyContainer">
         <form ref='uploadFormReply' 
             id='uploadFormReply' 
             action='/uploadreply' 
-            onsubmit='submitNewPost();'
+            onsubmit='submitReply();'
             method='post' 
             encType='multipart/form-data'>
+            <input class="permahidden" id="title-reply" name="title-reply"/>
+            <input class="permahidden" id="replytoPostID" name="replyto"/>
+            <input class="permahidden" id="userID-reply" name="userID"/>
+            <input class="permahidden" id="posttype-reply" name="type"/>
             <input id="tagForNewReply" name="tag" placeholder="you may provide a tag for your post" type="text" maxlength="64"/>
             <br/>
             <input type="text" style='height:300px;' placeholder="your reply content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"/>
             <br/>
-            <img id="myimg" src="" height="150" alt="Image preview...">
-            <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
+            <img id="myimg-reply" src="" height="150" alt="Image preview...">
+            <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();"/>
             <input class="raise" type='submit' value='Submit!' />
-            <button id="cancelNewPost" class="raise" onclick="returnNewReplyBox();">Cancel</button>
-          </form>     
+          </form>
+          <button id="cancelNewPost-reply" class="raise" onclick="returnReplyBox();">Cancel</button> 
       </div>
 
       <div id="tagContainer" data-tag-id="ff7">

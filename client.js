@@ -10,8 +10,16 @@ function onloadFunction(){
     $('#userprofilestuff').css('display', 'inline-block');
     $('.profallow').css('display', 'inline');
     $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('#userID-newpost').val(sessionStorage.getItem('userID'));
+    $('#userID-reply').val(sessionStorage.getItem('userID'));
+    $('#posttype-newpost').val("text_post");
+    $('#posttype-reply').val("text_post");
   }else{
     console.log(sessionStorage.getItem('userID'));
+    $('#userID-newpost').val("ANON");
+    $('#userID-reply').val("ANON");
+    $('#posttype-newpost').val("text_post");
+    $('#posttype-reply').val("text_post");
   }
 }
 
@@ -103,16 +111,21 @@ function returnShareBox(){
   shareButtonContainer.css('display', 'none');
 }
 
-function showReplyBox(){
+function showReplyBox(postElement){
+  console.log(postElement);
+  console.log($(postElement).attr('postID'));
+  console.log($(postElement));
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
   returnShieldCensorHarvestBox();
   returnShareBox();
-  var fileuploader = $('#fileuploader');
-  fileuploader.detach();
-  fileuploader.appendTo('#replyuploaderholder');
-  fileuploader.css('display', 'block');
+  // var fileuploader = $('#fileuploader');
+  // fileuploader.detach();
+  // fileuploader.appendTo('#replyuploaderholder');
+  // fileuploader.css('display', 'block');
+  //$('#replytoPostID').val(postElement.)
+  $('#title-reply').val("text_post");
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#statusdiv');
@@ -120,10 +133,10 @@ function showReplyBox(){
 }
 
 function returnReplyBox(){
-  var fileuploader = $('#fileuploader');
-  fileuploader.detach();
-  fileuploader.appendTo('#divStorage');
-  fileuploader.css('display', 'none');
+  // var fileuploader = $('#fileuploader');
+  // fileuploader.detach();
+  // fileuploader.appendTo('#divStorage');
+  // fileuploader.css('display', 'none');
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#divStorage');
@@ -155,10 +168,10 @@ function showNewPostBox(){
   returnReplyBox();
   returnShieldCensorHarvestBox();
   returnShareBox();
-  var fileuploader = $('#fileuploader');
-  fileuploader.detach();
-  fileuploader.appendTo('#newpostuploaderholder');
-  fileuploader.css('display', 'block');
+  // var fileuploader = $('#fileuploader');
+  // fileuploader.detach();
+  // fileuploader.appendTo('#newpostuploaderholder');
+  // fileuploader.css('display', 'block');
   var newPostContainer = $('#newPostContainer');
   newPostContainer.detach();
   newPostContainer.appendTo('body');
@@ -166,10 +179,10 @@ function showNewPostBox(){
 }
 
 function returnNewPostBox(){
-  var fileuploader = $('#fileuploader');
-  fileuploader.detach();
-  fileuploader.appendTo('#divStorage');
-  fileuploader.css('display', 'none');
+  // var fileuploader = $('#fileuploader');
+  // fileuploader.detach();
+  // fileuploader.appendTo('#divStorage');
+  // fileuploader.css('display', 'none');
   var newPostContainer = $('#newPostContainer');
   newPostContainer.detach();
   newPostContainer.appendTo('#divStorage');
@@ -292,19 +305,19 @@ function confirmCensor(postElement){
 
 function submitNewPost(){
   console.log("submit");
-  console.log(document.getElementById("sampleFile").value);
-  var fileupload = (document.getElementById("sampleFile").value=="") ? false : true;
-  //var potentialimage = document.getElementById('myimg').src;
-  //var filedata = potentialimage == "" ? "NONE" : potentialimage;
-  var userIdNumber = "ANON";
-  var postData = {
-    tag: document.getElementById('tagForNewPost').value,
-    type: 'text_post',
-    title: document.getElementById('title-of-new-post').value,
-    content: document.getElementById('new-text-post-data').value,
-    userID: userIdNumber,
-    fileexists: fileupload
-  };
+  // console.log(document.getElementById("sampleFile").value);
+  // var fileupload = (document.getElementById("sampleFile").value=="") ? false : true;
+  // //var potentialimage = document.getElementById('myimg').src;
+  // //var filedata = potentialimage == "" ? "NONE" : potentialimage;
+  // var userIdNumber = "ANON";
+  // var postData = {
+  //   tag: document.getElementById('tagForNewPost').value,
+  //   type: 'text_post',
+  //   title: document.getElementById('title-of-new-post').value,
+  //   content: document.getElementById('new-text-post-data').value,
+  //   userID: userIdNumber,
+  //   fileexists: fileupload
+  // };
   console.log(postData);
   //socket.emit('addNewPost', postData);
   $("#new-text-post-data").empty();
@@ -389,17 +402,26 @@ function viewPost(postID){
 
 function previewFile() {
   var preview = document.querySelector('#myimg');
-  var file    = document.querySelector('input[type=file]').files[0];
+  var previewReply = document.querySelector('#myimg-reply');
+  //var file    = document.querySelector('input[type=file]').files[0];
+  var file    = document.querySelector('#sampleFile').files[0];
+  var fileReply = document.querySelector('#sampleFile-reply').files[0];
   var reader  = new FileReader();
   reader.onloadend = function () {
     console.log("onlined");
     preview.src = reader.result;
+    previewReply.src = reader.result;
   }
   if (file) {
     reader.readAsDataURL(file);
   } else {
     preview.src = "";
   }
+  if (fileReply) {
+    reader.readAsDataURL(fileReply);
+  } else {
+    preview.src = "";
+  }  
 }
 
 

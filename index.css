@@ -211,6 +211,9 @@ h4 {
     width:100%;
     min-width:1px;
   }
+  .permahidden {
+    display:none;
+  }
 
 
 
