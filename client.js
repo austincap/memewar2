@@ -3,13 +3,13 @@ socket.emit('requestTop50Posts');
 
 
 function onloadFunction(){
-   if(sessionStorage.getItem('userID') !== null){
+  if(sessionStorage.getItem('userID') !== null){
     console.log(sessionStorage.getItem('userID'));
     $('#signinstuff').css('display', 'none');
     $('#accountButton').css('display', 'none');
     $('#userprofilestuff').css('display', 'inline-block');
     $('.profallow').css('display', 'inline');
-    $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('#userProfileButton').html("<span id='"+sessionStorage.getItem('userID')+"'>"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
     $('#userID-newpost').val(sessionStorage.getItem('userID'));
     $('#userID-reply').val(sessionStorage.getItem('userID'));
     $('#posttype-newpost').val("text_post");
@@ -58,9 +58,15 @@ function loginUser(){
   socket.emit('login', logindata);
 }
 
+function viewProfilePage(){
+  
+}
 
 
-function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest){
+
+function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement){
+  var userID = (sessionStorage.getItem('userID') !== null) ? sessionStorage.getItem('userID') : "ANON";
+  console.log(userID);
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
@@ -69,16 +75,20 @@ function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest){
   if(zeroIsCensorOneIsShieldTwoIsHarvest==1){
     $('.censormessage').css('display', 'none');
     $('.shieldmessage').css('display', 'block');  
-     $('.harvestmessage').css('display', 'none');
+    $('.harvestmessage').css('display', 'none');
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'shield'});
   }else if(zeroIsCensorOneIsShieldTwoIsHarvest==0){
     $('.censormessage').css('display', 'block');
     $('.shieldmessage').css('display', 'none');
-     $('.harvestmessage').css('display', 'none');
+    $('.harvestmessage').css('display', 'none');
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'censor'});
   }else{
     $('.censormessage').css('display', 'none');
     $('.shieldmessage').css('display', 'none');
     $('.harvestmessage').css('display', 'block');
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'harvest'});
   }
+
   var censorShieldHarvestContainer = $('#censorShieldHarvestContainer');
   censorShieldHarvestContainer.detach();
   censorShieldHarvestContainer.appendTo('#statusdiv');
@@ -228,25 +238,45 @@ socket.on('userChecked', function(resultOfCheck){
       console.log('you need more memecoins to vote on this post, but posting on a different one is free!');
       break;
     case 'ableToHarvestPost':
-      socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+      //socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+      $('#harvestmessage-span').html("you'll get "+resultOfCheck.cost+" memecoin from harvesting this post");
+      break;
     case 'failedHarvest':
+      $('#harvestmessage').html('you cant harvest posts you dont own!');
       console.log('you cant harvest posts you dont own!');
       break;
     case 'ableToCensorPost':
-      socket.emit('censorPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+      $('#confirmCensor').prop('disabled', false);
+      $('#censormessage-span').html("there are have been "+resultOfCheck.cost+" attempts to censor this post so far, and if there's at least 1 shield you'll waste your memecoin too");
+      //socket.emit('censorPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
       break;
     case 'failedCensoringCauseTooPoor':
-      console.log('you need more memecoins to censor this post. consider just getting over it?');
+      $('#confirmCensor').prop('disabled', true);
+      $('#censormessage-span').html("you need more memecoins to censor this post. consider just getting over it?");
+      console.log('you need more memecoin to censor this post. consider just getting over it?');
+      break;
+    case 'successfulCensoring':
+      $('#censormessage-span').html("success! you will be the last person to ever see this post! reload the page to wipe it from the net completely");
+      socket.emit('censorSuccess', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
+      break;
+    case 'failedCensoringCauseShield':
+      $('#censormessage-span').html("your attempt to censor this post has failed, but there are merely "+resultOfCheck.cost+" free speech shields remaining");
+      break;
+    case 'failedCensoringCauseOther':
+      console.log('no idea');
       break;
     case 'ableToApplyShield':
-      socket.emit('shieldPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+      $('#confirmShield').prop('disabled', false);
+      //socket.emit('shieldPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
       break;
-    case 'failedShieldingCauseTooPoor':
+    case 'failedShielding':
+      $('#confirmShield').prop('disabled', true);
+      $('#shieldmessage-span').html("you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!");
       console.log('you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!');
       break;
     case 'successfulTagUpvote':
       //socket.emit('upvoteTag', )
-      break; 
+      break;
     case 'failedTagUpvote':
       console.log('you need at least 1 memecoin to upvote a tag, but you can make a new one for free');
       break;
@@ -288,80 +318,40 @@ function returnNewStatsBox(){
 }
 
 
-function confirmCensor(postElement){
-  console.log(postElement.attr('postID'));
+function confirmCensor(postID){
   if(sessionStorage.getItem('memecoin') > 50){
     var dataPacket = {
       userID: sessionStorage.getItem('userID'),
-      postID: parseInt($(postElement).attr('postID'))
+      postID: postID
     };
     socket.emit('censorAttempt', dataPacket);
-    $('#censorShieldHarvestContainer').css('display', 'none');
+    //$('#censorShieldHarvestContainer').css('display', 'none');
   }
-  console.log("insufficient memecoin");
 }
 
+function confirmHarvest(postElement){
+  console.log(postElement);
+}
 
 
 function submitNewPost(){
   console.log("submit");
-  // console.log(document.getElementById("sampleFile").value);
-  // var fileupload = (document.getElementById("sampleFile").value=="") ? false : true;
-  // //var potentialimage = document.getElementById('myimg').src;
-  // //var filedata = potentialimage == "" ? "NONE" : potentialimage;
-  // var userIdNumber = "ANON";
-  // var postData = {
-  //   tag: document.getElementById('tagForNewPost').value,
-  //   type: 'text_post',
-  //   title: document.getElementById('title-of-new-post').value,
-  //   content: document.getElementById('new-text-post-data').value,
-  //   userID: userIdNumber,
-  //   fileexists: fileupload
-  // };
-  console.log(postData);
-  //socket.emit('addNewPost', postData);
   $("#new-text-post-data").empty();
   $("#tagForNewPost").empty();
   $("#title-of-new-post").empty();
   $("#sampleFile").empty();
   document.querySelector('#myimg').src = "";
-  //potentialimage = "";
   returnNewPostBox();
-  // if( document.getElementById('pageID').value=="main page"){
-  //   setTimeout(function(){
-  //     socket.emit('requestTop50Posts');
-  //   }, 700);
-  // }
 }
 
 function submitReply(postElement){
-  var userIdNumber = "ANON";
-  var potentialimage = document.getElementById('myimg').src;
-  var filedata = potentialimage == "" ? "NONE" : potentialimage;
-  var postData = {
-    title: $(postElement).children('.post').children('.posthelper').children('a').children('.post-maintext').html(),
-    tag: document.getElementById('tagForNewReply').value,
-    type: 'text_post',
-    content: document.getElementById('comment-input').value,
-    replyToPostID: parseInt($(postElement).attr('postID')),
-    userID: userIdNumber,
-    file: filedata
-  };
-  document.getElementById('replyContainer').style.display = "none";
-
-  socket.emit('reply', postData);
-  $('#comment-input').empty();
-  $("#entryContainer").empty();
+  console.log("submit reply");
+  $('#uploadContent-reply').empty();
+  //$("#entryContainer").empty();
   $('#tagForNewReply').empty();
-  potentialimage = "";
+  $("#sampleFile-reply").empty();
+  document.querySelector('#myimg-reply').src = "";
   returnReplyBox()
-  // if( document.getElementById('pageID').value=="main page"){
-  //   setTimeout(function(){
-  //     socket.emit('requestTop50Posts');
-  //   }, 700);
-  // }
-
-  //location.reload();
 }
 
 
@@ -400,7 +390,7 @@ function viewPost(postID){
 }
 
 
-function previewFile() {
+function previewFile(){
   var preview = document.querySelector('#myimg');
   var previewReply = document.querySelector('#myimg-reply');
   //var file    = document.querySelector('input[type=file]').files[0];
@@ -425,10 +415,15 @@ function previewFile() {
 }
 
 
-function getRandomInt(min, max) {
+function getRandomInt(min, max){
   min = Math.ceil(min);
   max = Math.floor(max);
   return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
+
+
+function testFunction(){
+
 }
 
 

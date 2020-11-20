@@ -152,8 +152,6 @@ h4 {
   .profallow {
     display:none;
   }
-
-
   #shareButtonContainer {
     display:none;
   }
@@ -176,7 +174,7 @@ h4 {
     top: 20px;
     left: 20px;
   }
-  #sort-by-mv-only {
+  #sort-by-upvotes-only {
     /*position: fixed;*/
     display:inline-block;
     color: white;
@@ -193,15 +191,6 @@ h4 {
     float:right !important;
     min-width: 200px;
   }
-  #adjacent-rooms {
-    font-family: 'Cute Font', cursive;
-    color:#dfe09d;
-    font-size: 18px;
-  }
-  .adjacent-roomId {
-    color: #551A8B;
-    background-color: #dfe09d;
-  }
   #popular-tags {
     color: #dfe09d;
     overflow: auto;
@@ -217,7 +206,7 @@ h4 {
 
 
 
-/* content stuff */
+/* post list stuff */
 
   #entryContainer {
     border: solid;
@@ -229,16 +218,23 @@ h4 {
   }
   .post {
     color: white;
-    display: flex; 
+    display: inline-block; 
     max-height: 120px;
   }
   .post-visual {
     padding-right:1vh;
   }
+  .post-title {
+    overflow-x:auto;
+    min-width: 300px;
+  }
   .post-header {
     height:10%;
     min-height:16px;
     padding-bottom:1vh;
+  }
+  .post-helper {
+    display: flex !important;
   }
   .post-maintext {
     height:70%;
@@ -254,17 +250,9 @@ h4 {
     padding:2px;
     padding-left:4vw;
     padding-right:4vw;
-
   }
   .post-container {
     margin-bottom:5px;
-  }
-
-  .content-container {
-    padding: 3px;
-  }
-  .content-container p {
-    font-size:20px;
   }
   .active {
     background-color:#564834 !important;
@@ -309,13 +297,6 @@ h4 {
     max-height:100px;
     max-width:70vw;
   }
-  .myimg{
-    color:white;
-  }
-  #fileuploader{
-    color:white;
-    display:none;
-  }
   .uploadedimage{
     text-align: center;
   }
@@ -356,69 +337,7 @@ h4 {
 
 
 /* post metadata container stuff */
-  .metadata-container {
-    font-family: 'Quantico', sans-serif;
-    font-size: 10px;
-    /*  border: solid;
-    border-width: 1px;*/
-    display: flex;
-  }
-  .upvotesnum {
-    /*  border:solid;
-    border-width:1px;*/
-    padding-left:8px;
-    padding-right:8px;
-    float:left;
-  }
-  .time-and-date{
-    /*  border:solid;
-    border-width:1px;*/
-    padding-left:8px;
-    padding-right:8px;
-    float:left;
-  }
-  .blockID{
-    padding-left:8px;
-    padding-right:8px;
-    float:left;
-    padding-top:0px;
-    padding-bottom: 0px;
-  }
-  .userID{
-    display: none;
-    /*  border:solid;
-    border-width: 1px;*/
-    padding-left:8px;
-    padding-right:8px;
-    float:left;
-  }
-  .special-action-buttons{
-    padding-left:8px;
-    padding-right:8px;
-    display:none;
-    float:left;
-  }
-  .replylinks {
-    float:right;
-    /*background-color: #3d3e3f;*/
-    padding:0px !important;
-    margin: 0px !important;
-  }
-  .replylinks a {
-    float: right;
-    /*    position:relative;*/
-    font-family: 'Quantico', sans-serif;
-    font-size:10px;
-  }
-  .label {
-    cursor: pointer;
-    font-family: 'Quantico', sans-serif;
-    font-size:10px;
-  }
-  .lower-metadata-container{
-    min-height:16px;
-    max-height:16px;
-  }
+
 
 
 /* tooltips */

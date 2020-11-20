@@ -15,8 +15,8 @@
 
     <div id="leftist-buttons">
       <div>
-        <button>protips</button>
-        <div id="accountButton"><button onclick="$('#signinstuff').css('display','inline-block');$(this).css('display','none');">sign up</button></div>
+        <button id="TEST" onclick="testFunction();">TEST</button>
+        <div id="accountButton"><button onclick="$('#signinstuff').css('display','inline-block');$(this).css('display','none');">account</button></div>
         <div id="userprofilestuff"><button id="userProfileButton" class="raise" onclick="viewProfilePage();">jk</button></div>
       </div>
       <div id="signinstuff">
@@ -59,29 +59,28 @@
     <div id="entryContainer">
 
 
-        <div class="post-container" postID="675675667"> 
+        <div class="post-container" postID="1605905839"> 
           <div class="post">
-            <a onclick="viewPost($(this).parent().parent().parent().attr('postID'));" href="#">
+            <a class="post-helper" onclick="viewPost($(this).parent().parent().attr('postID'));" href="#">
               <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
-              <div class="posthelper"><div class="post-title">Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf hdf</div>
+              <div class="post-title">Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf Hot pic of tifa cosplaydrfetetf gasegfasdgasdgfsadgasdga dsfhfdshgdfshsdfghd sfhdfshdfshsd fhsdfhfdhgsdfhdfsrhdfhdfhdf hdf</div>
             </a>
-              <div class="post-header">
-                <span class="upvotes-tooltip"><span class="tooltiptext">the number of +'s minus the number of -'s this post received</span><span class="upvotecount">34</span>&nbsp;profit</span>
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">100</span>&nbsp;clicks</span>
-                &nbsp;&nbsp;|&nbsp;&nbsp;<span class="post-date">3/4/2020</span>
-                &nbsp;&nbsp;|&nbsp;&nbsp;<span><span class="post-numreplies">3</span>&nbsp;replies</span>
-                &nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class="replyToId">TITLKE</span></span>
-              </div>
-          </div>
+            <div class="post-header">
+              <span class="upvotes-tooltip"><span class="tooltiptext">the number of +'s minus the number of -'s this post received</span><span class="upvotecount">34</span>&nbsp;profit</span>
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              <span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">100</span>&nbsp;clicks</span>
+              &nbsp;&nbsp;|&nbsp;&nbsp;<span class="post-date">3/4/2020</span>
+              &nbsp;&nbsp;|&nbsp;&nbsp;<span><span class="post-numreplies">3</span>&nbsp;replies</span>
+              &nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class="replyToId">TITLKE</span></span>
+            </div>
           </div>
           <div class="post-buttons">
             <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
             <button class="raise profallow" onclick="showVoteBox(true);"><span class="tooltiptext">upvote</span>&#10133;</button>
             <button class="raise profallow" onclick="showVoteBox(false);"><span class="tooltiptext">downvote</span>&#10134;</button>
-            <button class="raise profallow" onclick="showShieldCensorHarvestBox(2);"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
-            <button class="raise profallow" onclick="showShieldCensorHarvestBox(1);"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
-            <button class="raise profallow" onclick="showShieldCensorHarvestBox(0);"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
+            <button class="raise profallow" onclick="showShieldCensorHarvestBox(2, $(this).parent().parent().attr('postID'));"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
+            <button class="raise profallow" onclick="showShieldCensorHarvestBox(1, $(this).parent().parent().attr('postID'));"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
+            <button class="raise profallow" onclick="showShieldCensorHarvestBox(0, $(this).parent().parent().attr('postID'));"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
             <button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
             <button class="raise profallow" onclick="favoritePost($(this).parent().parent());"><span class="tooltiptext">favorite this post</span>❤</button>
             <button class="raise anonallow" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button>
@@ -97,25 +96,19 @@
     <div id="divStorage">
 
       <div id="newPostContainer">
-     <!--     <textarea id="title-of-new-post" placeholder="title of your new post"></textarea>
-        <br/><textarea id="new-text-post-data" placeholder="your post content can be a link, a goddamn essay, or nothing at all"></textarea>
-       <br/><input id="tagForNewPost" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
-        <br/><div id="newpostuploaderholder">tyuturrturt</div> -->
         <form ref='uploadForm' 
             id='uploadForm' 
             action='/upload' 
-            onsubmit='submitNewPost();'
+            onsubmit='submitNewPost();' 
             method='post' 
             encType='multipart/form-data'>
             <input class="permahidden" id="userID-newpost" name="userID"/>
-            <br/>
             <input class="permahidden" id="posttype-newpost" name="type"/>
+            <input required id="tagForNewPost" name="tag" placeholder="you MUST provide a tag for your post. how do you want your post to be categorized?" type="text" maxlength="64"/>
             <br/>
-            <input required id="tagForNewPost" name="tag" placeholder="you must provide a tag for your post" type="text" maxlength="64"/>
+            <input type="text" style='height:50px;' placeholder="you can treat this field like a title, or like a tweet if you're not putting anything in the box below" id="uploadTitle" name="title" maxlength="320"/>
             <br/>
-            <input type="text" style='height:50px;' placeholder="you can treat this field like a title or a tweet" id="uploadTitle" name="title" maxlength="320"/>
-            <br/>
-            <input type="text" style='height:300px;' placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"/>
+            <textarea type="text" style='height:300px;' placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"></textarea>
             <br/>
             <img id="myimg" src="" height="150" alt="Image preview...">
             <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
@@ -137,7 +130,7 @@
             <input class="permahidden" id="posttype-reply" name="type"/>
             <input id="tagForNewReply" name="tag" placeholder="you may provide a tag for your post" type="text" maxlength="64"/>
             <br/>
-            <input type="text" style='height:300px;' placeholder="your reply content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"/>
+            <textarea type="text" style='height:300px;' placeholder="your reply content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent-reply" name="content" maxlength="25000"></textarea>
             <br/>
             <img id="myimg-reply" src="" height="150" alt="Image preview...">
             <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();"/>
@@ -146,7 +139,7 @@
           <button id="cancelNewPost-reply" class="raise" onclick="returnReplyBox();">Cancel</button> 
       </div>
 
-      <div id="tagContainer" data-tag-id="ff7">
+      <div id="tagContainer">
         <div id="existingTagsForThisPost">
           Existing tags for this post:&nbsp;
           <div class="postTag">(<a href="#" title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost($(this).parent().parent().parent().attr('data-tag-id'), $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">44</a>)&nbsp;-&nbsp;<span class="tagName">ff7</span>&nbsp;-&nbsp;(<a href="#" title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag($(this).parent().parent().parent().attr('data-tag-id'));">37</a>)</div>
@@ -165,14 +158,15 @@
       </div>
 
 
- <!--      <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div> -->
+      <!--      <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div> -->
 
 
       <div id="censorShieldHarvestContainer">
-        <div class="harvestmessage">harvesting your post converts its profit into memecoins, but deletes the post</div>
-        <div class="censormessage">are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoins...</div><div class="shieldmessage">free speech shields cost half as much and block 1 censor attempt!</div>
-        <div><button class="censormessage" id="confirmCensor" onclick="confirmCensor($(this).parent().parent().parent().parent().parent());">CENSOR</button><button class="shieldmessage" id="confirmShield" onclick="confirmShield($(this).parent().parent().parent().parent().parent());">SHIELD</button>
-            <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent());">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button></div>
+        <div class="harvestmessage"><span id="harvestmessage-span">harvesting your post converts its profit into memecoin, but deletes the post</span></div>
+        <div class="censormessage"><span id="censormessage-span">are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoin...</span></div>
+        <div class="shieldmessage"><span id="shieldmessage-span">free speech shields cost half as much and block 1 censor attempt!</span></div>
+        <div><button class="censormessage" id="confirmCensor" onclick="confirmCensor($(this).parent().parent().parent().parent().parent().attr('postID'));">CENSOR</button><button class="shieldmessage" id="confirmShield" onclick="confirmShield($(this).parent().parent().parent().parent().parent().attr('postID'));">SHIELD</button>
+            <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent().attr('postID'));">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button></div>
       </div>
 
 
