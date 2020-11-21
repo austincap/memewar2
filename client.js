@@ -1,5 +1,5 @@
 var socket = io();
-socket.emit('requestTop50Posts');
+socket.emit('requestTop20Posts');
 
 
 function onloadFunction(){
@@ -473,227 +473,66 @@ function testFunction(){
   }
 
 
+  //subtitle function
+  $(function(){
+    $.getJSON('subtitles.json',function(data){
+      $('#sub-title').append(data[getRandomInt(0,Object.keys(data).length)]['text']);
+    });
+  });
+
+  $(document).ready(function(){
+    //change room on typing it in
+  $("#tag-filter").keyup(function(){
+    console.log($(this).val());
+    $("#entryContainer").empty();
+    socket.emit('requestPostsWithTag', $(this).val());
+  });
+
+});
 
 
-// "<div class='container'>
-//   <div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+">
-//     <div class='metadata-container'>
-//     <div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-
-//     <div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-
-//     <button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button>
-//     <div class='userID'>userID goes here</div>
-//     <div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div>
-//     <div class='replylinks'></div>
-//     <div class='labels'></div>
-//     <div>
-//       <a href="+linkblockUrl+">
-//         <div class='content-container uploadedimage'><img class='activeimage' src='"+linkblockUrl+"'/></div>
-//       </a>
-//     </div>
-//   </div>"
-        // var onclickTextX = "showReplyBoxX(parseInt(document.getElementById('id"+String(linkblockArray[i].blockID)+"').getAttribute('data-x')));";
-        // var onclickTextY = "showReplyBoxY(parseInt(document.getElementById('id"+String(linkblockArray[i].blockID)+"').getAttribute('data-y')));";
-        // var onclickTextID = "showReplyBoxID('"+String(linkblockArray[i].blockID)+"');";
-        //var replyPackage = {x:linkblockArray[i].x, y:linkblockArray[i].y, blockID:linkblockArray[i].blockID};
-        //var onclickText = "showReplyBox("+replyPackage+")";
-
-
-socket.on('receiveData', function(posts){
+socket.on('receiveTagData', function(topPostsForTag){
+  var posts = topPostsForTag[0];
+  var tag = topPostsForTag[1];
   console.log(posts);
+  posts.forEach(function(post){
+    var date = new Date(post.postID * 1000).toDateString();
+    console.log(date);
+    var processedPost = '<div class="post-container" postID="'+String(post.postID)+'"><div class="post"><a class="post-helper" onclick="viewPost($(this).parent().parent().attr("postID"));" href="#"><div class="post-visual"><img src="uploaded/'+String(post.file)+'"/></div><div class="post-title">'+post.title+'</div></a><div class="post-header"><span class="upvotes-tooltip"><span class="tooltiptext">the number of upvotes minus the number of downvotes this post received</span><span class="upvotecount">'+String(post.upvotes-post.downvotes)+'</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">'+String(post.clicks)+'</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class="post-date">'+date+'</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class="post-numreplies">'+String(post.replycount)+'</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class="replyToId">'+'ERROR'+'</span></span></div></div><div class="post-buttons"><button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button><button class="raise profallow" onclick="showVoteBox(true);"><span class="tooltiptext">upvote</span>&#10133;</button><button class="raise profallow" onclick="showVoteBox(false);"><span class="tooltiptext">downvote</span>&#10134;</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(2, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">convert this posts profit into memecoin, then delete post</span>♻</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(1, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(0, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button><button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button><button class="raise profallow" onclick="favoritePost($(this).parent().parent());"><span class="tooltiptext">favorite this post</span>❤</button><button class="raise anonallow" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button><div id="statusdiv"></div></div></div>';
+    $('#entryContainer').append(processedPost);
+  });
+  $('#pageID').html(tag);
+  onloadFunction();
+});
+
+socket.on('receiveTop20Data', function(topPostsAndTags){
+  var posts = topPostsAndTags[0];
+  var tags = topPostsAndTags[1];
+  console.log(posts);
+  posts.forEach(function(post){
+    var date = new Date(post.postID * 1000).toDateString();
+    console.log(date);
+    var processedPost = '<div class="post-container" postID="'+String(post.postID)+'"><div class="post"><a class="post-helper" onclick="viewPost($(this).parent().parent().attr("postID"));" href="#"><div class="post-visual"><img src="uploaded/'+String(post.file)+'"/></div><div class="post-title">'+post.title+'</div></a><div class="post-header"><span class="upvotes-tooltip"><span class="tooltiptext">the number of upvotes minus the number of downvotes this post received</span><span class="upvotecount">'+String(post.upvotes-post.downvotes)+'</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class="views-tooltip"><span class="tooltiptext">the number of times someone actually clicked on this post</span><span class="viewcount">'+String(post.clicks)+'</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class="post-date">'+date+'</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class="post-numreplies">'+String(post.replycount)+'</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class="replyToId">'+'ERROR'+'</span></span></div></div><div class="post-buttons"><button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button><button class="raise profallow" onclick="showVoteBox(true);"><span class="tooltiptext">upvote</span>&#10133;</button><button class="raise profallow" onclick="showVoteBox(false);"><span class="tooltiptext">downvote</span>&#10134;</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(2, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">convert this posts profit into memecoin, then delete post</span>♻</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(1, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button><button class="raise profallow" onclick="showShieldCensorHarvestBox(0, $(this).parent().parent().attr("postID"));"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button><button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button><button class="raise profallow" onclick="favoritePost($(this).parent().parent());"><span class="tooltiptext">favorite this post</span>❤</button><button class="raise anonallow" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button><div id="statusdiv"></div></div></div>';
+    $('#entryContainer').append(processedPost);
+  });
+  console.log(tags);
+  tags.forEach(function(tag){
+    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
+    $('#popular-tag-span').append(processedTag); 
+  });
+    //change room on clicking the button
+  $(".popular-tag-button").on("click", function(){
+    console.log($(this).children(".tag-name").html());
+    $("#entryContainer").empty();
+    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+  });
+  onloadFunction();
 });
 
 socket.on('receiveSinglePostData', function(dataFromServer){
   console.log(dataFromServer);
 });
 
-socket.on('sendServerDataToFeed', function(nodeData, replyData){  
-  var linkblockArray = convertLinkBlocks(nodeData);  
-  for (i=0; i < linkblockArray.length; i++){
-    if (linkblockArray[i].url != ""){
-        //build reply strings
-        var onclickTextX = "showReplyBoxX(parseInt(document.getElementById('id"+String(linkblockArray[i].blockID)+"').getAttribute('data-x')));";
-        var onclickTextY = "showReplyBoxY(parseInt(document.getElementById('id"+String(linkblockArray[i].blockID)+"').getAttribute('data-y')));";
-        var onclickTextID = "showReplyBoxID('"+String(linkblockArray[i].blockID)+"');";
-
-      if (linkblockArray[i]['type'] == ("vanilla_post" || "mine_post" || "autoturret_post" || "organic_post" || "viral_post")){
-        if (linkblockArray[i]['url'].substr(0, 8) ==String.raw`${"public/p"}`){ 
-          //if it's an uploaded picture linkblock
-          var linkblockUrl = "../"+linkblockArray[i]['url'].slice(7);       
-          $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href="+linkblockUrl+"><div class='content-container uploadedimage'><img class='activeimage' src='"+linkblockUrl+"'/></div></a></div><div class='lower-metadata-container'><div class='replylinks'></div></div></div>");
-        } else if(is_url(linkblockArray[i].url)){ //if it's a vanilla, mine, aggro linkblock, organic, or viral linkblock
-          if(linkblockArray[i]['url'].substr(0,32)=="https://www.youtube.com/watch?v="){ //if it's a youtube link
-            console.log(linkblockArray[i]['url'].substr(32,43));
-            var linkblockUrl = "<iframe width='500' height='300' src='https://www.youtube.com/embed/"+linkblockArray[i]['url'].substr(32,43)+"' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>";
-            //var linkblockUrl = "<iframe src='https://web.archive.org/web/"+linkblockArray[i].url+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
-            $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href='"+linkblockArray[i]['url']+"' ><div class='content-container'>"+linkblockUrl+"</div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
-          }else{ //if it's any other kind of link
-          //USING A STATIC IMAGE FOR A WEBSITE THUMBNAIL
-          //var linkblockImgUrl = "<img src='../images/mv.png'/>";
-          //$("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+"data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</div><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div class='content-container'><a href='"+String(linkblockArray[i].url)+"'>"+linkblockImgUrl+"<a/></div></div></div>");
-          //USING AN IFRAME FOR AN EMBEDDED SITE
-          var linkblockUrl = "<iframe src='https://web.archive.org/web/"+linkblockArray[i].url+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
-          $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href='"+linkblockArray[i]['url']+"' ><div class='content-container'>"+linkblockUrl+"</div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
-          }
-        } else{
-          //if it's a postblock full of text, treat as a text_post
-          $("#entryContainer").prepend("<div class='container'><div class='text_post block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div class='content-container'><p style='white-space: pre-line;' href='"+String(linkblockArray[i].url)+"'>"+linkblockArray[i].url+"<p/></div><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
-        }
-      } else if (linkblockArray[i].type=="text_post"){//if it's a text_post
-        if (linkblockArray[i]['url'].substr(0, 8) ==String.raw`${"public/p"}`){ //if its a text_post with a pic
-          var linkblockUrl = "../"+linkblockArray[i]['url'].slice(7);       
-          $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href="+linkblockUrl+"><div class='content-container uploadedimage'><img class='activeimage' src='"+linkblockUrl+"'/></div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
-        } else{ //if its plain ol text text_post
-          console.log(linkblockArray[i].url.replace('\\n', '\n'));
-          $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"' data-upvotes="+parseInt(linkblockArray[i].upvotes)+" data-x="+linkblockArray[i].x+" data-y="+linkblockArray[i].y+"><div class='metadata-container'><div class='upvotesnum'>"+linkblockArray[i].upvotes+"MV</div>-<div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div class='content-container'><p style='white-space: pre-line;'>"+linkblockArray[i].url.replace(/\\n/g, '\n')+"<p/></div><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");          
-        }
-      } else if (linkblockArray[i].type=="portal"){ 
-        //if it's a verse_portal       
-        $("#adjacent-rooms").append("<button id='"+linkblockArray[i].url+"' class='adjacent-roomId'>"+linkblockArray[i].url+"</button>&nbsp;");
-      } else {
-
-        //if it's a messageblock, teleblock, or anything else DO NOTHING
-      }
-    }
-  }
-  for(i=0; i < replyData.length; i++){
-    console.log(replyData[i]);
-    if(replyData[i]['type']=='REPLYTO'){
-      var hasreplyattr = $('#id'+replyData[i]['orig']+' > .metadata-container > .replylinks').attr('data-hasreplyto');
-      if(typeof hasreplyattr !== typeof undefined && hasreplyattr !== false){ //dont overwrite a reply if there are multiple replies
-        $('#id'+replyData[i]['orig']+' > .metadata-container > .replylinks').attr('data-hasreplyto', hasreplyattr+','+replyData[i]['reply']);
-      }else{ //if its the first reply
-        $('#id'+replyData[i]['orig']+' > .metadata-container > .replylinks').attr('data-hasreplyto', replyData[i]['reply']);
-      }
-      var newhasreplyattr = $('#id'+replyData[i]['reply']+' > .lower-metadata-container > .replylinks').attr('data-hasreplyto');
-      if(typeof newhasreplyattr !== typeof undefined && newhasreplyattr !== false){ //dont overwrite a reply if there are multiple replies
-        $('#id'+replyData[i]['reply']+' > .lower-metadata-container > .replylinks').attr('data-hasreplyto', newhasreplyattr+','+replyData[i]['orig']);
-      }else{
-        $('#id'+replyData[i]['reply']+' > .lower-metadata-container > .replylinks').attr('data-hasreplyto', replyData[i]['orig']);
-      }
-    }else if (replyData[i]['type']=='LABELS') {
-      var haslabelattr = $('#id'+replyData[i]['orig']+' > .metadata-container > .labels').attr('data-haslabel');
-        if(typeof haslabelattr !== typeof undefined && haslabelattr !== false){ //dont overwrite a label if there are multiple labels
-          $('#id'+replyData[i]['orig']+' > .metadata-container > .labels').attr('data-haslabel', haslabelattr+','+replyData[i]['reply']);
-        }else{ //if its first label
-          $('#id'+replyData[i]['orig']+' > .metadata-container > .labels').attr('data-haslabel', replyData[i]['reply']);
-        }
-    }else{ //idk why this case is happening, but handling it this way was easier than figuring it out
-      $('#id'+replyData[i]['orig']+' > .metadata-container > .replylinks').attr('data-hasreplyto', '');
-    }
-  }
-  $("input#newTagSuggestion").on({
-    keydown: function(e) {
-      print(e);
-      if (e.which === 32){
-        return false;
-      }
-    },
-    change: function() {
-      this.value = this.value.replace(/\s/g, "");
-    }
-  });
-  var sortedDivs = $(".block").toArray().sort(sorter);
-  //console.log(sortedDivs);
-  $(".container").remove();
-  $.each(sortedDivs, function (index, value) {$('#entryContainer').append(value);} );
-
-
-  window.onunload = function() {
-      
-  }
-
-  window.addEventListener('load', function() {
-    document.querySelector('input[type="file"]').addEventListener('change', function() {
-        if (this.files && this.files[0]) {
-            var img = document.querySelector('img');  // $('img')[0]
-            img.src = URL.createObjectURL(this.files[0]); // set src to blob url
-            img.onload = imageIsLoaded;
-        }
-    });
-  });
-
-  function imageIsLoaded() { 
-    alert(this.src);  // blob url
-    // update width and height ...
-  }
-
-  $(document).ready(function(){
-    // $('.activeimage').mouseleave(function(){
-    //   $(this).animate({})
-    // });
-    //}
-
-
-    $('.replylinks').each(function (index, e){
-      var replies = e.getAttribute('data-hasreplyto');
-      if(replies !== null){
-        replies = replies.split(',');
-        if (replies.length >= 1) {
-          for (var i=0; i < replies.length; i++) {
-            var aTag = document.createElement('a');
-            aTag.setAttribute("href","#id"+replies[i]);
-            aTag.classList.add("highlighter");
-            aTag.innerHTML = ">>"+replies[i].slice(5);//slice makes things a bit more compact without losing functionality
-            e.appendChild(aTag);
-            var aSpace = document.createElement('span');
-            aSpace.innerHTML = "&nbsp;&nbsp;";
-            e.appendChild(aSpace);
-          }
-        }
-      }
-    });
-    $('.labels').each(function (index, e){
-      var replies = e.getAttribute('data-haslabel');
-      if(replies !== null){
-        replies = replies.split(',');
-        if (replies.length >= 1) {
-          for (var i=0; i < replies.length; i++) {
-            var aTag = document.createElement('a');
-            aTag.classList.add("label");
-            aTag.innerHTML = "#"+replies[i];
-            e.appendChild(aTag);
-            var aSpace = document.createElement('span');
-            aSpace.innerHTML = "&nbsp;&nbsp;";
-            e.appendChild(aSpace);
-          }
-        }
-      }
-    });
-    $('.highlighter').click(function(event){
-        event.preventDefault();
-        var full_url = this.href,
-          parts = full_url.split('#'),
-          trgt = parts[1],
-          target_offset = $('#'+trgt).offset(),
-          target_top = target_offset.top;
-        $('html, body').animate({scrollTop:target_top}, 500);
-        $('.active').removeClass('active');
-        $($(this).attr('href')).addClass('active');
-    });
-    $('.label').click(function(event){
-      $('.active').removeClass('active');
-      event.preventDefault();
-      $('div[data-haslabel='+$(this).html().slice(1)+']').each(function(index, e){
-        $(e).parent().parent().addClass('active');
-      });
-    });
-  });
-
-    //change room on typing it in
-    $("#roomId").keyup(function(){
-      $("#entryContainer").empty();
-      $(" #adjacent-rooms").empty();
-      socket.emit('requestInfodrugFeedData', $(this).val());
-    });
-    //change room on clicking the button
-    $(".adjacent-roomId").on("click", function(){
-      document.getElementById('roomId').value = this.id;
-      $("#entryContainer").empty();
-      $(" #adjacent-rooms").empty();
-      socket.emit('requestInfodrugFeedData', this.id);
-    });
-
-});
 
 
 socket.on('loggedIn', function(loginData){

@@ -11,11 +11,11 @@ h1 {
   font-family: 'Press Start 2P', cursive;
   font-size: 40px;
 }
-h4 {
+h3 {
   font-family: 'Press Start 2P', cursive;
   margin: auto;
   color:#76a85f;
-  font-size: 30px;
+  font-size: 20px;
 }
 
 
@@ -180,8 +180,8 @@ h4 {
     color: white;
   }
   #sort-by-time-only {
-    /*position: fixed;*/
-    display:inline-block;
+    /*position: fixed;
+    display:inline-block;*/
     color: white;
   }
   #store {
@@ -199,6 +199,9 @@ h4 {
     display:block;
     width:100%;
     min-width:1px;
+  }
+  #popular-tag-span {
+    
   }
   .permahidden {
     display:none;
@@ -246,13 +249,16 @@ h4 {
   }
   .post-buttons {
     height:32%;
-    border:solid 1px;
+   /* border:solid 1px;*/
     padding:2px;
     padding-left:4vw;
     padding-right:4vw;
   }
   .post-container {
-    margin-bottom:5px;
+    border:solid 1px;
+    margin-bottom:2vh;
+    margin-top:4vh;
+    overflow-x:auto;
   }
   .active {
     background-color:#564834 !important;

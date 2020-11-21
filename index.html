@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
+<meta property="og:title" content="Meme War">
+<!-- <meta property="og:image" content="http://memewar.io/images/promo/shoot-upvotes.png"> -->
+<meta property="og:description" content="Meme War: The battlefield of ideas.">
+<meta property="og:url" content="http://memewar.io">
 <title>Meme War 2</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -15,7 +19,7 @@
 
     <div id="leftist-buttons">
       <div>
-        <button id="TEST" onclick="testFunction();">TEST</button>
+        <button id="TEST" class="permahidden" onclick="testFunction();">TEST</button>
         <div id="accountButton"><button onclick="$('#signinstuff').css('display','inline-block');$(this).css('display','none');">account</button></div>
         <div id="userprofilestuff"><button id="userProfileButton" class="raise" onclick="viewProfilePage();">jk</button></div>
       </div>
@@ -29,8 +33,9 @@
     </div>
 
     <div id="centerstage">
-      <h1>Meme War 2</h1>
-      <h4 id="pageID">main page</h4>
+      <h1 id="pageID">Meme War 2</h1>
+      <h3 id="sub-title"></h3>
+      <!-- <h4 id="pageID">main page</h4> -->
     </div>
 
     <div id="right-buttons">
@@ -41,12 +46,12 @@
   </div>
   <div class="header-container">
     <div>
-      <button id="sort-by-time-only">Time</button>
-      <button id="sort-by-mv-only">Upvotes</button>
-      <button id="sort-by-views-only">Views</button> 
+      <button class="permahidden" id="sort-by-time-only">Time</button>
+      <button class="permahidden" id="sort-by-mv-only">Upvotes</button>
+      <button class="permahidden" id="sort-by-views-only">Views</button> 
     </div>
     <div id="popular-tags">
-      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<button class="fill"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button>
+      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<span id="popular-tag-span"><button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button></span>
     </div>
     <div></div>
   </div>
@@ -86,7 +91,7 @@
             <button class="raise anonallow" onclick="showTagBox();"><span class="tooltiptext">tag this post</span>🏷</button>
             <div id="statusdiv"></div>
           </div>
-        </div> 
+        </div>
 
 
     </div>
