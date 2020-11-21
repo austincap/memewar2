@@ -76,17 +76,17 @@ function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postEle
     $('.censormessage').css('display', 'none');
     $('.shieldmessage').css('display', 'block');  
     $('.harvestmessage').css('display', 'none');
-    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'shield'});
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'shield', data:'EEEEEEEEEEEE'});
   }else if(zeroIsCensorOneIsShieldTwoIsHarvest==0){
     $('.censormessage').css('display', 'block');
     $('.shieldmessage').css('display', 'none');
     $('.harvestmessage').css('display', 'none');
-    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'censor'});
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'censor', data:'EEEEEEEEEEEE'});
   }else{
     $('.censormessage').css('display', 'none');
     $('.shieldmessage').css('display', 'none');
     $('.harvestmessage').css('display', 'block');
-    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'harvest'});
+    socket.emit('check', {userID:userID, postID:postElement, taskToCheck:'harvest', data:'EEEEEEEEEEEE'});
   }
 
   var censorShieldHarvestContainer = $('#censorShieldHarvestContainer');
@@ -122,9 +122,8 @@ function returnShareBox(){
 }
 
 function showReplyBox(postElement){
-  console.log(postElement);
-  console.log($(postElement).attr('postID'));
-  console.log($(postElement));
+  console.log(postElement.attr('postID'));
+  console.log($(postElement).children('.post').children('.post-helper').children('.post-title').html());
   returnTagBox();
   returnNewPostBox();
   returnNewStatsBox();
@@ -134,8 +133,8 @@ function showReplyBox(postElement){
   // fileuploader.detach();
   // fileuploader.appendTo('#replyuploaderholder');
   // fileuploader.css('display', 'block');
-  //$('#replytoPostID').val(postElement.)
-  $('#title-reply').val("text_post");
+  $('#replytoPostID').val(postElement.attr('postID'));
+  $('#title-reply').val(String($(postElement).children('.post').children('.post-helper').children('.post-title').html()));
   var replyContainer = $('#replyContainer');
   replyContainer.detach();
   replyContainer.appendTo('#statusdiv');
@@ -257,6 +256,7 @@ socket.on('userChecked', function(resultOfCheck){
       break;
     case 'successfulCensoring':
       $('#censormessage-span').html("success! you will be the last person to ever see this post! reload the page to wipe it from the net completely");
+      $('#confirmCensor').prop('disabled', true);
       socket.emit('censorSuccess', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
       break;
     case 'failedCensoringCauseShield':
@@ -274,11 +274,16 @@ socket.on('userChecked', function(resultOfCheck){
       $('#shieldmessage-span').html("you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!");
       console.log('you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!');
       break;
-    case 'successfulTagUpvote':
-      //socket.emit('upvoteTag', )
+    case 'ableToUpvoteTag':
+      socket.emit('upvoteTag', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, tagname:resultOfCheck.cost});
+      console.log("tag upvoted!");
       break;
     case 'failedTagUpvote':
-      console.log('you need at least 1 memecoin to upvote a tag, but you can make a new one for free');
+      if (resultOfCheck.cost == -1){
+        console.log('you need at least 1 memecoin to strengthen the link between a particular post and a tag, but you can make a new one for free');
+      }else{
+        console.log("unknown error");
+      }
       break;
     default:
       break;
@@ -331,6 +336,7 @@ function confirmCensor(postID){
 
 function confirmHarvest(postElement){
   console.log(postElement);
+  //socket.emit('harvestPost', postElement, sessionStorage.getItem("userID"));
 }
 
 
@@ -360,7 +366,13 @@ function submitReply(postElement){
 function upvoteThisTagForThisPost(tagname, postID){
   console.log(tagname);
   console.log(postID);
-  //socket.emit("upvoteTag", tagname, postID);
+  var stuffToCheck = {
+    userID: sessionStorage.getItem("userID"),
+    postID: postID,
+    data: tagname,
+    task: "upvotetag"
+  };
+  socket.emit("check", stuffToCheck);
 }
 
 
@@ -423,7 +435,7 @@ function getRandomInt(min, max){
 
 
 function testFunction(){
-
+  socket.emit('viewpost', 1605905839);
 }
 
 
@@ -490,8 +502,8 @@ socket.on('receiveData', function(posts){
   console.log(posts);
 });
 
-socket.on('receiveSinglePostData', function(post, replies){
-
+socket.on('receiveSinglePostData', function(dataFromServer){
+  console.log(dataFromServer);
 });
 
 socket.on('sendServerDataToFeed', function(nodeData, replyData){  

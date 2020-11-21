@@ -110,6 +110,7 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
 
 app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, next){
   console.log("UPLOAD POST REPLY");
+  console.log(req.body);
   var blockId = new ObjectId();
   var query;
   var fileName = "officialunofficialplaceholderlogo.jpg";
@@ -122,14 +123,14 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
             type: req.body.type,
             title: sanitizeHtml(req.body.title),
             content: sanitizeHtml(req.body.content),
-            userID: req.body.userID,
+            userID: parseInt(req.body.userID),
             tag: req.body.tag,
             file: fileName,
             clicks: 1,
             censorattempts: 0,
             shields: 0,
             memecoinsspent: 0,
-            replyto: req.body.replyto
+            replyto: parseInt(req.body.replyto)
   };
   if(req.userID=="ANON"){
     query = `
@@ -141,7 +142,7 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
     `;
   }else{
     query = `
-    MATCH (whomadeit:User {userID:$userID}), (origPost: {postID:$replyto})
+    MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
     MERGE (whichtag:Tag {name:$tag})
     MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
     MERGE (whichtag)<-[ta:TAGGEDAS]-(newpost)-[cb:CREATEDBY]->(whomadeit)
@@ -262,7 +263,8 @@ io.on('connection', function(socket) {
     console.log("CHECKING TASK");
     var params = {
       userID: parseInt(stuffToCheck.userID),
-      postID: parseInt(stuffToCheck.postID)
+      postID: parseInt(stuffToCheck.postID),
+      data: stuffToCheck.data
     };
     var query;
     console.log(params);
@@ -367,8 +369,35 @@ io.on('connection', function(socket) {
             console.log(error);
           });
         break;
+      case 'upvotetag':
+        query = `
+        MATCH (u:User {userID:$userID})
+        RETURN u.memecoin
+        `;
+        session
+        .run(query, params)
+        .then(function(result){
+          console.log(result.records);
+          if(result.records[0] == null){
+            socket.emit('userChecked', {task:'failedTagUpvote', userID:params.userID, postID:params.postID, cost:0});
+            console.log("user doesnt exist");
+          }else{
+            var memecoin = parseInt(result.records[0]['_fields'][0]);
+            if (memecoin >= 1){
+              console.log("user has enough memecoin to upvote tag");
+              socket.emit('userChecked', {task:'ableToUpvoteTag', userID:params.userID, postID:params.postID, cost:stuffToCheck.data});
+            }else{
+              socket.emit('userChecked', {task:'failedTagUpvote', userID:params.userID, postID:params.postID, cost:-1});
+            }
+          }
+        })
+        .catch(function(error){
+          socket.emit('userChecked', {task:'failedTagUpvote', userID:params.userID, postID:params.postID, cost:0});
+          console.log(error);
+        });
+        break;
       default:
-        // code block
+        break;
     } 
   });
 
@@ -433,26 +462,48 @@ io.on('connection', function(socket) {
 
   socket.on('viewpost', function(postID){
     var query = `
-      MATCH (n:Post {postID:$postID}), (t:Tag), (f:User)
-      SET n.clicks = n.clicks + 1
+      MATCH (n:Post {postID:$postID})
       OPTIONAL MATCH (m:Post)-[rt:REPLYTO]->(n)
-      OPTIONAL MATCH (n)-[ta:TAGGEDAS]->(t)
-      OPTIONAL MATCH (n)<-[f:FAVORITED]-(f)
-      RETURN n, m, t
+      OPTIONAL MATCH (n)-[ta:TAGGEDAS]->(t:Tag)
+      OPTIONAL MATCH (n)<-[fa:FAVORITED]-(u:User)
+      SET n.clicks = n.clicks + 1
+      RETURN n AS postToBeViewed, COLLECT(m) AS replies, COLLECT(DISTINCT t.name) AS tags, COLLECT(u) AS usersWhoFavorited
       `;
       session
         .run(query, {postID: parseInt(postID)})
         .then(function(result){
-            console.log(result.records);
+            //console.log(result.records);
             if(result.records[0]==null){
               socket.emit('noDataFound');
               console.log('NULL');
             }else{
-              console.log("NOT null");
-              result.records[3]["_fields"].forEach(function(record){
-                console.log(record);
+
+              var postToBeViewed = result.records[0]["_fields"][0]["properties"];
+              var replies = [];
+              var tags = [];
+              var usersWhoFavorited = [];
+              //console.log(result.records[0]["_fields"][2]);
+              console.log(result.records[0]["_fields"][0]["properties"]);
+              // console.log(result.records[3]["_fields"]);
+              result.records[0]["_fields"][1].forEach(function(record){
+                if (record !== null && record.properties !== undefined){
+                  replies.push(record.properties);
+                }
               });
-              socket.emit('receiveSinglePostData', result.records);   
+              console.log(replies);
+              result.records[0]["_fields"][2].forEach(function(record){
+                  tags.push(record);
+              });
+              console.log(tags);
+              result.records[0]["_fields"][3].forEach(function(record){
+                if (record !== null && record.properties !== undefined){
+                  usersWhoFavorited.push(record.properties.username);
+                }
+              });
+              console.log(usersWhoFavorited);
+              var dataForClient = {postToBeViewed:postToBeViewed, replies:replies, tags:tags, usersWhoFavorited:usersWhoFavorited};
+              console.log(dataForClient);
+              socket.emit('receiveSinglePostData', dataForClient);   
             }
         })
         .catch(function(error){
@@ -465,7 +516,29 @@ io.on('connection', function(socket) {
   /////////////
   //VOTING
   ///////////
-  socket.on('upvoteTag', function(tagname, postID){
+  socket.on('upvoteTag', function(upvoteTagStuff){
+    var params = {
+        userID: upvoteTagStuff.userID,
+        tagname: upvoteTagStuff.tagname,
+        postID: upvoteTagStuff.postID
+      };
+    var query = `
+      MATCH (n:User {userID:$userID}), (p:Post {postID:$postID})
+      MERGE (m:Tag {name:$tagname})
+      MERGE (m)<-[ta:TAGGEDAS]-(p)
+      SET n.memecoin = n.memecoin - 1
+      SET m.memecoinsspent = m.memecoinsspent + 1
+      SET ta.upvotes = ta.upvotes + 1
+      RETURN ta
+      `;
+    session
+      .run(query, params)
+      .then(function(result){
+        console.log(result);
+      })
+      .catch(function(error){
+        console.log(error);
+      });  
   });
 
   socket.on('voteOnPost', function(postVoteData){
@@ -574,12 +647,13 @@ io.on('connection', function(socket) {
     if(tagPostOrUserData.postIfTrue==true){
       params = {
         postID: tagPostOrUserData.postID,
-        tagname: tagPostOrUserData.tagname
+        tagname: tagPostOrUserData.tagname,
+        upvotes: 1
       };
       query = `
       MATCH (n:Post {postID:$postID})
       MERGE (m:Tag {name:$tagname})
-      MERGE (m)<-[ta:TAGGEDAS]-(n)
+      MERGE (m)<-[ta:TAGGEDA {upvotes:$upvotes}]-(n)
       RETURN m, n
       `;
     }else{
@@ -590,7 +664,7 @@ io.on('connection', function(socket) {
       query = `
       MATCH (n:User {userID:$userID})
       MERGE (m:Tag {name:$tagname})
-      MERGE (m)<-[ta:TAGGEDAS]-(n)
+      MERGE (m)<-[ta:TAGGEDAS {upvotes:$upvotes}]-(n)
       RETURN m, n
       `;
     }
@@ -650,6 +724,7 @@ io.on('connection', function(socket) {
     var query = `
     MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
     SET p.shields = p.shields - 1
+    SET p.memecoinsspent = p.memecoinsspent + 50
     SET u.memecoin = u.memecoin - 50
     RETURN p.shields
     `;
@@ -703,12 +778,13 @@ io.on('connection', function(socket) {
   /////////////////////
   socket.on('shieldPost', function(dataFromClient){
     var params = {
-      postID: dataFromClient.postID,
-      userID: dataFromClient.userID
+      postID: parseInt(dataFromClient.postID),
+      userID: parseInt(dataFromClient.userID)
     };
     var query = `
       MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
       SET p.shields = p.shields + 1
+      SET p.memecoinsspent = p.memecoinsspent + 25
       SET u.memecoin = u.memecoin - 25
       RETURN p, u
       `;

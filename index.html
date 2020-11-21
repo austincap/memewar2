@@ -59,7 +59,7 @@
     <div id="entryContainer">
 
 
-        <div class="post-container" postID="1605905839"> 
+        <div class="post-container" postID="1605905839">
           <div class="post">
             <a class="post-helper" onclick="viewPost($(this).parent().parent().attr('postID'));" href="#">
               <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
@@ -124,7 +124,7 @@
             onsubmit='submitReply();'
             method='post' 
             encType='multipart/form-data'>
-            <input class="permahidden" id="title-reply" name="title-reply"/>
+            <input class="permahidden" id="title-reply" name="title"/>
             <input class="permahidden" id="replytoPostID" name="replyto"/>
             <input class="permahidden" id="userID-reply" name="userID"/>
             <input class="permahidden" id="posttype-reply" name="type"/>
@@ -142,7 +142,7 @@
       <div id="tagContainer">
         <div id="existingTagsForThisPost">
           Existing tags for this post:&nbsp;
-          <div class="postTag">(<a href="#" title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost($(this).parent().parent().parent().attr('data-tag-id'), $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">44</a>)&nbsp;-&nbsp;<span class="tagName">ff7</span>&nbsp;-&nbsp;(<a href="#" title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag($(this).parent().parent().parent().attr('data-tag-id'));">37</a>)</div>
+          <div class="postTag" tagname="ff7">(<a href="#" title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost($(this).parent().attr('tagname'), $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">44</a>)&nbsp;-&nbsp;<span class="tagName">ff7</span>&nbsp;-&nbsp;(<a href="#" title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag($(this).parent().attr('tagname'));">37</a>)</div>
         </div>
         <div id="addNewTag">
           <input id="newTagSuggestion" type="text" title="'keyboard smash' tags won't be deleted, but will be consolidated into the JUNK tag at the admin's pleasure" maxlength="24"/><button id="submitTag" onclick="submitTag(document.getElementById('newTagSuggestion').value, $(this).parent().parent().parent().parent().parent().attr('postID'));">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
