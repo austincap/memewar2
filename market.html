@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta property="og:title" content="Meme War">
+<!-- <meta property="og:image" content="http://memewar.io/images/promo/shoot-upvotes.png"> -->
+<meta property="og:description" content="Meme War: The battlefield of ideas.">
+<meta property="og:url" content="http://memewar.io">
+<title>Meme War 2 - Meme Market</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
+<script src="market.js" type="text/javascript"></script>
+<link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
+<link rel="stylesheet" href="index.css"></link>
+<!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
+</head>
+<body>
+    <div class="header-container">
+
+        <div id="leftist-buttons">
+          <div>
+            <button id="contextButton" onclick="contextButtonFunction($(this).html());">get data</button>
+            <div id="accountButton"><button onclick="$('#signinstuff').css('display','inline-block');$(this).css('display','none');">account</button></div>
+            <div id="userprofilestuff"><button id="userProfileButton" class="raise" onclick="viewProfilePage();">jk</button></div>
+          </div>
+          <div id="signinstuff">
+            <div id="signInBox">
+              <div><input id="signInName" placeholder="username" type="text"/></div>
+              <div><input id="passwordvalue" placeholder="password" type="text"/></div>
+              <button id="submitSignInDetails" class="raise" onclick="loginUser();">Sign in</button><button class="raise" id="registerNewUser" onclick="registerNewUser();">Sign up</button>
+            </div>
+          </div>
+        </div>
+
+    </div>
+    <div >
+        <div id="testingdiv"></div>
+
+        <div class="divTable">
+        <div class="divTableBody">
+            <div class="divTableHeading">
+            <div class="divTableCell">owner</div>
+            <div class="divTableCell">change in profit in past day</div>
+            <div class="divTableCell">net upvotes</div>
+            <div class="divTableCell">net downvotes</div>
+            <div class="divTableCell">memecoins spent</div>
+            <div class="divTableCell">censor attempts</div>
+            <div class="divTableCell">date created</div>
+            <div class="divTableCell">tag count</div>
+            <div class="divTableCell">favorite count</div>
+            <div class="divTableCell">postID</div>
+            </div>
+            <div class="divTableRow">
+            <div class="divTableCell">austin</div>
+            <div class="divTableCell">-2</div>
+            <div class="divTableCell">6</div>
+            <div class="divTableCell">5</div>
+            <div class="divTableCell">8</div>
+            <div class="divTableCell">3</div>
+            <div class="divTableCell">7/5/2020</div>
+            <div class="divTableCell">3</div>
+            <div class="divTableCell">0</div>
+            <div class="divTableCell">532153443</div>
+            </div>
+        </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -9,6 +9,7 @@ const session = driver.session();
 //   database: 'memewar2',
 //   defaultAccessMode: neo4j.session.WRITE
 // });
+const fetch = require('node-fetch');
 const express = require('express');
 const path = require('path');
 var ObjectId = require('node-time-uuid');
@@ -44,16 +45,6 @@ app.use(express.static(__dirname));
 //CODE FOLDING LEVEL 3
 ///////
 
-// app.post('/upload', function(req, res){
-//   if (!req.files || Object.keys(req.files).length === 0) { return res.status(400); }
-//   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
-//   let sampleFile = req.files.sampleFile;
-//   // Use the mv() method to place the file somewhere on your server
-//   sampleFile.mv('filename.jpg', function(err){
-//     if(err){ return res.status(500).send(err); }
-//     res.redirect('/');
-//   });
-// });
 
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
   console.log("UPLOAD POST");
@@ -178,6 +169,25 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
 
 // });
 
+app.get('/retrieve20', function(req, res, next){
+  console.log('eoiltjewsoit');
+     console.log('Request received');
+
+    res.writeHead(200, { 
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': '*' // implementation of CORS
+    });
+    req.on('data', function (chunk) {
+        console.log('GOT DATA!');
+    });
+
+    res.end('{"msg": "OK"}'); // removed the 'callback' stuff
+});
+
+// fetch('https://google.com')
+//     .then(res => res.text())
+//     .then(text => console.log(text));
+
 // app.get('/', function(req, res){
 //       var topPostsAndTags = [];
 //       var topPostQuery = `
@@ -259,12 +269,9 @@ function requestTop20Posts(socket){
               processedPostObject.tagnames = tagAndVote[0];
               processedPostObject.tagvotes = tagAndVote[1];
             });
-            // processedPostObject.tagnames = record["_fields"][1];
-            // processedPostObject.tagvotes = record["_fields"][2];
             processedPostObject.replycount = record["_fields"][2];
             dataForClient.push(processedPostObject);
           });
-          //console.log(dataForClient);
           topPostsAndTags.push(dataForClient);
             session
               .run(topTagQuery)
@@ -273,7 +280,6 @@ function requestTop20Posts(socket){
                 result.records.forEach(function(record){
                   tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
                 });
-                //console.log(tagdataForClient);
                 topPostsAndTags.push(tagdataForClient);
                 console.log(topPostsAndTags);
                 console.log("TOP 20 POSTS");
@@ -291,6 +297,10 @@ function requestTop20Posts(socket){
 io.on('connection', function(socket) {
   console.log("connection");
   requestTop20Posts(socket);
+
+  socket.on('retrievePostsForMarket', function(){
+    requestTop20Posts(socket);
+  });
 
   socket.on('requestTop20Posts', function(){
     var topPostsAndTags = [];
@@ -986,4 +996,8 @@ io.on('connection', function(socket) {
 });
 
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
-server.listen(3000,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
+server.listen(3000,function(){
+
+
+
+  console.log('Meme War app listeningn on port 3000 like a prude!');});
