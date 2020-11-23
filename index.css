@@ -198,7 +198,7 @@ h3 {
     white-space: nowrap;
     display:block;
     width:100%;
-    min-width:1px;
+    min-width:50vw;
   }
   #popular-tag-span {
     
@@ -206,7 +206,12 @@ h3 {
   .permahidden {
     display:none;
   }
+  #pageID {
 
+  }
+  #centerstage {
+    min-width: 50vw;
+  }
 
 
 /* post list stuff */
@@ -223,13 +228,17 @@ h3 {
     color: white;
     display: inline-block; 
     max-height: 120px;
+    width:100%;
   }
   .post-visual {
     padding-right:1vh;
   }
   .post-title {
-    overflow-x:auto;
+    overflow-y:hidden;
+    overflow-x:hidden !important;
     min-width: 300px;
+    max-height: 140px;
+    font-size:150% !important;
   }
   .post-header {
     height:10%;
@@ -238,14 +247,25 @@ h3 {
   }
   .post-helper {
     display: flex !important;
+    width:100%;
   }
   .post-maintext {
     height:70%;
     font-size:120%;
-    overflow-y:auto;
+    overflow-y:visible;
     scrollbar-color: gray #cccccc;
     scrollbar-width: thin;
     padding-bottom:1vh;
+  }
+  .post-content {
+    overflow-y:ellipsis !important;
+    font-size: 70%;
+    max-height: 20%;
+  }
+  .post-content-span {
+        overflow-y:ellipsis !important;
+        overflow-x:ellipsis !important;
+    max-height: 20%;
   }
   .post-buttons {
     height:32%;
@@ -253,12 +273,14 @@ h3 {
     padding:2px;
     padding-left:4vw;
     padding-right:4vw;
+    overflow:visible !important;
+
   }
   .post-container {
     border:solid 1px;
     margin-bottom:2vh;
     margin-top:4vh;
-    overflow-x:auto;
+    /*overflow-x:auto;*/
   }
   .active {
     background-color:#564834 !important;
@@ -282,22 +304,8 @@ h3 {
     box-shadow: 4px 4px 8px #55390d;
     transition: top ease 0.5s;
   }
-  .vanilla_post {
-    border:solid;
-    border-width: 1px;
-    border-color: #4ECDC4;
-    color:#cccccc;
-    margin: 5px;
-    padding:3px;
-    background-color: #3d3e3f;
-    text-align: center;
-  }
   iframe{
     display: inline-block;
-  }
-  .vanilla_post:hover{
-    box-shadow: 2px 2px 4px #d0bb92;
-    transition: top ease 0.5s;
   }
   img{
     max-height:100px;
@@ -335,6 +343,9 @@ h3 {
     display:none;
   }
   .censormessage {
+    display:none;
+  }
+  .harvestmessage {
     display:none;
   }
   #censorShieldContainer {
