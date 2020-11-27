@@ -460,6 +460,9 @@
         k = i+1;
         var foundPrev = false;
         var thisPostID = results[i][0];
+        if(thisPostID==undefined){
+          continue;
+        }
         for(node in dbresults.nodes){
           if(node.id==thisPostID){
             foundPrev=true;
@@ -473,40 +476,34 @@
         }
         console.log("DBRESULTSNODES");
         console.log(dbresults.nodes);
-        // //if k is undefined, continue loop to prevent error from next expression
-        if(results[k] == undefined){
+        //if k is undefined, continue loop to prevent error from next expression
+        if(results[k][0] == undefined){
           continue;
         }else{
           var thisNextPostID = results[k][0];
-          console.log("thisNextPostData");
-          console.log(thisNextPostID);
-          for(obj of Object.values(dbresults.nodes)){
-            if(obj.id==thisNextPostID){
+          for(node in dbresults.nodes){
+            //console.log("IF NODE WAS ALREADY ADDED, MARK FOUND PREV");
+            if(node.id==thisNextPostID){
               foundPrev=true;
-              thisNextPostID = obj.id;
+              thisNextPostID=node.id;
               break;
             }
           }
-
-          //GET LINK DATA HERE
-          //
-          //FOR EVERY TAG THIS POST HAS
-          // for(tag in results[i][3]){
-          //   console.log("TAGFEGE");
-          //   console.log(tag);
-          //   //CHECK AGAINST EVERY TAG IN EVERY OTHER POST
-          //   for(otherNode in results)
-          //   for(otherNodeTag in results[k][3]){
-          //     //IF NODE results[i] HAS A MATCHING TAG WITH NODE results[k]
-          //     if(tag[0]==results[k][3][otherNodeTagIndex][0]){
-          //       //AND IF THIS CONNECTION DIDNT
-          //       existingTagArray.indexOf(thisPostTag0) === -1 ? existingTagArray.push(thisPostTag0) : console.log("This item already exists");
-          //       dbresults.links.push({source:thisPostDataID, target:thisNextPostID, tag:thisPostTag0});
-          //     }    
+          // for(obj of Object.values(dbresults.nodes)){
+          //   if(obj.id==thisNextPostID){
+          //     foundPrev=true;
+          //     thisNextPostData = obj.id;
+          //     break;
           //   }
-
           // }
-
+          var thisPostTag = results[i][3];
+          //IF THIS POSTS TAG IS IDENTICAL TO THE NEXT POSTS TAG
+          if(thisPostTag==results[k][3]){
+            //THEN CHECK IF THAT TAG IS ALREADY IN THE EXISTING TAG ARRAY. IF NOT? PUSH IT TO THAT LIST
+            existingTagArray.indexOf(thisPostTag) === -1 ? existingTagArray.push(thisPostTag) : console.log("This item already exists");
+            //BECAUSE THERE MUST BE AT LEAST TWO POSTS WITH THE SAME TAG FOR A LINK TO EXIST, 
+            dbresults.links.push({source:thisPostID, target:thisNextPostID, tag:thisPostTag});
+          }
         }
       console.log("test");
       resolve(dbresults);
@@ -515,8 +512,8 @@
 
     promise1.then(function(data){
       console.log("PROMISE1THEN START");
-      console.log(data);
-      console.log(existingTagArray);
+      //console.log(data);
+      //console.log(existingTagArray);
       var svg = d3.select("svg")
           .attr("width", 2000)
           .attr("height", 2000)
@@ -534,9 +531,8 @@
           .enter()
           .append("path")
           .attr("class", "linkpath")
-          .attr("id", function(d,i) { console.log(d);
-            console.log(i);return "linkId_" + d.source; })
-          .attr("marker-end", function(d) { console.log(d.tag);return "url(#" + d.tag + ")"; });
+          .attr("id", function(d,i) { return "linkId_" + d.target; })
+          .attr("marker-end", function(d) { return "url(#" + d.tag + ")"; });
 
       var linktext = svg.append("g").selectAll(".gLink").data(data.links);
       
