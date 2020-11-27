@@ -484,6 +484,18 @@ function contextButtonFunction(currentContext){
     case 'Home':
       sessionStorage.setItem('currentPage', 'home');
       socket.emit('requestTop20Posts');
+    case 'Alt':
+      $('#entryContainer').empty();
+      socket.emit('retrieveDatabase');
+      // var xhttp = new XMLHttpRequest();
+      // xhttp.onreadystatechange = function() {
+      //   if (this.readyState == 4 && this.status == 200) {
+      //     $('body').innerHTML = this.responseText;
+      //   }
+      // };
+      // xhttp.open("GET", "netview", true);
+      // xhttp.send();
+      break;
   }
 }
 
@@ -660,3 +672,26 @@ socket.on('loggedIn', function(loginData){
   $('.profallow').css('display','inline');
   $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
 });
+
+  socket.on('sendDatabase', function(results){
+    $('#entryContainer').empty();
+    $('#adjacentBlocks').empty();
+    console.log(results);
+    handleRetrievedDatabase(results);
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

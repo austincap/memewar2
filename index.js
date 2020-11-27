@@ -231,6 +231,14 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
 //         });    
 // });
 
+    // MATCH (p:Post)-[ta:TAGGEDAS]->(t:Tag)
+    // WITH p.title AS post, t.name AS tag, ta.upvotes AS tagupvotes, p.upvotes AS upvotes, p.content AS content
+    // ORDER BY tagupvotes DESC 
+    // WITH post, upvotes, content, COLLECT([tag, tagupvotes])[0..2] AS toptags
+    // UNWIND toptags AS tags
+    // RETURN post, upvotes, content, tags
+    // ORDER BY tags[0] DESC
+
 function requestTagsForThisPost(socket, postID){
   var params = {
     postID: parseInt(postID)
@@ -312,57 +320,40 @@ function requestTop20Posts(socket){
       });
 }
 
-            // MATCH (p:Post)-[ta:TAGGEDAS]->(t:Tag)
-            // WITH p.name AS post, t.tagname AS tag, ta.upvotes AS tagupvotes, p.upvotes AS upvotes, p.content AS content
-            // ORDER BY tagupvotes DESC 
-            // WITH post, upvotes, content, COLLECT([tag, tagupvotes])[0..2] AS toptags
-            // UNWIND toptags AS tags
-            // RETURN post, upvotes, content, tags
-            // ORDER BY tags[0] DESC
+
 function retrievePostsForNetView(socket){
-  var topPostsAndTags = [];
+  var dataForClient = [];
     var topPostQuery = `
-    MATCH (p:Post)
-    WITH p ORDER BY p.upvotes-p.downvotes DESC
-    OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
-    OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
-    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
-    LIMIT 20
-    `;
-    var topTagQuery = `
-    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
-    WITH t.name AS tag, COUNT(p)+COUNT(ta) AS tagcount 
-    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    MATCH (p:Post)-[ta:TAGGEDAS]->(t:Tag)
+    WITH p.postID AS id, t.name AS tag, ta.upvotes AS tagupvotes, p.upvotes AS upvotes, p.content AS content, p.title AS title, p.file AS file
+    ORDER BY tagupvotes DESC 
+    WITH id, upvotes, content, COLLECT(DISTINCT [tag, tagupvotes])[0..3] AS toptags, COUNT(DISTINCT tag) AS tagcount, title, file
+    UNWIND toptags AS tags
+    RETURN id, upvotes, content, tags[0], title, file
+    ORDER BY tags[0] DESC
     `;
     session
       .run(topPostQuery)
       .then(function(result){
-        var dataForClient = [];
         result.records.forEach(function(record){
-          var processedPostObject = record["_fields"][0]["properties"];
-          record["_fields"][1].forEach(function(tagAndVote){
-            processedPostObject.tagnames = tagAndVote[0];
-            processedPostObject.tagvotes = tagAndVote[1];
-          });
-          processedPostObject.replycount = record["_fields"][2];
-          dataForClient.push(processedPostObject);
+          console.log(record._fields);
+          let tagarray = [];
+          let postarray = [];
+          
+          postarray.push(record["_fields"][0], record["_fields"][1], record["_fields"][4], record["_fields"][3], record["_fields"][2], record["_fields"][5]);
+          dataForClient.push(postarray);
+          //dataForClient.push(record["_fields"]);
+          // dataForClient[record["_fields"][0]] = {
+          //   upvotes: record["_fields"][1],
+          //   tags: tagarray,
+          //   title: record["_fields"][2],
+          //   file: record["_fields"][5],
+          //   content: record["_fields"][4]
+          // };
         });
-        topPostsAndTags.push(dataForClient);
-          session
-            .run(topTagQuery)
-            .then(function(result){
-              var tagdataForClient = [];
-              result.records.forEach(function(record){
-                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
-              });
-              topPostsAndTags.push(tagdataForClient);
-              console.log(topPostsAndTags);
-              console.log("TOP 20 POSTS");
-              socket.emit('receiveTop20Data', topPostsAndTags);
-            })
-            .catch(function(error){
-              console.log(error);
-            });
+        console.log(dataForClient);
+        console.log("SENT NETVIEW FORMAT POSTS TO CLIENT");
+        socket.emit('sendDatabase', dataForClient);
       })
       .catch(function(error){
         console.log(error);
@@ -373,9 +364,14 @@ io.on('connection', function(socket) {
   console.log("connection");
   requestTop20Posts(socket);
 
-  socket.on('retrievePostsForMarket', function(){
-    requestTop20Posts(socket);
+  // socket.on('retrievePostsForMarket', function(){
+  //   requestTop20Posts(socket);
+  // });
+
+  socket.on('retrieveDatabase', function(){
+    retrievePostsForNetView(socket);
   });
+
 
   socket.on('requestTop20Posts', function(){
     requestTop20Posts(socket);
@@ -1023,9 +1019,9 @@ io.on('connection', function(socket) {
 
 });
 
+app.get('/netview', function(req, res){
+  console.log('fuck');
+});
+
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
-server.listen(3000,function(){
-
-
-
-  console.log('Meme War app listeningn on port 3000 like a prude!');});
+server.listen(3000,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
