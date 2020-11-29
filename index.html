@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
-  <script type="text/javascript" src="https://d3js.org/d3.v6.min.js"></script>
+  <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
 
   <script src="client.js" type="text/javascript"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
@@ -69,7 +69,7 @@
 
         <div class="post-container" postID="1605905839">
           <div class="post">
-            <a class="post-helper" onclick="viewPost($(this).parent().parent().attr('postID'));">
+            <a class="post-helper" href="/?q=1605905839" onclick="viewPost($(this).parent().parent().attr('postID'));">
               <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
               <div class="post-title-helper"><span class="post-title">Hot pic of tifa cosplay</span><br/>
               <div class="post-content"><div class="post-content-span">test</div></div></div>
@@ -442,20 +442,12 @@
   var previewContent = document.getElementById("previewContent");
 
   function handleRetrievedDatabase(results){
-
-
-      // for (let i=0; i<results.length; i+=1){
-      //   console.log(results[i]);
-      //   for(let j=1; j<results.length-1; j+=1){
-          
-      //     }
-      //   }
-      
-
-  
+    
 
     var promise1 = new Promise(function(resolve, reject){
-
+      console.log("DBRESULTSNODES");
+      console.log(dbresults.nodes);
+      //0 = id, 1 = upvotes, 2 = content, 3 = tag from results array
       for(let i=0; i<results.length; i++){
         k = i+1;
         var foundPrev = false;
@@ -463,67 +455,75 @@
         if(thisPostID==undefined){
           continue;
         }
-        for(node in dbresults.nodes){
-          if(node.id==thisPostID){
+        // for(node in dbresults.nodes){
+        //   if(node.id==thisPostID){
+        //     foundPrev=true;
+        //     thisPostID=node.id;
+        //     break;
+        //   }
+        // }
+        for(obj of Object.values(dbresults.nodes)){
+          if(obj.id==thisPostID){
             foundPrev=true;
-            thisPostID=node.id;
+            thisPostID = obj.id;
             break;
           }
         }
         //console.log(dbresults.nodes.indexOf({id:results[i]['post']}));
         if(foundPrev==false){
           dbresults.nodes.push({id:thisPostID, upvotes:results[i][1], content:results[i][2]});
+         // dbresults.nodes[thisPostID] = {upvotes:results[i][1], content:results[i][2]};
         }
-        console.log("DBRESULTSNODES");
-        console.log(dbresults.nodes);
+        
         //if k is undefined, continue loop to prevent error from next expression
-        if(results[k][0] == undefined){
+        if(results[k] == undefined){
           continue;
         }else{
           var thisNextPostID = results[k][0];
-          for(node in dbresults.nodes){
-            //console.log("IF NODE WAS ALREADY ADDED, MARK FOUND PREV");
-            if(node.id==thisNextPostID){
-              foundPrev=true;
-              thisNextPostID=node.id;
-              break;
-            }
-          }
-          // for(obj of Object.values(dbresults.nodes)){
-          //   if(obj.id==thisNextPostID){
+          // for(node in dbresults.nodes){
+          //   //console.log("IF NODE WAS ALREADY ADDED, MARK FOUND PREV");
+          //   if(node.id==thisNextPostID){
           //     foundPrev=true;
-          //     thisNextPostData = obj.id;
+          //     thisNextPostID=node.id;
           //     break;
           //   }
           // }
+          for(obj of Object.values(dbresults.nodes)){
+            if(obj.id==thisNextPostID){
+              foundPrev=true;
+              thisNextPostID = obj.id;
+              break;
+            }
+          }
           var thisPostTag = results[i][3];
           //IF THIS POSTS TAG IS IDENTICAL TO THE NEXT POSTS TAG
-          if(thisPostTag==results[k][3]){
+          if(thisPostTag==results[k][3] && thisNextPostID !== null){
             //THEN CHECK IF THAT TAG IS ALREADY IN THE EXISTING TAG ARRAY. IF NOT? PUSH IT TO THAT LIST
             existingTagArray.indexOf(thisPostTag) === -1 ? existingTagArray.push(thisPostTag) : console.log("This item already exists");
             //BECAUSE THERE MUST BE AT LEAST TWO POSTS WITH THE SAME TAG FOR A LINK TO EXIST, 
-            dbresults.links.push({source:thisPostID, target:thisNextPostID, tag:thisPostTag});
+            dbresults.links.push({
+              source:thisPostID,
+              target:thisNextPostID,
+              tag:thisPostTag
+            });
           }
         }
-      console.log("test");
-      resolve(dbresults);
+      
       }
+      resolve(dbresults);
     });
 
     promise1.then(function(data){
       console.log("PROMISE1THEN START");
-      //console.log(data);
+
+      console.log(data);
       //console.log(existingTagArray);
       var svg = d3.select("svg")
           .attr("width", 2000)
           .attr("height", 2000)
           .on("mousemove", mousemove);
 
-      var simulation = d3.forceSimulation()
-        .force("collision", d3.forceCollide().radius(70))
-          .force("link", d3.forceLink().id(function(d) { console.log(d);return d.id; }))
-          .force("charge", d3.forceManyBody().strength(1000).distanceMin(30))
-          .force("center", d3.forceCenter(700 , 700));
+
 
       var path = svg.append("g")
           .selectAll("path")
@@ -531,7 +531,7 @@
           .enter()
           .append("path")
           .attr("class", "linkpath")
-          .attr("id", function(d,i) { return "linkId_" + d.target; })
+          .attr("id", function(d,i){ return "pathId_" + i; })
           .attr("marker-end", function(d) { return "url(#" + d.tag + ")"; });
 
       var linktext = svg.append("g").selectAll(".gLink").data(data.links);
@@ -546,7 +546,7 @@
            .attr("text-anchor", "start")
            .style("fill", "#f1d141")
            .append("textPath")
-           .attr("xlink:href",function(d,i){console.log(d);return "#linkId_" + d.target; })
+           .attr("xlink:href",function(d,i){ return "#pathId_" + i; })
            .text(function(d){ return d.tag; })
            .on("mousedown", clickOnTag);
 
@@ -557,6 +557,7 @@
           .enter()
           .append("circle")
             .attr("r", function(d){ return (d.upvotes != null || d.upvotes != 0) ? 5*d.upvotes : 5;})
+            .attr("id", function(d){return "linkId_"+d.id})
             .attr("color", "#cccccc")
             .on("mousedown", clickOnNode)
             .call(d3.drag()
@@ -581,12 +582,18 @@
       //     .attr("transform", "translate(-100,-100)")
       //     .attr("class", "cursor");
 
+
+      var simulation = d3.forceSimulation()
+        .force("collision", d3.forceCollide().radius(70))
+          .force("link", d3.forceLink().id(function(d, i){ return d.id; }))
+          .force("charge", d3.forceManyBody().strength(1000).distanceMin(30))
+          .force("center", d3.forceCenter(700 , 700));
+
       simulation.nodes(data.nodes).on("tick", ticked);
       console.log(data.links);
-      simulation.force("link", d3.forceLink().links(data.links));
+      simulation.force("link").links(data.links);
       //simulation.force("link").links(data.links);
       console.log("OEIFHJEOIGJHNEOIGJHEOIGJEOGJ");
-
 
 
       var imageElement = svg.append("g").selectAll(".image").data(data.nodes);
@@ -613,21 +620,29 @@
       }
 
       function ticked(){
-        node
-              .attr("cx", function(d) { return d.x; })
+
+        node.attr("cx", function(d) { return d.x; })
               .attr("cy", function(d) { return d.y; });
 
         postTitle.attr("x", function(d) { return d.x; })
               .attr("y", function(d) { return d.y; });      
 
         path.attr("d", function(d) {
-          //console.log(d);
-          if (d.source != null){
             var dx = d.target.x - d.source.x,
                 dy = d.target.y - d.source.y;
-            return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;          
-          }
+            return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
         });
+        //         path.attr("d", function(d) {
+        //   //console.log($('#linkId_'+d.target));
+        //   let targetNode = $('#linkId_'+d.target);
+        //   //console.log($('#linkId_'+d.source));
+        //   let sourceNode = $('#linkId_'+d.source);
+          // if (d.source != null){
+          //   var dx = targetNode.cx - sourceNode.cx,
+          //       dy = targetNode.cy - sourceNode.cy;
+          //   return "M " + sourceNode.cx + " " + sourceNode.cy + " L " + targetNode.cx + " " + targetNode.cy;          
+          // }
+        //});
       }
 
       function clickOnTag(d, i){
@@ -682,6 +697,7 @@
       }
 
       function dragstarted(d){
+        simulation.stop();
         if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
         d.fx = d.x;
         d.fy = d.y;
@@ -697,6 +713,7 @@
         d.fx = null;
         d.fy = null;
       }
+
     });
 
   }
