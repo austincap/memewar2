@@ -66,9 +66,28 @@
   
 
     <div id="entryContainer">
+        <div class="advanced-post-container" postID="142322">
+          <div id="advanced-post-stats">
+            <span id="advanced-post-upvotes">33</span>&nbsp;upvotes<br/>
+            <span id="advanced-post-upvotes">3</span>&nbsp;downvotes<br/>
+            <span id="advanced-post-upvotes">332</span>&nbsp;clicks<br/>
+            <span id="advanced-post-upvotes">2</span>&nbsp;memecoins spent<br/>
+            <span id="advanced-post-upvotes">32/23/23</span>&nbsp;date created<br/>
+          </div>
+          <div style="display:block;">
+          <div id="advanced-post">
+            <div><img class="activeimage" src="uploaded/tifa.jpg"/></div><div id="advanced-post-title">Thetetehetete hetetehetetehetetehetete hetetehetetehetetehetete hetete hetetehetetehetetehetetehetete hetetehetetehetetehetetehetete hetete</div>
+          </div>
+          <div id="advanced-post-content">rtrtrtert rtert rtr tr ertrt t rtr t trrrrrrrrrrt trt rttttttttttttttt rt rtttttttttttttttt rrt tttr t tresedr trt r tsetrrrrrrrrrrt tr trt rtsert rt sr tr tr t rrrrrrrrrrrrt trrrrrrrrrrrrrt rrrrrrrrrrrrrtt rtrrrrrrrr</div>
+          </div>
+          <div id="advanced-post-tags">
+            <button class="postTag" tagname="tage">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag('tage');">33</a>)&nbsp;-&nbsp;<span class="tagName">tage</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost('tage', $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">1</a>)</button>&nbsp;&nbsp;
+            <button class="postTag" tagname="tage">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag('tage');">33</a>)&nbsp;-&nbsp;<span class="tagName">tage</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost('tage', $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">1</a>)</button>&nbsp;&nbsp;
+            <button class="postTag" tagname="tage">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag('tage');">33</a>)&nbsp;-&nbsp;<span class="tagName">tage</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost('tage', $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">1</a>)</button>&nbsp;&nbsp;
+          </div>
+        </div>
 
-
-        <div class="post-container" postID="1605905839">
+  <!--       <div class="post-container" postID="1605905839">
           <div class="post">
             <a class="post-helper" href="/?q=1605905839" onclick="viewPost($(this).parent().parent().attr('postID'));">
               <div class="post-visual"><img src="uploaded/tifa.jpg"/></div>
@@ -98,7 +117,7 @@
             <button class="raise anonallow" onclick="showTagBox($(this).parent().parent().attr('postID'));"><span class="tooltiptext">tag this post</span>🏷</button>
             <div class="statusdiv" id="1605905839"></div>
           </div>
-        </div>
+        </div> -->
     </div>
 
 
@@ -139,7 +158,7 @@
             <input class="permahidden" id="posttype-reply" name="type"/>
             <input id="tagForNewReply" name="tag" placeholder="you may provide a tag for your post" type="text" maxlength="64"/>
             <br/>
-            <textarea type="text" style='height:300px;' placeholder="your reply content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent-reply" name="content" maxlength="25000"></textarea>
+            <textarea type="text" style='height:300px;' placeholder="your reply content can be a straight link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent-reply" name="content" maxlength="25000"></textarea>
             <br/>
             <img id="myimg-reply" src="" height="150" alt="Image preview...">
             <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();"/>
@@ -196,46 +215,46 @@
 
   <div>
 
-  <div id="adjacentblocks">
+    <div id="adjacentblocks">
 
-    <div id="previewframe">
-      <div id="previewframeTopSpace"></div>
-      <div id="postNameInModalPostOnly"></div>
-      <button id="upvote" onclick="upvotePost()">Upvote it</button>
-      <button id="downvote">Hate it</button> 
-      <button id="tagIt" onclick="tagPost()">Tag it</button>
-      <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+      <div id="previewframe">
+        <div id="previewframeTopSpace"></div>
+        <div id="postNameInModalPostOnly"></div>
+        <button id="upvote" onclick="upvotePost()">Upvote it</button>
+        <button id="downvote">Hate it</button> 
+        <button id="tagIt" onclick="tagPost()">Tag it</button>
+        <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
 
-      <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)"/></div>
-        <br/>
+        <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)"/></div>
+          <br/>
+          <hr/>
+        <div id="previewContent">test</div>
+      </div>
+
+      <div id="d3frame" >
+        <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+        <svg ></svg>
+      </div>
+
+
+      <div id="upvoteTagModal">
+        <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
+        <div id="contentInModal"></div>
         <hr/>
-      <div id="previewContent">test</div>
+        <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
+        <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+      </div>
+
+
+      <div id="submitnew">
+        <input type="text" id="nodename"  maxlength="150" class="submissionslot" placeholder="post title goes here"/>
+        <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here"/><br/>
+        <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)"/><br/>
+        <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)"/><br/>
+        <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
+      </div>
+
     </div>
-
-    <div id="d3frame" >
-      <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
-      <svg ></svg>
-    </div>
-
-
-    <div id="upvoteTagModal">
-      <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
-      <div id="contentInModal"></div>
-      <hr/>
-      <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
-      <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-    </div>
-
-
-    <div id="submitnew">
-      <input type="text" id="nodename"  maxlength="150" class="submissionslot" placeholder="post title goes here"/>
-      <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here"/><br/>
-      <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)"/><br/>
-      <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)"/><br/>
-      <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
-    </div>
-
-  </div>
 
   </div>
 

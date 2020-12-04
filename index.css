@@ -205,7 +205,6 @@ h3 {
 
 
 /* post list stuff */
-
   #entryContainer {
     border: solid;
     padding-left: 8vw;
@@ -301,7 +300,7 @@ h3 {
     display: inline-block;
   }
   img{
-    max-height:100px;
+    max-height:120px;
     max-width:70vw;
   }
   .uploadedimage{
@@ -331,7 +330,7 @@ h3 {
   }
 
 
-/*shield censor stuff */
+/* shield censor stuff */
   .shieldmessage {
     display:none;
   }
@@ -344,7 +343,6 @@ h3 {
   #censorShieldContainer {
     display:none;
   }
-
 
 
 /* tooltips */
@@ -559,7 +557,7 @@ h3 {
   }
 
 
-/*  NETVIEW STUFF  */
+/* NETVIEW STUFF  */
   #closeWindow {
     position: relative;
     margin-right: 10px;
@@ -671,4 +669,32 @@ h3 {
   #newTagInput{
     display:none;
     margin-top: 5px;
+  }
+
+
+/*advanced post */
+  .advanced-post-container {
+    display:flex;
+    margin-left:-8% !important;
+    margin-right:-3%!important;
+    width:116%;
+  }
+  .advanced-post-container> div {
+    flex:1;
+  }
+  #advanced-post-title{
+    font-size: 22px;
+    width:50%;
+  }
+  #advanced-post-stats{
+    max-width: 15%;
+    border: solid;
+  }
+  #advanced-post-tags{
+    max-width: 15%;
+    float: right !important;
+    border: solid;
+  }
+  #advanced-post {
+    display:inline-flex;
   }
