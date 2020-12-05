@@ -3,13 +3,14 @@
 }
 body {
   background-color: #001011;
+  font-size: 200%;
 }
 
 h1 {
   margin: auto;
   color:#76a85f;
   font-family: 'Press Start 2P', cursive;
-  font-size: 40px;
+  font-size: 300%;
 }
 h3 {
   font-family: 'Press Start 2P', cursive;
@@ -27,6 +28,7 @@ h3 {
     margin-left: 0px !important;
     margin-right: 0px !important;
   }
+
 
 /* temp containers */
   #replyto {
@@ -164,6 +166,8 @@ h3 {
   }
   #tag-filter {
     width:50%;
+    min-width: 30vw;
+    font-size: 150%;
   }
   #back-to-main-page {
     position: fixed;
@@ -194,7 +198,7 @@ h3 {
     white-space: nowrap;
     display:block;
     width:100%;
-    min-width:75vw;
+    min-width:77vw;
   }
   #popular-tag-span {
     
@@ -207,8 +211,8 @@ h3 {
 /* post list stuff */
   #entryContainer {
     border: solid;
-    padding-left: 8vw;
-    padding-right: 8vw;
+    padding-left: 0vw;
+    padding-right: 0vw;
     padding-top: 2vh;
     padding-bottom: 3vh;
     color:white;
@@ -439,8 +443,8 @@ h3 {
     margin-right: 1%;
     /*min-width: 21vw;*/
     width: 8%;
-    min-width: 70px;
-    min-height: 40px;
+    min-width: 15vw;
+    min-height: 10vw;
     vertical-align: middle;
   }
   .up {
@@ -638,7 +642,7 @@ h3 {
     text-align: center;
   }
   #statusbar{
-    width:40vw;
+    width: 40vw;
     padding:2px;
     border-style:groove;
     border-color: #ffd24d;
@@ -674,32 +678,28 @@ h3 {
 /*advanced post */
   .advanced-post-container {
     display:flex;
-    margin-left:-8% !important;
-    margin-right:-3%!important;
-    width:116%;
+    width:100%;
   }
-  .advanced-post-container > div {
-    flex:1;
-  }
+
   .advimg {
-    min-height: 180px !important;
+    min-height: 22vh !important;
   }
   #advanced-post-title{
-    font-size: 28px;
+    font-size:150%;
     width:90%;
     padding-left: 3px;
   }
   #advanced-post-stats{
-    max-width: 15%;
+    width: 50%;
     border: solid;
   }
   #advanced-post-tags{
-    max-width: 25%;
-    float: right !important;
+    width: 50%;
     border: solid;
   }
   #advanced-post {
-    display:inline-flex;
+    display:flex !important;
+
   }
   #advanced-post-content {
     padding: 5px;

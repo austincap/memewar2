@@ -11,10 +11,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
   <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
-  <script type="text/javascript" src="detectmobilebrowser.js"></script>
+
 
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
-  <link rel="stylesheet" href="index.css"></link>
+  <link rel="stylesheet" href="mobile.css"></link>
   <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
 </head>
 <body>
@@ -37,14 +37,13 @@
 
     <div id="centerstage">
       <h1 id="pageID">Meme War 2</h1>
-      <div><marquee behavior="slide" direction="left" scrollamount="20" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
-      <!-- <h3 id="sub-title"></h3> -->
+      <div><marquee behavior="scroll" direction="left" loop="1" scrollamount="20" id="statusbar">Welcome to Meme War!</marquee></div>
       <!-- <h4 id="pageID">main page</h4> -->
     </div>
 
     <div id="right-buttons">
       <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
-     <!--  <div><button id="store">store</button></div> -->
+      <!--<button id="store">store</button>-->
     </div>
 
   </div>
@@ -56,7 +55,7 @@
       <button class="permahidden" id="sort-by-views-only">Views</button> 
     </div>
     <div id="popular-tags">
-      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<span id="popular-tag-span"><button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button></span>
+      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="search tags"/>&nbsp;<span id="popular-tag-span"><button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button></span>
     </div>
     
   </div>
@@ -68,18 +67,18 @@
 
     <div id="entryContainer">
 
-        <div postID="142322">
-        <div class="advanced-post-container">
+      <div postID="142322">
+        <div class="advanced-post-container" >
+          <img class="activeimage advimg" src="uploaded/tifa.jpg"/>
+          <div id="advanced-post-title">Thetetehetete hetetehetetehetetehetete hetetehetetehetetehetete hetete heteteheteteh etete hetetehetete hetetehetetehetetehetetehetete hetete</div>
+        </div>
+        <div id="advanced-post">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">33</span>&nbsp;upvotes<br/>
               <span id="advanced-post-upvotes">3</span>&nbsp;downvotes<br/>
               <span id="advanced-post-upvotes">332</span>&nbsp;clicks<br/>
               <span id="advanced-post-upvotes">2</span>&nbsp;memecoins spent<br/>
               <span id="advanced-post-upvotes">32/23/23</span>&nbsp;date created<br/>
-            </div>
-            <div id="advanced-post">
-              <img class="activeimage advimg" src="uploaded/tifa.jpg"/>
-              <div id="advanced-post-title">Thetetehetete hetetehetetehetetehetete hetetehetetehetetehetete hetete heteteheteteh etete hetetehetete hetetehetetehetetehetetehetete hetete</div>
             </div>
             <div id="advanced-post-tags">
               <span class="postTag" tagname="tadfdfdfssge">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag('tage');">33</a>)&nbsp;<span class="tagName">tadfdfdfssge</span>&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost('tage', $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">1</a>)</span>&nbsp;&nbsp;
@@ -100,10 +99,9 @@
               <button class="raise profallow" onclick="favoritePost($(this).parent().parent());"><span class="tooltiptext">favorite this post</span>❤</button>
             </span>
             <button class="raise anonallow" onclick="showTagBox($(this).parent().parent().attr('postID'));"><span class="tooltiptext">tag this post</span>🏷</button>
-            <div class="statusdiv" id="1605905839"></div>
-          </div>
-
+            <div class="statusdiv" id="142322"></div>
         </div>
+      </div>
   <!--       <div class="post-container" postID="1605905839">
           <div class="post">
             <a class="post-helper" href="/?q=1605905839" onclick="viewPost($(this).parent().parent().attr('postID'));">

@@ -475,6 +475,7 @@ function is_url(str){
 //subtitle function
 $(function(){
   $.getJSON('subtitles.json',function(data){
+    $('#statusbar').html(data[getRandomInt(0,Object.keys(data).length)]['text']);
     $('#sub-title').append(data[getRandomInt(0,Object.keys(data).length)]['text']);
   });
 });
@@ -629,9 +630,20 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   var tags = dataFromServer[2];
   if(is_url(viewedPost.content)){
     var linkblockUrl = "<iframe src='https://web.archive.org/web/"+viewedPost.content+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
-          $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"'><div class='metadata-container'><div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href='"+linkblockArray[i]['url']+"' ><div class='content-container'>"+linkblockUrl+"</div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
+    $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"'><div class='metadata-container'><div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href='"+linkblockArray[i]['url']+"' ><div class='content-container'>"+linkblockUrl+"</div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
   }
-  
+  var viewedPostData = new Date(viewedPost.postID * 1000).toDateString();
+  var viewedPostMustacheData = {
+    postID:viewedPost.postID,
+    upvotes:String(viewedPost.upvotes),
+    downvotes:String(viewedPost.downvotes),
+    clicks:String(viewedPost.clicks),
+    title:String(viewedPost.title),
+    memecoinsspent:String(viewedPost.memecoinsspent),
+    date:viewedPostData,
+    content:String(viewedPost.content),
+    file:String(viewedPost.file)
+  };
   var processedViewedPostTemplate = `<`;
   repliesToPost.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
