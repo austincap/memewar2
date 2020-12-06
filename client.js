@@ -6,17 +6,15 @@ function onloadFunction(){
   if(isMobile){ console.log("MOBILE"); }
   else{ console.log("NOT MOBILE"); }
   var currentPage = sessionStorage.getItem('currentPage');
-  switch (currentPage){
-    case 'post':
-      socket.emit("viewpost", getQueryParam("post"));
-    case 'user':
-      socket.emit('viewuser', getQueryParam("user"));
-    case 'tag':
-      socket.emit('requestPostsWithTag', getQueryParam("tag"));
-    case undefined || null:
-      socket.emit('requestTop20Posts');
-    default:
-      socket.emit('requestTop20Posts');
+
+  if(getQueryParam("post")!==""){
+    socket.emit("viewpost", getQueryParam("post"));
+  }else if(getQueryParam("user")!==""){
+    socket.emit('viewuser', getQueryParam("user"))
+  }else if(getQueryParam("tag")!==""){
+    socket.emit('requestPostsWithTag', getQueryParam("tag"));
+  }else{
+    socket.emit('requestTop20Posts');
   }
   console.log(document.URL); ////GEEEEEEEEEEEEEEEEEEEEEEEE
   console.log(getQueryParam("post"));
@@ -650,29 +648,28 @@ socket.on('receiveSinglePostData', function(dataFromServer){
     content:String(viewedPost.content),
     file:String(viewedPost.file)
   };
-  var processedViewedPostTemplate = `<div postID="{{postID}}">
-        <div class="advanced-post-container">
-          <img class="activeimage advimg" src="uploaded/{{file}}"/>
-          <div id="advanced-post-title">{{title}}</div>
-        </div>
-        <div id="advanced-post">
+  var processedViewedPostTemplate = `
+        <div postID="{{postID}}">
+          <div class="advanced-post-container">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">{{upvotes}}</span>&nbsp;upvotes<br/>
-              <span id="advanced-post-downvotes">{{downvotes}}</span>&nbsp;downvotes<br/>
-              <span id="advanced-post-clicks">{{clicks}}</span>&nbsp;clicks<br/>
-              <span id="advanced-post-memecoinsspent">{{memecoinsspent}}</span>&nbsp;memecoins spent<br/>
-              <span id="advanced-post-datecreated">{{date}}</span>&nbsp;date created<br/>
-              <span id="advanced-post-postid">{{postID}}</span>&nbsp;post ID<br/>
+              <span id="advanced-post-upvotes">{{downvotes}}</span>&nbsp;downvotes<br/>
+              <span id="advanced-post-upvotes">{{clicks}}</span>&nbsp;clicks<br/>
+              <span id="advanced-post-upvotes">{{memecoinsspent}}</span>&nbsp;memecoins spent on post<br/>
+              <span id="advanced-post-upvotes">{{date}}</span>&nbsp;post was created<br/>
+              <hr/>
+              favorited by:<br/>
+              <div id="advanced-post-favoriters"><button class="raise" onclick=""></button></div>
+            </div>
+            <div id="advanced-post">
+              <img class="activeimage advimg" src="uploaded/{{file}}"/>
+              <div id="advanced-post-title">{{title}}</div>
             </div>
             <div id="advanced-post-tags">
-
             </div>
-        </div>
-        <div id="advanced-post-content">{{content}}</div>
-        <div id="advanced-post-favoriters">
-          <button class="raise" onclick=""></button>
-        </div>
-        <div class="post-buttons">
+          </div>
+          <div id="advanced-post-content">{{content}}</div>
+          <div class="post-buttons">
             <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
             <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span>&#10133;</button>
             <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span>&#10134;</button>
@@ -685,8 +682,11 @@ socket.on('receiveSinglePostData', function(dataFromServer){
             </span>
             <button class="raise anonallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
             <div class="statusdiv" id="{{postID}}"></div>
-        </div>
-      </div>`;
+          </div>
+        </div>`;
+      var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
+      //$('#result').html( html );
+      $('#entryContainer').append(html);
   repliesToPost.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {

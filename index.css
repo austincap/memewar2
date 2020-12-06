@@ -691,10 +691,12 @@ h3 {
   }
   #advanced-post-stats{
     max-width: 15%;
+    min-width: 15%;
     border: solid;
   }
   #advanced-post-tags{
     max-width: 25%;
+    min-width: 25%;
     float: right !important;
     border: solid;
   }

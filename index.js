@@ -596,7 +596,7 @@ io.on('connection', function(socket) {
         .run(query, {postID: parseInt(postID)})
         .then(function(result){
             if(result.records[0]==null){
-              socket.emit('noDataFound');
+              //socket.emit('noDataFound');
               console.log('NULL');
             }else{
               var dataForClient = [];
@@ -624,7 +624,6 @@ io.on('connection', function(socket) {
                 .catch(function(error){
                   console.log(error);
                 });
-
               //socket.emit('receiveSinglePostData', dataForClient);   
             }
         })
