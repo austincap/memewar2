@@ -1,34 +1,31 @@
 const socket = io();
 
 
-
 function onloadFunction(){
   var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
-
-  if( isMobile ) {
-   console.log("MOBILE");
-  }else{
-    console.log("NOT MOBILE");
+  if(isMobile){ console.log("MOBILE"); }
+  else{ console.log("NOT MOBILE"); }
+  var currentPage = sessionStorage.getItem('currentPage');
+  switch (currentPage){
+    case 'post':
+      socket.emit("viewpost", getQueryParam("post"));
+    case 'user':
+      socket.emit('viewuser', getQueryParam("user"));
+    case 'tag':
+      socket.emit('requestPostsWithTag', getQueryParam("tag"));
+    case undefined || null:
+      socket.emit('requestTop20Posts');
+    default:
+      socket.emit('requestTop20Posts');
   }
-  // var currentPage = sessionStorage.getItem('currentPage');
-  // switch (currentPage){
-  //   case 'post':
-  //     console.log('post');
-  //   case 'tag':
-  //     socket.emit('requestTop20Posts');
-  //   case 'user':
-  //     socket.emit('requestTop20Posts');
-  //   default:
-  //     socket.emit('requestTop20Posts');
-  // }
   console.log(document.URL); ////GEEEEEEEEEEEEEEEEEEEEEEEE
+  console.log(getQueryParam("post"));
   if(sessionStorage.getItem('userID') !== null){
     console.log(sessionStorage.getItem('userID'));
     $('#signinstuff').css('display', 'none');
-    $('#accountButton').css('display', 'none');
     $('#userprofilestuff').css('display', 'inline-block');
     $('.profallow').css('display', 'inline');
-    $('#userProfileButton').html("<span id='"+sessionStorage.getItem('userID')+"'>"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
     $('#userID-newpost').val(sessionStorage.getItem('userID'));
     $('#userID-reply').val(sessionStorage.getItem('userID'));
     $('#posttype-newpost').val("text_post");
@@ -41,29 +38,6 @@ function onloadFunction(){
     $('#posttype-newpost').val("text_post");
     $('#posttype-reply').val("text_post");
   }
-}
-
-
-function displayStatus(message){
-  document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">'+message+'</marquee>';
-  //document.getElementById('statusbar').innerHTML = message;
-}
-
-function generateUUID(){
-  var d = new Date().getTime();
-  var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-  var uuid = 'xxxxxx'.replace(/[xy]/g, function(c) {
-    var r = Math.random() * 16;
-    if(d > 0){
-      var r = (d + r)%16 | 0;
-      d = Math.floor(d/16);
-    } else {
-      var r = (d2 + r)%16 | 0;
-      d2 = Math.floor(d2/16);
-    }
-    return (c=='x' ? r : (r&0x7|0x8));
-  });
-  return uuid;
 }
 
 
@@ -84,9 +58,62 @@ function loginUser(){
   socket.emit('login', logindata);
 }
 
+function clickAccountButton(thisButton){
+  console.log($(thisButton).children()[0]);
+  if($(thisButton).html()=="Account"){
+    $('#signinstuff').css('display', 'inline-block');
+    $(thisButton).html("Close");
+  }else if($(thisButton).html()=="Close"){
+    $('#signinstuff').css('display', 'none');
+    $(thisButton).html("Account");
+  }else if($($(thisButton).children()[0]).attr('userid')==sessionStorage.getItem('userID')){
+    console.log("ETE");
+    viewProfilePage(sessionStorage.getItem('userID'));
+  }
+}
+
+function contextButtonFunction(currentContext){
+  console.log(currentContext);
+  switch(currentContext){
+    case 'About':
+      break;
+    case 'Home':
+      d3.select('svg').selectAll('*').remove();
+      $('#d3frame').css('display', 'none');
+      sessionStorage.setItem('currentPage', 'home');
+      socket.emit('requestTop20Posts');
+    case 'Alt':
+      $('#entryContainer').empty();
+      sessionStorage.setItem('currentPage', 'alt');
+      document.getElementById('contextButton').innerHTML = 'Home';
+      socket.emit('retrieveDatabase');
+      break;
+  }
+}
+
+
+
+function getAllPostsWithThisTag(tagname){
+  sessionStorage.setItem('currentPage', 'tag');
+  $("#contextButton").html("Home");
+  $("#entryContainer").empty();
+  window.location.href='/?tag='+tagname;
+  //socket.emit("requestPostsWithTag", tagname);
+}
+
+function viewPost(postID){
+  sessionStorage.setItem('currentPage', 'post');
+  $("#contextButton").html("Home");
+  $("#entryContainer").empty();
+  // socket.emit('viewpost', postID);
+}
+
 function viewProfilePage(userID){
-  $('#entryContainer').empty();
-  socket.emit('viewuser', sessionStorage.getItem('userID'));
+  sessionStorage.setItem('currentPage', 'user');
+  $("#contextButton").html("Home");
+  $("#entryContainer").empty();
+  window.location.href='/?user='+userID;
+  //socket.emit('viewuser', sessionStorage.getItem('userID'));
 }
 
 
@@ -231,9 +258,6 @@ function returnNewPostBox(){
   newPostContainer.css('display', 'none');
 }
 
-
-
-
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
   console.log(postID);
@@ -296,6 +320,7 @@ function returnNewStatsBox(){
 }
 
 
+
 function confirmCensor(postID){
   if(sessionStorage.getItem('memecoin') > 50){
     var dataPacket = {
@@ -311,6 +336,7 @@ function confirmHarvest(postElement){
   console.log(postElement);
   socket.emit('harvestPost', postElement, sessionStorage.getItem("userID"));
 }
+
 
 
 function submitNewPost(){
@@ -332,49 +358,6 @@ function submitReply(postElement){
   document.querySelector('#myimg-reply').src = "";
   returnReplyBox()
 }
-
-
-
-
-function upvoteThisTagForThisPost(tagname, postID){
-  console.log(tagname);
-  console.log(postID);
-  var stuffToCheck = {
-    userID: sessionStorage.getItem("userID"),
-    postID: postID,
-    data: tagname,
-    task: "upvotetag"
-  };
-  socket.emit("check", stuffToCheck);
-}
-
-
-
-function submitTag(tagname, postID){
-  console.log(tagname);
-  console.log(postID);
-  var tagPostOrUser = {
-    tagname:tagname,
-    postID:postID,
-    userID:sessionStorage.getItem("userID"),
-    postIfTrue:true
-  };
-  socket.emit('tagPostOrUser', tagPostOrUser);
-}
-
-function getAllPostsWithThisTag(tagname){
-  console.log(tagname);
-  socket.emit("requestPostsWithTag", tagname);
-}
-
-
-function viewPost(postID){
-  sessionStorage.setItem('currentPage', 'post');
-  $("#contextButton").html("Home");
-  $("#entryContainer").empty();
-  socket.emit('viewpost', postID);
-}
-
 
 function previewFile(){
   var preview = document.querySelector('#myimg');
@@ -402,41 +385,37 @@ function previewFile(){
 
 
 
+function upvoteThisTagForThisPost(tagname, postID){
+  console.log(tagname);
+  console.log(postID);
+  var stuffToCheck = {
+    userID: sessionStorage.getItem("userID"),
+    postID: postID,
+    data: tagname,
+    task: "upvotetag"
+  };
+  socket.emit("check", stuffToCheck);
+}
+
+function submitTag(tagname, postID){
+  console.log(tagname);
+  console.log(postID);
+  var tagPostOrUser = {
+    tagname:tagname,
+    postID:postID,
+    userID:sessionStorage.getItem("userID"),
+    postIfTrue:true
+  };
+  socket.emit('tagPostOrUser', tagPostOrUser);
+}
+
+
+
 function favoritePost(postID){
+  //
   return;
 }
 
-
-function getRandomInt(min, max){
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
-
-
-function testFunction(){
-  socket.emit('viewpost', 1605905839);
-}
-
-
-function contextButtonFunction(currentContext){
-  console.log(currentContext);
-  switch(currentContext){
-    case 'About':
-      break;
-    case 'Home':
-      d3.select('svg').selectAll('*').remove();
-      $('#d3frame').css('display', 'none');
-      sessionStorage.setItem('currentPage', 'home');
-      socket.emit('requestTop20Posts');
-    case 'Alt':
-      $('#entryContainer').empty();
-      sessionStorage.setItem('currentPage', 'alt');
-      document.getElementById('contextButton').innerHTML = 'Home';
-      socket.emit('retrieveDatabase');
-      break;
-  }
-}
 
 //NEED BETTER SORTER
 //NEED SORTER OPTIONS
@@ -451,7 +430,6 @@ function timesorter(a,b){
 function upvotesorter(a,b){
   return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes');
 }
-
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -464,14 +442,41 @@ function timeConverter(UNIX_timestamp){
   var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
   return time;
 }
-
+function getRandomInt(min, max){
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+}
 function is_url(str){
   var regexp =  /^(?:(?:https?|ftp):\/\/)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/\S*)?$/;
   if(regexp.test(str)){return true;}
   else{return false;}
 }
-
-
+function getQueryParam(param){
+  var rx = new RegExp("[?&]" + param + "=([^&]+).*$");
+  var returnVal = window.location.search.match(rx);
+  return returnVal === null ? "" : decodeURIComponent(returnVal[1].replace(/\+/g, " "));
+}
+function generateUUID(){
+  var d = new Date().getTime();
+  var d2 = (performance && performance.now && (performance.now()*1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
+  var uuid = 'xxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16;
+    if(d > 0){
+      var r = (d + r)%16 | 0;
+      d = Math.floor(d/16);
+    } else {
+      var r = (d2 + r)%16 | 0;
+      d2 = Math.floor(d2/16);
+    }
+    return (c=='x' ? r : (r&0x7|0x8));
+  });
+  return uuid;
+}
+function displayStatus(message){
+  document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">'+message+'</marquee>';
+  //document.getElementById('statusbar').innerHTML = message;
+}
 //subtitle function
 $(function(){
   $.getJSON('subtitles.json',function(data){
@@ -487,6 +492,7 @@ $(document).ready(function(){
     socket.emit('requestPostsWithTag', $(this).val());
   });
 });
+
 
 
 socket.on('userChecked', function(resultOfCheck){
@@ -583,7 +589,6 @@ socket.on('receiveTagData', function(topPostsForTag){
 });
 
 socket.on('receiveTop20Data', function(topPostsAndTags){
-  window.setTimeout(function(){
     var posts = topPostsAndTags[0];
     var tags = topPostsAndTags[1];
     console.log(posts);
@@ -602,9 +607,8 @@ socket.on('receiveTop20Data', function(topPostsAndTags){
         title:String(post.title),
         content:String(post.content)
       };
-
     //console.log(date);
-    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a class='post-helper' href='/?q={{postID}}' onclick='viewPost({{postID}});'><div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span>&#10133;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span>&#10134;</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost($(this).parent().parent());'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
+    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'><div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span>&#10133;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span>&#10134;</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost($(this).parent().parent());'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
     var html = Mustache.render(processedPostTemplate, mustacheData);
       $('#entryContainer').append(html);
     });
@@ -618,12 +622,14 @@ socket.on('receiveTop20Data', function(topPostsAndTags){
       $("#entryContainer").empty();
       socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
     });
-    onloadFunction();
-  }, 800);
+    //onloadFunction();
+  // window.setTimeout(function(){
+
+  // }, 800);
 });
 
 socket.on('receiveSinglePostData', function(dataFromServer){
-  console.log("ETOIUEHTOIUEHT");
+  console.log("receiveSinglePostData");
   console.log(dataFromServer);
   var viewedPost = dataFromServer[0];
   var repliesToPost = dataFromServer[1];
@@ -644,7 +650,43 @@ socket.on('receiveSinglePostData', function(dataFromServer){
     content:String(viewedPost.content),
     file:String(viewedPost.file)
   };
-  var processedViewedPostTemplate = `<`;
+  var processedViewedPostTemplate = `<div postID="{{postID}}">
+        <div class="advanced-post-container">
+          <img class="activeimage advimg" src="uploaded/{{file}}"/>
+          <div id="advanced-post-title">{{title}}</div>
+        </div>
+        <div id="advanced-post">
+            <div id="advanced-post-stats">
+              <span id="advanced-post-upvotes">{{upvotes}}</span>&nbsp;upvotes<br/>
+              <span id="advanced-post-downvotes">{{downvotes}}</span>&nbsp;downvotes<br/>
+              <span id="advanced-post-clicks">{{clicks}}</span>&nbsp;clicks<br/>
+              <span id="advanced-post-memecoinsspent">{{memecoinsspent}}</span>&nbsp;memecoins spent<br/>
+              <span id="advanced-post-datecreated">{{date}}</span>&nbsp;date created<br/>
+              <span id="advanced-post-postid">{{postID}}</span>&nbsp;post ID<br/>
+            </div>
+            <div id="advanced-post-tags">
+
+            </div>
+        </div>
+        <div id="advanced-post-content">{{content}}</div>
+        <div id="advanced-post-favoriters">
+          <button class="raise" onclick=""></button>
+        </div>
+        <div class="post-buttons">
+            <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
+            <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span>&#10133;</button>
+            <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span>&#10134;</button>
+            <span class="advancedButtons">
+              <button class="raise profallow" onclick="showShieldCensorHarvestBox(2, {{postID}});"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
+              <button class="raise profallow" onclick="showShieldCensorHarvestBox(1, {{postID}});"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
+              <button class="raise profallow" onclick="showShieldCensorHarvestBox(0, {{postID}});"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
+              <button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
+              <button class="raise profallow" onclick="favoritePost($(this).parent().parent());"><span class="tooltiptext">favorite this post</span>❤</button>
+            </span>
+            <button class="raise anonallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
+            <div class="statusdiv" id="{{postID}}"></div>
+        </div>
+      </div>`;
   repliesToPost.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {
@@ -674,11 +716,6 @@ socket.on('receiveSinglePostData', function(dataFromServer){
     $("#entryContainer").empty();
     socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
   });
-  // $(".post-helper").on("click", function(){
-  //   console.log($(this).parent().parent().attr("postID"));
-  //   $("#entryContainer").empty();
-  //   socket.emit('viewpost', $(this).parent().parent().attr("postID"));
-  // });
 });
 
 socket.on('loggedIn', function(loginData){
@@ -686,10 +723,56 @@ socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('username', loginData.name);
   sessionStorage.setItem('memecoin', loginData.memecoin);
   $('#signinstuff').css('display', 'none');
-  $('#accountButton').css('display', 'none');
-  $('#userprofilestuff').css('display', 'inline-block');
   $('.profallow').css('display','inline');
-  $('#userProfileButton').html(sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+  $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+  $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
+});
+
+socket.on('userDataFound', function(userData){
+  var user = userData[0];
+  var tags = userData[1];
+  var posts = userData[2];
+  var faves = userData[3];
+  console.log(posts);
+  //$("#entryContainer").empty();
+  var user_date = "1/9/89";//new Date(user.userID * 1000).toDateString();
+  var user_mustacheData = {
+    userid:String(user.userID),
+    username:String(user.name),
+    memecoin:String(user.memecoin),
+    file:String(user.file),
+    date:user_date,
+    postcount:String(posts.length),
+    content:String(user.content)
+  };
+  posts.forEach(function(post){
+    var date = new Date(post.postID * 1000).toDateString();
+    var mustacheData = {
+      postID:String(post.postID),
+      profit:String(post.upvotes-post.downvotes),
+      up:String(post.upvotes),
+      down:String(post.downvotes),
+      file:String(post.file),
+      date:date,
+      replycount:String(post.replycount),
+      clicks:String(post.clicks),
+      title:String(post.title),
+      content:String(post.content)
+    };
+    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a class='post-helper' href='/?q={{postID}}' onclick='viewPost({{postID}});'><div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span>&#10133;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span>&#10134;</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost($(this).parent().parent());'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
+    var html = Mustache.render(processedPostTemplate, mustacheData);
+      $('#entryContainer').append(html);
+  });
+  //console.log(tags);
+  tags.forEach(function(tag){
+    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
+    $('#popular-tag-span').append(processedTag); 
+  });
+  $(".popular-tag-button").on("click", function(){
+    console.log($(this).children(".tag-name").html());
+    $("#entryContainer").empty();
+    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+  });
 });
 
 socket.on('sendDatabase', function(results){
@@ -856,34 +939,34 @@ var validateInputs = function validateInputs(inputs){
     }
   });
   return validForm;
-}
+};
 
 inputs.change(function(){
-    if (validateInputs(inputs)) {
-      document.getElementById("upload").removeAttribute("disabled");
-    }
+  if (validateInputs(inputs)) {
+    document.getElementById("upload").removeAttribute("disabled");
+  }
 });
 
-text_truncate = function(str, length, ending){
-    if (length == null) {
-      length = 100;
-    }
-    if (ending == null) {
-      ending = '...';
-    }
-    //console.log(String(str));
-    if(str !== null) {
-      //console.log("STRING IS NOT NULL");
-      if (str.length > length) {
-        //console.log(str.substring(0, length - ending.length) + ending);
-        return str.substring(0, length - ending.length) + ending;
-      } else {
-        return str;
-      }     
-    }else{
-      //console.log("STRING IS NULL");
-      return "null";
-    }
+var text_truncate = function(str, length, ending){
+  if (length == null) {
+    length = 100;
+  }
+  if (ending == null) {
+    ending = '...';
+  }
+  //console.log(String(str));
+  if(str !== null) {
+    //console.log("STRING IS NOT NULL");
+    if (str.length > length) {
+      //console.log(str.substring(0, length - ending.length) + ending);
+      return str.substring(0, length - ending.length) + ending;
+    } else {
+      return str;
+    }     
+  }else{
+    //console.log("STRING IS NULL");
+    return "null";
+  }
 };
 
 var previewContent = document.getElementById("previewContent");
@@ -1129,8 +1212,6 @@ function handleRetrievedDatabase(results){
   });
 }
 
-
-
 function autocomplete(inp, arr){
   /*the autocomplete function takes two arguments,
   the text field element and an array of possible autocompleted values:*/
@@ -1230,6 +1311,4 @@ autocomplete(document.getElementById("newTagInput"), existingTagArray);
 autocomplete(document.getElementById("tag1"), existingTagArray);
 autocomplete(document.getElementById("tag2"), existingTagArray);
 
-
 window.onload = onloadFunction();
-
