@@ -227,7 +227,7 @@ function requestTop20Posts(socket){
                 tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
               });
               topPostsAndTags.push(tagdataForClient);
-              //console.log(topPostsAndTags);
+              console.log(topPostsAndTags);
               console.log("TOP 20 POSTS");
               socket.emit('receiveTop20Data', topPostsAndTags);
             })

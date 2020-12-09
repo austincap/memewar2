@@ -33,6 +33,9 @@ function onloadFunction(){
       $('#posttype-newpost').val("text_post");
       $('#posttype-reply').val("text_post");
     }
+    document.querySelectorAll('img').forEach(function(img){
+    img.onerror = function(){console.log("TETETE");this.style.display='none';};
+   });
   }, 800);
 }
 
@@ -415,6 +418,10 @@ function favoritePost(postID){
   return;
 }
 
+function showAdvancedButtons(postID){
+
+}
+
 
 //NEED BETTER SORTER
 //NEED SORTER OPTIONS
@@ -495,8 +502,6 @@ $(document).ready(function(){
     socket.emit('requestPostsWithTag', $(this).val());
   });
 });
-
-
 
 socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
@@ -676,8 +681,8 @@ socket.on('receiveSinglePostData', function(dataFromServer){
           <div id="advanced-post-content">{{content}}</div>
           <div class="post-buttons">
             <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
-            <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span>&#10133;</button>
-            <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span>&#10134;</button>
+            <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+            <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
             <span class="advancedButtons">
               <button class="raise profallow" onclick="showShieldCensorHarvestBox(2, {{postID}});"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
               <button class="raise profallow" onclick="showShieldCensorHarvestBox(1, {{postID}});"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
@@ -706,7 +711,7 @@ socket.on('receiveSinglePostData', function(dataFromServer){
       title:String(post.title),
       content:String(post.content)
     };
-    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a href='/?q={{postID}} class='post-helper' onclick='viewPost({{postID}});'><div class='post-visual'><img src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span>&#10133;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span>&#10134;</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
+    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a href='/?q={{postID}} class='post-helper' onclick='viewPost({{postID}});'><div class='post-visual'><img src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style="filter:sepia(100%);">🔺</span></button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style="filter:sepia(100%);">🔻</span></button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
       var html = Mustache.render(processedPostTemplate, mustacheData);
       //$('#result').html( html );
       $('#entryContainer').append(html);
@@ -1120,7 +1125,7 @@ function handleRetrievedDatabase(results){
       .attr("width", "10")
         .attr("height", "10")
         .style("fill","#ffd24d")
-        .text(function(d) { return text_truncate(d.id, 16); });
+        .text(function(d) { return text_truncate(d.content, 16); });
 
     // var cursor = svg.append("circle")
     //     .attr("r", 30)
@@ -1135,10 +1140,9 @@ function handleRetrievedDatabase(results){
         .force("center", d3.forceCenter(700 , 700));
 
     simulation.nodes(data.nodes).on("tick", ticked);
-    console.log(data.links);
+    //console.log(data.links);
     simulation.force("link").links(data.links);
     //simulation.force("link").links(data.links);
-    console.log("OEIFHJEOIGJHNEOIGJHEOIGJEOGJ");
 
 
     var imageElement = svg.append("g").selectAll(".image").data(data.nodes);
@@ -1198,6 +1202,9 @@ function handleRetrievedDatabase(results){
     function clickOnNode(d, i){
       //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
       //linkifyStr(previewFrame, linkifyOptions);
+
+      console.log(i.id);
+      window.location.href='/?post='+String(i.id);
       closeAllFrames();
       clickOnAddNewPost=true;
       document.getElementById('uploadNewPostButton').innerHTML="-";
