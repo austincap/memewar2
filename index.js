@@ -541,7 +541,7 @@ io.on('connection', function(socket) {
 
   socket.on('viewuser', function(userID){
     var query = `
-      MATCH (u:User {userID:0})
+      MATCH (u:User {userID:$userID})
       OPTIONAL MATCH (u)-[:TAGGEDAS]->(t:Tag)
       WITH u, COLLECT(DISTINCT t.name) AS tags
       OPTIONAL MATCH (u)<-[:CREATEDBY]-(p:Post)
@@ -566,6 +566,7 @@ io.on('connection', function(socket) {
               dataForClient.push(tempData);
               tempData = [];
               result.records[0]["_fields"][3].forEach(function(record){
+                console.log(record.properties);console.log("record.properties");
                 tempData.push(record["properties"]);
               });
               dataForClient.push(tempData);
@@ -926,23 +927,30 @@ io.on('connection', function(socket) {
 
   ///////////////
   //FAVORITE POST
-  socket.on('favoritePost', function(postID, userID){
-    var query = `
-      MATCH (n:Post {postID:$postID}), (m:User {userID:$userID})
-      MERGE (n)<-[r:FAVORITED]-(m)
-      RETURN n, m
-      `;
-      session
-        .run(query, {postID: parseInt(postID), userID: userID})
-        .then(function(result){
-          console.log(result);
-          socket.emit('receiveSinglePostData', result);
-          console.log(result.records[0]["_fields"][1]);
-          //session.close();
-        })
-        .catch(function(error){
-          console.log(error);
-        });  
+  socket.on('favorite', function(dataFromClient){
+    console.log(dataFromClient);
+    switch(dataFromClient.faveType){
+      case 0:
+        var query = `
+        MATCH (n:Post {postID:$postID}), (m:User {userID:$userID})
+        MERGE (n)<-[r:FAVORITED]-(m)
+        RETURN n, m
+        `;
+        session
+          .run(query, {postID: parseInt(dataFromClient.postidORtagnameORuserid), userID: dataFromClient.userid})
+          .then(function(result){
+            console.log(result);
+            socket.emit('userChecked', {task:'favoritedPost', userID:dataFromClient.userid, postID:dataFromClient.postidORtagnameORuserid, cost:50});
+          })
+          .catch(function(error){
+            console.log(error);
+          });  
+      case 1:
+        break;
+      case 2:
+        break;
+    }
+
   });
 
 });

@@ -58,5 +58,20 @@
 	},
 	"19":{
 		"text": "The battlefield of ideas."
+	},
+	"20":{
+		"text": "Tags basically function as subreddits."
+	},
+	"21":{
+		"text": "Favoriting a tag is like adding a personalized subreddit to your feed."
+	},
+	"22":{
+		"text": "Favoriting another user is like following someone on twitter."
+	},
+	"23":{
+		"text": "You have no right to complain about hate speech here because you are responsible for moderation."
+	},
+	"24":{
+		"text": "The only types of information we'll forcibly remove are child porn and criminal plots!"
 	}
 }

@@ -672,6 +672,9 @@ h3 {
 
 
 /*advanced post */
+  #ap {
+    display:inline;
+  }
   .advanced-post-container {
     display:flex;
     margin-left:-8% !important;
@@ -690,20 +693,76 @@ h3 {
     padding-left: 3px;
   }
   #advanced-post-stats{
+    float: both !important;
     max-width: 15%;
     min-width: 15%;
     border: solid;
+    order: 1;
+  }
+  #advanced-post {
+    /*display:inline-flex;*/
+    order: 2;
   }
   #advanced-post-tags{
     max-width: 25%;
     min-width: 25%;
-    float: right !important;
+    float: both !important;
     border: solid;
-  }
-  #advanced-post {
-    display:inline-flex;
+    order: 3;
   }
   #advanced-post-content {
     padding: 5px;
     border:solid;
+  }
+  #advanced-post-favoriters {
+    max-width:100%;
+    max-height:20vw;
+    border-bottom: solid;
+    overflow-y:scroll !important;
+    text-overflow: ellipsis !important;
+  }
+  .fave-container{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display:block;
+    width:100%;
+    min-width:1px;
+  }
+  @media all and (max-width: 1200px) {
+    body{
+      font-size: 200%;
+    }
+    .advanced-post-container {
+      display:flex;
+      margin-left:0% !important;
+      margin-right:0%!important;
+      width:100%;
+      flex-wrap:wrap;
+      font-size: 80%;
+    }
+    #advanced-post-stats{
+      min-width:48%;
+      margin: 0;
+      order: 2;
+    }
+    #advanced-post{
+      min-width: 100%;
+      order: 1;
+    }
+    #advanced-post-tags{
+      min-width:48%;
+      margin: 0;
+    }
+    #advanced-post-title{
+      font-size:160% !important;
+    }
+    .raise{
+      min-width: 15vw;
+      min-height: 10vw;
+    }
+    #entryContainer{
+      padding-left: 0vw;
+      padding-right: 0vw;
+    }
   }

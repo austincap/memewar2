@@ -11,7 +11,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
   <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
-  <script type="text/javascript" src="detectmobilebrowser.js"></script>
+  <!-- <script type="text/javascript" src="detectmobilebrowser.js"></script> -->
 
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
   <link rel="stylesheet" href="index.css"></link>
@@ -36,7 +36,7 @@
 
     <div id="centerstage">
       <h1 id="pageID">Meme War 2</h1>
-      <div><marquee behavior="slide" direction="left" scrollamount="20" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
+      <div><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
       <!-- <h3 id="sub-title"></h3> -->
       <!-- <h4 id="pageID">main page</h4> -->
     </div>
@@ -67,7 +67,7 @@
 
     <div id="entryContainer">
 
-        <div postID="142322">
+  <!--     <div id="ap" postID="142322">
         <div class="advanced-post-container">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">33</span>&nbsp;upvotes<br/>
@@ -76,14 +76,13 @@
               <span id="advanced-post-upvotes">2</span>&nbsp;memecoins spent<br/>
               <span id="advanced-post-upvotes">32/23/23</span>&nbsp;date created<br/>
               <hr/>
-              <div id="advanced-post-favoriters"><button class="raise" onclick=""></button></div>
+              <div id="advanced-post-favoriters"></div>
             </div>
             <div id="advanced-post">
-              <img class="activeimage advimg" src="uploaded/tifa.jpg"/>
+              <img class="activeimage advimg" src="uploaded/tifa.jpg" onclick="enlargePic(this);" />
               <div id="advanced-post-title">
                 Thetetehetete hetetehetetehetetehetete hetetehetetehetetehetete hetete heteteheteteh etete hetetehetete hetetehetetehetetehetetehetete hetete
                 <br/>
-                
               </div>
             </div>
             <div id="advanced-post-tags">
@@ -109,7 +108,7 @@
             <div class="statusdiv" id="1605905839"></div>
         </div>
 
-        </div>
+      </div> -->
   <!--       <div class="post-container" postID="1605905839">
           <div class="post">
             <a class="post-helper" href="/?q=1605905839" onclick="viewPost($(this).parent().parent().attr('postID'));">
