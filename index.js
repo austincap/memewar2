@@ -586,7 +586,7 @@ io.on('connection', function(socket) {
       OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
       OPTIONAL MATCH (p)<-[fa:FAVORITED]-(u:User)
       SET p.clicks = p.clicks + 1
-      RETURN p AS postToBeViewed, COLLECT(DISTINCT m) AS replies, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tagstuff, COLLECT(u) AS usersWhoFavorited
+      RETURN p AS postToBeViewed, COLLECT(DISTINCT m) AS replies, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tagstuff, COLLECT(DISTINCT [u.userID, u.name]) AS usersWhoFavorited
       `;
     var topTagQuery = `
       MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)

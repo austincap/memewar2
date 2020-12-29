@@ -685,7 +685,10 @@ h3 {
     flex:1;
   }
   .advimg {
-    min-height: 180px !important;
+    min-height: 280px !important;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
   #advanced-post-title{
     font-size: 28px;

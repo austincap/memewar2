@@ -736,13 +736,14 @@ socket.on('receiveSinglePostData', function(dataFromServer){
           <div class="advanced-post-container">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">{{upvotes}}</span>&nbsp;upvotes<br/>
-              <span id="advanced-post-upvotes">{{downvotes}}</span>&nbsp;downvotes<br/>
-              <span id="advanced-post-upvotes">{{clicks}}</span>&nbsp;clicks<br/>
-              <span id="advanced-post-upvotes">{{memecoinsspent}}</span>&nbsp;memecoins spent on post<br/>
-              <span id="advanced-post-upvotes">{{date}}</span>&nbsp;post was created<br/>
+              <span id="advanced-post-downvotes">{{downvotes}}</span>&nbsp;downvotes<br/>
+              <span id="advanced-post-clicks">{{clicks}}</span>&nbsp;clicks<br/>
+              <span id="advanced-post-mcspent">{{memecoinsspent}}</span>&nbsp;memecoins spent on post<br/>
+              <span id="advanced-post-date">{{date}}</span>&nbsp;post was created<br/>
+              <span id="advanced-post-id">{{postID}}</span>&nbsp;is post's id#
               <hr/>
               favorited by:<br/>
-              <div id="advanced-post-favoriters"><button class="raise" onclick=""></button></div>
+              <div id="advanced-post-favoriters"></div>
             </div>
             <div id="advanced-post">
               <img class="activeimage advimg" src="uploaded/{{file}}"/>
@@ -770,6 +771,9 @@ socket.on('receiveSinglePostData', function(dataFromServer){
       var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
       //$('#result').html( html );
       $('#entryContainer').append(html);
+      viewedPost.favoritedBy.forEach(function(userWhoFaved){
+        $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage('+String(userWhoFaved[0])+')">'+userWhoFaved[1]+'</button>');
+      });
   repliesToPost.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {
@@ -862,9 +866,9 @@ socket.on('userDataFound', function(userData){
           <div class="advanced-post-container">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">{{upvotes}}</span>&nbsp;upvotes dealt<br/>
-              <span id="advanced-post-upvotes">{{downvotes}}</span>&nbsp;downvotes dealt<br/>
-              <span id="advanced-post-upvotes">{{memecoin}}</span>&nbsp;memecoin available<br/>
-              <span id="advanced-post-upvotes">{{date}}</span>&nbsp;account was created<br/>
+              <span id="advanced-post-downvotes">{{downvotes}}</span>&nbsp;downvotes dealt<br/>
+              <span id="advanced-post-mcspent">{{memecoin}}</span>&nbsp;memecoin available<br/>
+              <span id="advanced-post-date">{{date}}</span>&nbsp;account was created<br/>
               <hr/>
               favorited:<br/>
               <div id="advanced-post-favoriters"></div>
@@ -880,6 +884,8 @@ socket.on('userDataFound', function(userData){
         </div>`;
   var html = Mustache.render(processedUserTemplate, user_mustacheData);
   $('#entryContainer').append(html);
+  $('#pageID-tagname').html("&nbsp;:&nbsp;"+user.name);
+  window.history.replaceState(null, null, "/?user="+user.name);
   posts.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {
