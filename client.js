@@ -428,10 +428,13 @@ function showAdvancedButtons(postID){
 //CURRENTLY SORTS BY UPVOTES, THEN BY DATE
 //DATA PROCESSING FUNCTIONS
 function sorter(a, b){
-  return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes') || b.getAttribute('id').slice(2) - a.getAttribute('id').slice(2);
+  return b.getAttribute('profit') - a.getAttribute('profit') || b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
 }
 function timesorter(a,b){
-  return b.getAttribute('id').slice(2) - a.getAttribute('id').slice(2);
+  return b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
+}
+function clicksorter(a,b){
+  return b.getAttribute('clicks').slice(2) - a.getAttribute('clicks').slice(2);
 }
 function upvotesorter(a,b){
   return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes');
@@ -505,6 +508,15 @@ $(document).ready(function(){
     socket.emit('requestPostsWithTag', $(this).val());
   });
 });
+//
+function dropDownFunction() {
+  var x = document.getElementById("Demo");
+  if (x.className.indexOf("w3-show") == -1) {
+    x.className += " w3-show";
+  } else { 
+    x.className = x.className.replace(" w3-show", "");
+  }
+}
 
 socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
@@ -665,7 +677,7 @@ socket.on('receiveTop20Data', function(topPostsAndTags){
     };
   //console.log(date);
   var processedPostTemplate = `
-  <div class='post-container' postID='{{postID}}'>
+  <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
     <div class='post'>
       <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
         <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
@@ -768,12 +780,12 @@ socket.on('receiveSinglePostData', function(dataFromServer){
             <div class="statusdiv" id="{{postID}}"></div>
           </div>
         </div>`;
-      var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
-      //$('#result').html( html );
-      $('#entryContainer').append(html);
-      viewedPost.favoritedBy.forEach(function(userWhoFaved){
-        $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage('+String(userWhoFaved[0])+')">'+userWhoFaved[1]+'</button>');
-      });
+  var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
+  //$('#result').html( html );
+  $('#entryContainer').append(html);
+  viewedPost.favoritedBy.forEach(function(userWhoFaved){
+    $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage('+String(userWhoFaved[0])+')">'+userWhoFaved[1]+'</button>');
+  });
   repliesToPost.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {
