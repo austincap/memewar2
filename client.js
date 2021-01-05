@@ -981,8 +981,7 @@ function clickNewPostButton(){
   if(clickOnAddNewPost==false){
     document.getElementById('submitnew').style.display="block";
     document.getElementById('uploadNewPostButton').innerHTML="-";
-    clickOnAddNewPost=true; 
-    
+    clickOnAddNewPost=true;
   }else{
     document.getElementById('uploadNewPostButton').innerHTML="+";
     clickOnAddNewPost=false;
@@ -990,8 +989,8 @@ function clickNewPostButton(){
 }
 
 function displayStatus(message){
+  //
   document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">'+message+'</marquee>';
-  //document.getElementById('statusbar').innerHTML = message;
 }
 
 function sendNewPostToServer(){
@@ -1155,7 +1154,7 @@ function handleRetrievedDatabase(results){
         }
       }
       if(foundPrev==false){
-        dbresults.nodes.push({id:thisPostID, upvotes:results[i][1], content:results[i][2]});
+        dbresults.nodes.push({id:thisPostID, upvotes:results[i][1], content:results[i][2], img:results[i][5]});
       }
       if(results[k] == undefined){
         continue;
@@ -1190,8 +1189,6 @@ function handleRetrievedDatabase(results){
         .attr("width", 2000)
         .attr("height", 2000)
         .on("mousemove", mousemove);
-
-
 
     var path = svg.append("g")
         .selectAll("path")
@@ -1232,6 +1229,8 @@ function handleRetrievedDatabase(results){
               .on("start", dragstarted)
               .on("drag", dragged)
               .on("end", dragended));
+
+
 
     var postTitle = svg.selectAll(".mytext")
       .data(data.nodes)
