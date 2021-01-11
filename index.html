@@ -60,12 +60,12 @@
     <div class="w3-dropdown-click">
       <button onclick="dropDownFunction()" class="w3-button w3-black">Sort by</button>
       <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
-        <button class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
-        <button class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
-        <button class="w3-bar-item w3-button" id="sort-by-downvotes">Most loathed</button>
-        <button class="w3-bar-item w3-button" id="sort-by-time">Most recent</button>
-        <button class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
-        <button class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+        <button onclick="controversialSort()" class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
+        <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
+        <button onclick="loathedSort()" class="w3-bar-item w3-button" id="sort-by-downvotes">Most loathed</button>
+        <button onclick="recentSort()" class="w3-bar-item w3-button" id="sort-by-time">Most recent</button>
+        <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
+        <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
       </div>
     </div>
     </div>

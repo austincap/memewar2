@@ -1,5 +1,5 @@
 const socket = io();
-
+var postsOnThisPage = []
 
 function onloadFunction(){
   var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
@@ -8,7 +8,8 @@ function onloadFunction(){
   if(getQueryParam("post")!==""){
     socket.emit("viewpost", getQueryParam("post"));
   }else if(getQueryParam("user")!==""){
-    socket.emit('viewuser', getQueryParam("user"))
+    console.log('USER');
+    socket.emit('viewuser', getQueryParam("user"));
   }else if(getQueryParam("tag")!==""){
     socket.emit('requestPostsWithTag', getQueryParam("tag"));
   }else{
@@ -257,6 +258,8 @@ function returnNewPostBox(){
   newPostContainer.css('display', 'none');
 }
 
+
+
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
   console.log(postID);
@@ -283,8 +286,6 @@ function showVoteBox(postID, upIfTrue){
 
   // }
 }
-
-
 
 function upvoteAndShowStats(element){
   returnTagBox();
@@ -423,22 +424,59 @@ function showAdvancedButtons(postID){
 }
 
 
-//NEED BETTER SORTER
-//NEED SORTER OPTIONS
-//CURRENTLY SORTS BY UPVOTES, THEN BY DATE
 //DATA PROCESSING FUNCTIONS
-function sorter(a, b){
-  return b.getAttribute('profit') - a.getAttribute('profit') || b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
+
+function controversialSort(){
+  console.log(postsOnThisPage);
+  postsOnThisPage.sort((a,b) => (parseInt(a.up)+parseInt(a.down)+parseInt(a.replycount) < parseInt(b.up)+parseInt(b.down)+parseInt(b.replycount)) ? 1 : -1);
+  console.log(postsOnThisPage);
 }
-function timesorter(a,b){
-  return b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
+function likedSort(){
+
 }
-function clicksorter(a,b){
-  return b.getAttribute('clicks').slice(2) - a.getAttribute('clicks').slice(2);
+function loathedSort(){
+
 }
-function upvotesorter(a,b){
-  return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes');
+function recentSort(){
+  console.log(postsOnThisPage);
+  var sortedPosts=[];//= postsOnThisPage.sort((a,b) => (parseInt(a.postID) < parseInt(b.postID)) ? 1 : -1);
+
+  var my_promise = new Promise(
+    function(resolve, reject){
+      sortedPosts = postsOnThisPage.sort((a,b) => (parseInt(a.postID) < parseInt(b.postID)) ? 1 : -1);
+      if (true) {
+        resolve(sortedPosts);
+      } else {
+        reject(sortedPosts);
+      }
+  });
+
+  my_promise
+   .then( function(data){console.log(sortedPosts);$("#entryContainer").empty();})
+   .catch( function(data){ console.log("promise rejected");});
+
 }
+function viewedSort(){
+
+}
+function randomSort(){
+
+}
+
+// function sorter(a, b){
+//   return b.getAttribute('profit') - a.getAttribute('profit') || b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
+// }
+// function timesorter(a,b){
+//   return b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
+// }
+// function clicksorter(a,b){
+//   return b.getAttribute('clicks').slice(2) - a.getAttribute('clicks').slice(2);
+// }
+// function upvotesorter(a,b){
+//   return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes');
+// }
+
+
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -509,13 +547,77 @@ $(document).ready(function(){
   });
 });
 //
-function dropDownFunction() {
+function dropDownFunction(){
   var x = document.getElementById("Demo");
   if (x.className.indexOf("w3-show") == -1) {
     x.className += " w3-show";
   } else { 
     x.className = x.className.replace(" w3-show", "");
   }
+}
+
+function populatePage(posts, tags){
+  console.log(posts);
+  //$("#entryContainer").empty();
+  postsOnThisPage = [];
+  posts.forEach(function(post){
+    var date = new Date(post.postID * 1000).toDateString();
+    var mustacheData = {
+      postID:String(post.postID),
+      profit:String(post.upvotes-post.downvotes),
+      up:String(post.upvotes),
+      down:String(post.downvotes),
+      file:String(post.file),
+      date:date,
+      replycount:String(post.replycount),
+      clicks:String(post.clicks),
+      title:String(post.title),
+      content:String(post.content)
+    };
+    postsOnThisPage.push(mustacheData);
+    //console.log(date);
+    var processedPostTemplate = `
+    <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+      <div class='post'>
+        <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+          <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+          <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
+        </a>
+        <div class='post-header'><span class='upvotes-tooltip'>
+          <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+          <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
+          &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+          &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+          &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+          &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
+        </div>
+      </div>
+      <div class='post-buttons'>
+        <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>  
+        <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+        <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+        <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+        <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+        <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+        <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
+        <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
+        <button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+        <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+      </div>
+    </div>`;
+    var html = Mustache.render(processedPostTemplate, mustacheData);
+    $('#entryContainer').append(html);
+  });
+  console.log(tags);
+  tags.forEach(function(tag){
+    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
+    $('#popular-tag-span').append(processedTag); 
+  });
+  $(".popular-tag-button").on("click", function(){
+    console.log($(this).children(".tag-name").html());
+    $("#entryContainer").empty();
+    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+  });
 }
 
 socket.on('userChecked', function(resultOfCheck){
@@ -602,123 +704,16 @@ socket.on('tagsForPostData', function(tagsForPostData){
 });
 
 socket.on('receiveTagData', function(topPostsForTag){
-  var posts = topPostsForTag[0];
-  var tag = topPostsForTag[1];
-  console.log(posts);
-  posts.forEach(function(post){
-    var date = new Date(post.postID * 1000).toDateString();
-    var mustacheData = {
-      postID:String(post.postID),
-      profit:String(post.upvotes-post.downvotes),
-      up:String(post.upvotes),
-      down:String(post.downvotes),
-      file:String(post.file),
-      date:date,
-      replycount:String(post.replycount),
-      clicks:String(post.clicks),
-      title:String(post.title),
-      content:String(post.content)
-    };
-    var processedPostTemplate = `
-     <div class='post-container' postID='{{postID}}'>
-        <div class='post'>
-          <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
-            <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
-            <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
-          </a>
-          <div class='post-header'><span class='upvotes-tooltip'>
-            <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
-            <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
-            &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
-            &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
-            &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
-            &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
-          </div>
-        </div>
-        <div class='post-buttons'>
-          <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>  
-          <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-          <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
-          <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
-          <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
-          <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
-          <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
-          <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
-          <button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
-          <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
-        </div>
-      </div>`;
-    var html = Mustache.render(processedPostTemplate, mustacheData);
-    $('#entryContainer').append(html);
-  });
-  $('#pageID-tagname').html("&nbsp;:&nbsp;"+tag);
-  window.history.replaceState(null, null, "/?tag="+tag);
-  //onloadFunction();
+  postsOnThisPage = [];
+  console.log(topPostsForTag);
+  populatePage(topPostsForTag[0], []);
+  $('#pageID-tagname').html("&nbsp;:&nbsp;"+topPostsForTag[1]);
+  window.history.replaceState(null, null, "/?tag="+topPostsForTag[1]);
 });
 
 socket.on('receiveTop20Data', function(topPostsAndTags){
-  var posts = topPostsAndTags[0];
-  var tags = topPostsAndTags[1];
-  console.log(posts);
-  //$("#entryContainer").empty();
-  posts.forEach(function(post){
-    var date = new Date(post.postID * 1000).toDateString();
-    var mustacheData = {
-      postID:String(post.postID),
-      profit:String(post.upvotes-post.downvotes),
-      up:String(post.upvotes),
-      down:String(post.downvotes),
-      file:String(post.file),
-      date:date,
-      replycount:String(post.replycount),
-      clicks:String(post.clicks),
-      title:String(post.title),
-      content:String(post.content)
-    };
-  //console.log(date);
-  var processedPostTemplate = `
-  <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
-    <div class='post'>
-      <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
-        <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
-        <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
-      </a>
-      <div class='post-header'><span class='upvotes-tooltip'>
-        <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
-        <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
-        &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
-        &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
-        &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
-        &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
-      </div>
-    </div>
-    <div class='post-buttons'>
-      <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>  
-      <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-      <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
-      <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
-      <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
-      <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
-      <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
-      <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
-      <button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
-      <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
-    </div>
-  </div>`;
-  var html = Mustache.render(processedPostTemplate, mustacheData);
-    $('#entryContainer').append(html);
-  });
-  //console.log(tags);
-  tags.forEach(function(tag){
-    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
-    $('#popular-tag-span').append(processedTag); 
-  });
-  $(".popular-tag-button").on("click", function(){
-    console.log($(this).children(".tag-name").html());
-    $("#entryContainer").empty();
-    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
-  });
-  //onloadFunction();// window.setTimeout(function(){// }, 800);
+  //
+  populatePage(topPostsAndTags[0], topPostsAndTags[1]);
 });
 
 socket.on('receiveSinglePostData', function(dataFromServer){
@@ -786,52 +781,8 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   viewedPost.favoritedBy.forEach(function(userWhoFaved){
     $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage('+String(userWhoFaved[0])+')">'+userWhoFaved[1]+'</button>');
   });
-  repliesToPost.forEach(function(post){
-    var date = new Date(post.postID * 1000).toDateString();
-    var mustacheData = {
-      postID:post.postID,
-      profit:String(post.upvotes-post.downvotes),
-      upvotes:String(post.upvotes),
-      downvotes:String(post.downvotes),
-      file:String(post.file),
-      date:date,
-      replycount:String(post.replycount),
-      clicks:String(post.clicks),
-      title:String(post.title),
-      content:String(post.content)
-    };
-    var processedPostTemplate = `
-    <div class='post-container' postID='{{postID}}'>
-      <div class='post'>
-        <a href='/?q={{postID}} class='post-helper' onclick='viewPost({{postID}});'>
-          <div class='post-visual'><img src='uploaded/{{file}}'/></div>
-          <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
-        </a>
-        <div class='post-header'>
-          <span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
-          &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
-          &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
-          &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
-          &nbsp;&nbsp;<span>reply to&nbsp;<!--<span class='replyToId'></span>--></span>
-        </div>
-      </div>
-      <div class='post-buttons'>
-        <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>
-        <button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-        <button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style="filter:sepia(100%);">🔻</span></button>
-        <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
-        <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
-        <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
-        <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
-        <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
-        <button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
-        <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
-      </div>
-    </div>`;
-      var html = Mustache.render(processedPostTemplate, mustacheData);
-      //$('#result').html( html );
-      $('#entryContainer').append(html);
-  });
+  postsOnThisPage = [];
+  populatePage(repliesToPost, []);
   console.log(tags);
   tags.forEach(function(tag){
     var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
@@ -898,24 +849,8 @@ socket.on('userDataFound', function(userData){
   $('#entryContainer').append(html);
   $('#pageID-tagname').html("&nbsp;:&nbsp;"+user.name);
   window.history.replaceState(null, null, "/?user="+user.name);
-  posts.forEach(function(post){
-    var date = new Date(post.postID * 1000).toDateString();
-    var mustacheData = {
-      postID:String(post.postID),
-      profit:String(post.upvotes-post.downvotes),
-      up:String(post.upvotes),
-      down:String(post.downvotes),
-      file:String(post.file),
-      date:date,
-      replycount:String(post.replycount),
-      clicks:String(post.clicks),
-      title:String(post.title),
-      content:String(post.content)
-    };
-    var processedPostTemplate = `<div class='post-container' postID='{{postID}}'><div class='post'><a class='post-helper' href='/?q={{postID}}' onclick='viewPost({{postID}});'><div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div><div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div></a><div class='post-header'><span class='upvotes-tooltip'><span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span><span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|&nbsp;&nbsp;<span>reply to&nbsp;<span class='replyToId'></span></span></div></div><div class='post-buttons'><button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span>&#10133;</button><button class='raise profallow' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span>&#10134;</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button><button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button><button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button><button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button><button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button><div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div></div></div>`;
-    var html = Mustache.render(processedPostTemplate, mustacheData);
-    $('#entryContainer').append(html);
-  });
+  postsOnThisPage = [];
+  populatePage(posts, tags);
   faves.forEach(function(fave){
     console.log(fave);
     var date = new Date(fave.postID * 1000).toDateString();
