@@ -638,47 +638,48 @@ io.on('connection', function(socket) {
   /////////////
   //VOTING
   ///////////
-  socket.on('voteOnPost', function(postVoteData){
-    var query;
-    var params = {
-      postID: postVoteData.postID,
-      userID: postVoteData.userID
-    };
-    if(postVoteData.upIfTrue==true){
-      query = `
-      MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
-      SET n.upvotes = n.upvotes + 1
-      MERGE (n)<-[r:VOTEDON]-(u)
-      SET r.upvotes = r.upvotes + 1
-      RETURN u, n, r
-      `;
-    }else{
-      query = `
-      MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
-      SET n.downvotes = n.downvotes + 1
-      MERGE (n)<-[r:VOTEDON]-(u)
-      SET r.downvotes = r.downvotes + 1
-      RETURN u, n, r
-      `;
-    }
-    session
-      .run(query, params)
-      .then(function(result){
-        console.log(result);
-        socket.emit('receiveSinglePostData', result.records);
-        //console.log(result.records[0]["_fields"][1]);
-        //session.close();
-      })
-      .catch(function(error){
-        console.log(error);
-      });  
-  });
+  // socket.on('voteOnPost', function(postVoteData){
+  //   var query;
+  //   var params = {
+  //     postID: postVoteData.postID,
+  //     userID: postVoteData.userID
+  //   };
+  //   if(postVoteData.upIfTrue==true){
+  //     query = `
+  //     MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
+  //     SET n.upvotes = n.upvotes + 1
+  //     MERGE (n)<-[r:VOTEDON]-(u)
+  //     SET r.upvotes = r.upvotes + 1
+  //     RETURN u, n, r
+  //     `;
+  //   }else{
+  //     query = `
+  //     MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
+  //     SET n.downvotes = n.downvotes + 1
+  //     MERGE (n)<-[r:VOTEDON]-(u)
+  //     SET r.downvotes = r.downvotes + 1
+  //     RETURN u, n, r
+  //     `;
+  //   }
+  //   session
+  //     .run(query, params)
+  //     .then(function(result){
+  //       console.log(result);
+  //       socket.emit('receiveSinglePostData', result.records);
+  //       //console.log(result.records[0]["_fields"][1]);
+  //       //session.close();
+  //     })
+  //     .catch(function(error){
+  //       console.log(error);
+  //     });  
+  // });
 
   socket.on('makevote', function(makevotestuff){
     var query;
     var params = {
       userID: makevotestuff.userID,
-      postID: makevotestuff.postID
+      postID: makevotestuff.postID,
+      cost: parseInt(makevotestuff.cost) 
     };
     switch(makevotestuff.voteType) {
       case 'firstvote':
@@ -701,6 +702,7 @@ io.on('connection', function(socket) {
         MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
         SET p.upvotes = p.upvotes + 1
         SET v.upvotes = v.upvotes + 1
+        SET u.memecoin = u.memecoin - $cost
         RETURN u, p, v
         `;  
         session.run(query, params).then(function(result){
@@ -718,6 +720,7 @@ io.on('connection', function(socket) {
         MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
         SET p.downvotes = p.downvotes + 1
         SET v.downvotes = v.downvotes + 1
+        SET u.memecoin = u.memecoin - $cost
         RETURN u, p, v
         `;
         session.run(query, params).then(function(result){

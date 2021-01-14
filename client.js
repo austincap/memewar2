@@ -624,7 +624,7 @@ socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
   switch(resultOfCheck.task){
     case 'additionalvote':
-      //socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
+      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
       break;
     case 'firstvote':
       socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
