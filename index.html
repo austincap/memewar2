@@ -57,23 +57,24 @@
       <button>Most controversial</button> -->
 
     <div class="lower-leftist-buttons">
-    <div class="w3-dropdown-click">
-      <button onclick="dropDownFunction()" class="w3-button w3-black">Sort by</button>
-      <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
-        <button onclick="controversialSort()" class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
-        <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
-        <button onclick="loathedSort()" class="w3-bar-item w3-button" id="sort-by-downvotes">Most loathed</button>
-        <button onclick="recentSort()" class="w3-bar-item w3-button" id="sort-by-time">Most recent</button>
-        <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
-        <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+      <div class="w3-dropdown-click">
+        <button onclick="dropDownFunction()" class="w3-button w3-black">Sort by</button>
+        <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
+          <button onclick="controversialSort()" class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
+          <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
+          <button onclick="loathedSort()" class="w3-bar-item w3-button" id="sort-by-downvotes">Most loathed</button>
+          <button onclick="recentSort()" class="w3-bar-item w3-button" id="sort-by-time">Most recent</button>
+          <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
+          <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+        </div>
       </div>
-    </div>
+      <div id="popular-tags">
+      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<span id="popular-tag-span"><!-- <button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button> --></span>
+      </div>
     </div>
 
    
-    <div id="popular-tags">
-      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<span id="popular-tag-span"><!-- <button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button> --></span>
-    </div>
+
     
   </div>
 

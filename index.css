@@ -219,14 +219,18 @@ h3 {
     float:right !important;
     min-width: 200px;
   }
+  #lower-leftist-buttons {
+    display:inline;
+  }
   #popular-tags {
-    color: #dfe09d;
-    overflow: auto;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    color:#dfe09d;
+    overflow:auto;
+    text-overflow:ellipsis;
+    white-space:nowrap;
     display:block;
-    width:100%;
-    min-width:75vw;
+    width:90vw;
+   /* min-width:75vw;*/
+    float:right;
   }
   #popular-tag-span {
     

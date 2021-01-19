@@ -198,7 +198,7 @@ function requestTop20Posts(socket){
     OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
     OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
     RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
-    LIMIT 20
+    SKIP 0 LIMIT 20
     `;
     var topTagQuery = `
     MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
@@ -356,15 +356,16 @@ io.on('connection', function(socket) {
 
   socket.on('check', function(stuffToCheck){
     console.log("CHECKING TASK");
+    console.log(stuffToCheck);
     var params = {
-      userID: parseInt(stuffToCheck.userID),
-      postID: parseInt(stuffToCheck.postID),
+      userID: stuffToCheck.userID,
+      postID: stuffToCheck.postID,
       data: stuffToCheck.data
     };
     var query;
     console.log(params);
     switch(stuffToCheck.taskToCheck){
-      case 'makevote':
+      case 'vote':
         query = `
         MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
         RETURN p,u
@@ -372,11 +373,10 @@ io.on('connection', function(socket) {
         session
         .run(query, params)
         .then(function(result){
-          if(result.records[0] == null){
+          if(result.records[0] != null){
             socket.emit('userChecked', {task:'firstvote', userID:params.userID, postID:params.postID, cost:0});
             console.log("NULL");
           }else{
-            console.log(result.records);
             socket.emit('userChecked', {task:'additionalvote', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]+result.records[0]["_fields"][0]["properties"]["downvotes"]["low"]))});
           }
         })

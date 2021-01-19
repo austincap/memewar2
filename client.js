@@ -263,31 +263,7 @@ function returnNewPostBox(){
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
   console.log(postID);
-  var userID = sessionStorage.getItem('userID');
-    returnTagBox();
-    returnReplyBox();
-    returnNewPostBox();
-    returnShieldCensorHarvestBox();
-    returnShareBox();
-    var newStatsContainer = $('#newStatsContainer');
-    newStatsContainer.detach();
-    newStatsContainer.appendTo('#'+String(postID));
-    console.log($('#'+String(postID)));
-    newStatsContainer.css('display', 'block');
-    $('#upvotestat').html($('#'+String(postID)).attr('up'));
-    $('#downvotestat').html($('#'+String(postID)).attr('down'));
-    socket.emit('check', {userID:userID, taskToCheck:'makevote', postToCheck:postID});
-  //upvote
-  // if(upIfTrue){
-  //   socket.emit('voteOnPost', {upIfTrue:true, postID:postID, userID:userID});
-  // }
-  // //downvote
-  // else{
-
-  // }
-}
-
-function upvoteAndShowStats(element){
+  var userID = parseInt(sessionStorage.getItem('userID'));
   returnTagBox();
   returnReplyBox();
   returnNewPostBox();
@@ -295,30 +271,21 @@ function upvoteAndShowStats(element){
   returnShareBox();
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
-  newStatsContainer.appendTo('#statusdiv');
+  newStatsContainer.appendTo('#'+String(postID));
+  var postData = postsOnThisPage.find(obj => { return obj.postID === String(postID) });
+  console.log(postData);
   newStatsContainer.css('display', 'block');
-  socket.emit('check')
+  $('#upvotestat').html(postData.up);
+  $('#downvotestat').html(postData.down);
+  console.log(userID, postID, upIfTrue)
+  socket.emit('check', {taskToCheck:'vote', userID:userID, postToCheck:postID, data:upIfTrue});
 }
-
-function downvoteAndShowStats(element){
-  returnTagBox();
-  returnReplyBox();
-  returnNewPostBox();
-  returnShieldCensorHarvestBox();
-  returnShareBox();
-  var newStatsContainer = $('#newStatsContainer');
-  newStatsContainer.detach();
-  newStatsContainer.appendTo('#statusdiv');
-  newStatsContainer.css('display', 'block');
-}
-
 function returnNewStatsBox(){
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
   newStatsContainer.appendTo('#divStorage');
   newStatsContainer.css('display', 'none');
 }
-
 
 
 function confirmCensor(postID){
@@ -331,12 +298,10 @@ function confirmCensor(postID){
     //$('#censorShieldHarvestContainer').css('display', 'none');
   }
 }
-
 function confirmHarvest(postElement){
   console.log(postElement);
   socket.emit('harvestPost', postElement, sessionStorage.getItem("userID"));
 }
-
 
 
 function submitNewPost(){
@@ -348,7 +313,6 @@ function submitNewPost(){
   document.querySelector('#myimg').src = "";
   returnNewPostBox();
 }
-
 function submitReply(postElement){
   console.log("submit reply");
   $('#uploadContent-reply').empty();
@@ -358,7 +322,6 @@ function submitReply(postElement){
   document.querySelector('#myimg-reply').src = "";
   returnReplyBox()
 }
-
 function previewFile(){
   var preview = document.querySelector('#myimg');
   var previewReply = document.querySelector('#myimg-reply');
@@ -384,7 +347,6 @@ function previewFile(){
 }
 
 
-
 function upvoteThisTagForThisPost(tagname, postID){
   console.log(tagname);
   console.log(postID);
@@ -396,7 +358,6 @@ function upvoteThisTagForThisPost(tagname, postID){
   };
   socket.emit("check", stuffToCheck);
 }
-
 function submitTag(tagname, postID){
   console.log(tagname);
   console.log(postID);
@@ -408,9 +369,6 @@ function submitTag(tagname, postID){
   };
   socket.emit('tagPostOrUser', tagPostOrUser);
 }
-
-
-
 function favoritePost(postID){
   //0 favorites post, 1 favorites tag, 2 favorites user
   console.log({faveType:0, postidORtagnameORuserid:postID, userid:sessionStorage.getItem('userID')});
@@ -418,9 +376,7 @@ function favoritePost(postID){
 
   return;
 }
-
 function showAdvancedButtons(postID){
-
 }
 
 
@@ -462,21 +418,6 @@ function viewedSort(){
 function randomSort(){
 
 }
-
-// function sorter(a, b){
-//   return b.getAttribute('profit') - a.getAttribute('profit') || b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
-// }
-// function timesorter(a,b){
-//   return b.getAttribute('postID').slice(2) - a.getAttribute('postID').slice(2);
-// }
-// function clicksorter(a,b){
-//   return b.getAttribute('clicks').slice(2) - a.getAttribute('clicks').slice(2);
-// }
-// function upvotesorter(a,b){
-//   return b.getAttribute('data-upvotes') - a.getAttribute('data-upvotes');
-// }
-
-
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -559,7 +500,7 @@ function dropDownFunction(){
 function populatePage(posts, tags){
   console.log(posts);
   //$("#entryContainer").empty();
-  postsOnThisPage = [];
+  postsOnThisPage = posts;
   posts.forEach(function(post){
     var date = new Date(post.postID * 1000).toDateString();
     var mustacheData = {
