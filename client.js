@@ -262,7 +262,6 @@ function returnNewPostBox(){
 
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
-  console.log(postID);
   var userID = parseInt(sessionStorage.getItem('userID'));
   returnTagBox();
   returnReplyBox();
@@ -278,7 +277,7 @@ function showVoteBox(postID, upIfTrue){
   $('#upvotestat').html(postData.up);
   $('#downvotestat').html(postData.down);
   console.log(userID, postID, upIfTrue)
-  socket.emit('check', {taskToCheck:'vote', userID:userID, postToCheck:postID, data:upIfTrue});
+  socket.emit('check', {taskToCheck:'vote', userID:userID, postID:postID, data:upIfTrue});
 }
 function returnNewStatsBox(){
   var newStatsContainer = $('#newStatsContainer');
@@ -564,11 +563,32 @@ function populatePage(posts, tags){
 socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
   switch(resultOfCheck.task){
-    case 'additionalvote':
-      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
+    case 'additionalvoteup':
+      $('#cost-of-next-vote').html(resultOfCheck.cost);
+      socket.emit('check', {taskToCheck:'makeadditionalvoteup', userID:resultOfCheck.userID, postID:resultOfCheck.postID, data:resultOfCheck.cost});
       break;
-    case 'firstvote':
-      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
+    case 'additionalvotedown':
+      $('#cost-of-next-vote').html(resultOfCheck.cost);
+      socket.emit('check', {taskToCheck:'makeadditionalvotedown', userID:resultOfCheck.userID, postID:resultOfCheck.postID, data:resultOfCheck.cost});
+      break;
+    case 'madeadditionalvoteup':
+      $('#cost-of-next-vote').html(resultOfCheck.cost);
+      $('#upvotestat').html(String(parseInt($('#upvotestat').html())+1));
+      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost, voteType:'additionalvoteup'});
+      break;
+    case 'madeadditionalvotedown':
+      $('#cost-of-next-vote').html(resultOfCheck.cost);
+      $('#downvotestat').html(String(parseInt($('#downvotestat').html())+1));
+      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost, voteType:'additionalvotedown'});
+      break;
+    case 'firstvoteup':
+      $('#cost-of-next-vote').html("1");
+      $('#upvotestat').html("1");
+      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost, voteType:'firstvoteup'});
+      break;
+    case 'firstvotedown':
+      $('#cost-of-next-vote').html("1");
+      socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost, voteType:'firstvotedown'});
       break;
     case 'failedAdditionalVote':
       console.log('you need more memecoins to vote on this post, but posting on a different one is free!');

@@ -373,15 +373,70 @@ io.on('connection', function(socket) {
         session
         .run(query, params)
         .then(function(result){
-          if(result.records[0] != null){
-            socket.emit('userChecked', {task:'firstvote', userID:params.userID, postID:params.postID, cost:0});
-            console.log("NULL");
+          if(result.records[0] == null){
+            console.log("FIRST VOTE");
+            if(stuffToCheck.data==true){
+              socket.emit('userChecked', {task:'firstvoteup', userID:params.userID, postID:params.postID, cost:1});
+            }else{
+              socket.emit('userChecked', {task:'firstvotedown', userID:params.userID, postID:params.postID, cost:1}); 
+            }
           }else{
-            socket.emit('userChecked', {task:'additionalvote', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]+result.records[0]["_fields"][0]["properties"]["downvotes"]["low"]))});
+            console.log("ADDITIONAL VOTE");
+            if(stuffToCheck.data==true){
+              socket.emit('userChecked', {task:'additionalvoteup', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]+result.records[0]["_fields"][0]["properties"]["downvotes"]))});
+            }else{
+              socket.emit('userChecked', {task:'additionalvotedown', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]+result.records[0]["_fields"][0]["properties"]["downvotes"]))});
+            }
           }
         })
         .catch(function(error){
-          socket.emit('userChecked', {task:'additionalvote', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]["low"]+result.records[0]["_fields"][0]["properties"]["downvotes"]["low"]))});
+          socket.emit('userChecked', {task:'failedAdditionalVote', userID:params.userID, postID:params.postID, cost:-1});
+          console.log(error);
+        });
+        break;
+      case 'makeadditionalvoteup':
+        query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+        RETURN p,u
+        `;
+        session
+        .run(query, params)
+        .then(function(result){
+          console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
+          console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
+          if(result.records[0]["_fields"][1]["properties"]["memecoin"]>stuffToCheck.data){
+            console.log("YES");
+            socket.emit('userChecked', {task:'madeadditionalvoteup', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]+result.records[0]["_fields"][0]["properties"]["downvotes"]))});
+          }else{
+            console.log('NO');
+            socket.emit('userChecked', {task:'failedAdditionalVote', userID:params.userID, postID:params.postID, cost:-1});
+          }
+        })
+        .catch(function(error){
+          socket.emit('userChecked', {task:'failedAdditionalVote', userID:params.userID, postID:params.postID, cost:-1});
+          console.log(error);
+        });
+        break;
+      case 'makeadditionalvotedown':
+        query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+        RETURN p,u
+        `;
+        session
+        .run(query, params)
+        .then(function(result){
+          console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
+          console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
+          if(result.records[0]["_fields"][1]["properties"]["memecoin"]>stuffToCheck.data){
+            console.log("YES");
+            socket.emit('userChecked', {task:'madeadditionalvotedown', userID:params.userID, postID:params.postID, cost:Math.pow(2,(result.records[0]["_fields"][0]["properties"]["upvotes"]+result.records[0]["_fields"][0]["properties"]["downvotes"]))});
+          }else{
+            console.log('NO');
+            socket.emit('userChecked', {task:'failedAdditionalVote', userID:params.userID, postID:params.postID, cost:-1});
+          }
+        })
+        .catch(function(error){
+          socket.emit('userChecked', {task:'failedAdditionalVote', userID:params.userID, postID:params.postID, cost:-1});
           console.log(error);
         });
         break;
@@ -638,42 +693,6 @@ io.on('connection', function(socket) {
   /////////////
   //VOTING
   ///////////
-  // socket.on('voteOnPost', function(postVoteData){
-  //   var query;
-  //   var params = {
-  //     postID: postVoteData.postID,
-  //     userID: postVoteData.userID
-  //   };
-  //   if(postVoteData.upIfTrue==true){
-  //     query = `
-  //     MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
-  //     SET n.upvotes = n.upvotes + 1
-  //     MERGE (n)<-[r:VOTEDON]-(u)
-  //     SET r.upvotes = r.upvotes + 1
-  //     RETURN u, n, r
-  //     `;
-  //   }else{
-  //     query = `
-  //     MATCH (n:Post {postID:$postID}), (u:User {userID:$userID})
-  //     SET n.downvotes = n.downvotes + 1
-  //     MERGE (n)<-[r:VOTEDON]-(u)
-  //     SET r.downvotes = r.downvotes + 1
-  //     RETURN u, n, r
-  //     `;
-  //   }
-  //   session
-  //     .run(query, params)
-  //     .then(function(result){
-  //       console.log(result);
-  //       socket.emit('receiveSinglePostData', result.records);
-  //       //console.log(result.records[0]["_fields"][1]);
-  //       //session.close();
-  //     })
-  //     .catch(function(error){
-  //       console.log(error);
-  //     });  
-  // });
-
   socket.on('makevote', function(makevotestuff){
     var query;
     var params = {
@@ -682,13 +701,14 @@ io.on('connection', function(socket) {
       cost: parseInt(makevotestuff.cost) 
     };
     switch(makevotestuff.voteType) {
-      case 'firstvote':
+      case 'firstvoteup':
         query = `
         MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
-        MERGE (u)-[v:VOTEDON {upvotes:0, downvotes:0}]->(p)
+        MERGE (u)-[v:VOTEDON {upvotes:1, downvotes:0}]->(p)
         `;
         session.run(query, params).then(function(result){
-            console.log(result);
+            //console.log(result);
+            console.log("firstvotecompleted");
             //socket.emit('receiveSinglePostData', result);
             //console.log(result.records[0]["_fields"][1]);
             //session.close();
@@ -697,7 +717,23 @@ io.on('connection', function(socket) {
             console.log(error);
         });  
         break;
-      case 'upvote':
+      case 'firstvotedown':
+        query = `
+        MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
+        MERGE (u)-[v:VOTEDON {upvotes:0, downvotes:1}]->(p)
+        `;
+        session.run(query, params).then(function(result){
+            //console.log(result);
+            console.log("firstvotecompleted");
+            //socket.emit('receiveSinglePostData', result);
+            //console.log(result.records[0]["_fields"][1]);
+            //session.close();
+        })
+        .catch(function(error){
+            console.log(error);
+        });  
+        break;
+      case 'additionalvoteup':
         query = `
         MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
         SET p.upvotes = p.upvotes + 1
@@ -706,7 +742,8 @@ io.on('connection', function(socket) {
         RETURN u, p, v
         `;  
         session.run(query, params).then(function(result){
-            console.log(result);
+            //console.log(result);
+            console.log("additionalvotecompleted");
             //socket.emit('receiveSinglePostData', result);
             //console.log(result.records[0]["_fields"][1]);
             //session.close();
@@ -715,7 +752,7 @@ io.on('connection', function(socket) {
             console.log(error);
         });  
         break;
-      case 'downvote':
+      case 'additionalvotedown':
         query = `
         MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
         SET p.downvotes = p.downvotes + 1
@@ -724,7 +761,8 @@ io.on('connection', function(socket) {
         RETURN u, p, v
         `;
         session.run(query, params).then(function(result){
-            console.log(result);
+            //console.log(result);
+            console.log("additionalvotecompleted");
             //socket.emit('receiveSinglePostData', result);
             //console.log(result.records[0]["_fields"][1]);
             //session.close();
