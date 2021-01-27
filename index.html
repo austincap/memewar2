@@ -11,8 +11,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
   <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
-  <!-- <script type="text/javascript" src="detectmobilebrowser.js"></script> -->
-
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
   <link rel="stylesheet" href="index.css"></link>
   <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
@@ -37,24 +35,16 @@
     <div id="centerstage">
       <button onclick="gohome();"><h1 id="pageID">Meme War 2<span id="pageID-tagname"></span></h1></button>
       <div><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
-      <!-- <h3 id="sub-title"></h3> -->
-      <!-- <h4 id="pageID">main page</h4> -->
     </div>
 
     <div id="right-buttons">
       <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
-     <!--  <div><button id="store">store</button></div> -->
+      <!--  <div><button id="store">store</button></div> -->
     </div>
 
   </div>
 
   <div class="header-container">
-  <!--     <div id="lower-leftist-buttons">
-      sort by:&nbsp;
-      <button id="sort-by-time-only">Most recent</button>
-      <button id="sort-by-mv-only">Most profit</button>
-      <button id="sort-by-views-only">Most viewed</button> 
-      <button>Most controversial</button> -->
 
     <div class="lower-leftist-buttons">
       <div class="w3-dropdown-click">
@@ -73,21 +63,13 @@
       </div>
     </div>
 
-   
-
-    
   </div>
-
 
 
   <div id="big-container">
   
 
     <div id="entryContainer">
-
-
-   
-
     </div>
 
 
@@ -140,23 +122,17 @@
       <div id="tagContainer">
         <div id="existingTagsForThisPost">
           Existing tags for this post:&nbsp;
-
         </div>
         <div id="addNewTag">
           <input id="newTagSuggestion" type="text" title="'keyboard smash' tags won't be deleted, but will be consolidated into the JUNK tag at the admin's pleasure" maxlength="24"/><button id="submitTag" onclick="submitTag(document.getElementById('newTagSuggestion').value, $(this).parent().parent().parent().parent().parent().attr('postID'));">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
         </div>
       </div>
 
-
       <div id="newStatsContainer">
         <div>For each individual post, for each + or - after the first vote costs double the memecoin it did prior. </div>
         <div>To vote again will cost you:&nbsp;<span id="cost-of-next-vote">?</span>&nbsp;memecoin</div>
         <div>Current votes:&nbsp;<span id="upvotestat">84</span>&nbsp;&#10133;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="downvotestat">50</span>&nbsp;&#10134;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="totalvotestat"></span></div>
       </div>
-
-
-      <!--      <div id="fileuploader"><input type="file" onchange="previewFile();"/><br/><img id="myimg" src="" height="150" alt="Image preview..."></div> -->
-
 
       <div id="censorShieldHarvestContainer">
         <div class="harvestmessage"><span id="harvestmessage-span">harvesting your post converts its profit into memecoin, but deletes the post</span></div>
@@ -166,7 +142,6 @@
             <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent().attr('postID'));">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button></div>
       </div>
 
-
       <div id="shareButtonContainer">
         I understand how shitty other platforms are, but it's only by mingling with the lower races that we can bring them up... This is the memelord's burden.
         <div>
@@ -174,9 +149,9 @@
         </div>
       </div>
 
-
       <div id="warningFloater">
       </div>
+
     </div>
 
 
@@ -194,7 +169,6 @@
         <button id="downvote">Hate it</button> 
         <button id="tagIt" onclick="tagPost()">Tag it</button>
         <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-
         <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)"/></div>
           <br/>
           <hr/>
@@ -206,7 +180,6 @@
         <svg ></svg>
       </div>
 
-
       <div id="upvoteTagModal">
         <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
         <div id="contentInModal"></div>
@@ -214,7 +187,6 @@
         <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
         <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
       </div>
-
 
       <div id="submitnew">
         <input type="text" id="nodename"  maxlength="150" class="submissionslot" placeholder="post title goes here"/>
@@ -230,5 +202,4 @@
 
 <script src="client.js" type="text/javascript"></script>
 </body>
-
 </html>

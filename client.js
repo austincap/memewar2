@@ -578,7 +578,7 @@ socket.on('userChecked', function(resultOfCheck){
       break;
     case 'madeadditionalvotedown':
       $('#cost-of-next-vote').html(resultOfCheck.cost);
-      $('#downvotestat').html(String(parseInt($('#downvotestat').html())+1));
+      $('#downvotestat').html(String(parseInt($('#downvotestat').html())-1));
       socket.emit('makevote', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost, voteType:'additionalvotedown'});
       break;
     case 'firstvoteup':
@@ -733,7 +733,7 @@ socket.on('receiveSinglePostData', function(dataFromServer){
               <button class="raise profallow" onclick="favoritePost({{postID}});"><span class="tooltiptext">favorite this post</span>❤</button>
             </span>
             <button class="raise anonallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
-            <div class="statusdiv" id="{{postID}}"></div>
+            <div class='statusdiv' id='{{postID}}' up='{{upvotes}}' down='{{downvotes}}'></div>
           </div>
         </div>`;
   var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
@@ -744,6 +744,9 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   });
   postsOnThisPage = [];
   populatePage(repliesToPost, []);
+  console.log(postsOnThisPage)
+  console.log("TESTS");
+  postsOnThisPage.push(viewedPostMustacheData);
   console.log(tags);
   tags.forEach(function(tag){
     var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
@@ -1030,7 +1033,6 @@ var text_truncate = function(str, length, ending){
 var previewContent = document.getElementById("previewContent");
 
 function handleRetrievedDatabase(results){
-
   var promise1 = new Promise(function(resolve, reject){
     console.log("DBRESULTSNODES");
     console.log(dbresults.nodes);
@@ -1078,7 +1080,6 @@ function handleRetrievedDatabase(results){
 
   promise1.then(function(data){
     console.log("PROMISE1THEN START");
-
     console.log(data);
     //console.log(existingTagArray);
     var svg = d3.select("svg")
@@ -1126,45 +1127,31 @@ function handleRetrievedDatabase(results){
               .on("drag", dragged)
               .on("end", dragended));
 
-
-
     var postTitle = svg.selectAll(".mytext")
       .data(data.nodes)
       .enter()
       .append("text")
       .on("mousedown", clickOnNode);
-
     postTitle.style("fill", "#cccccc")
       .attr("width", "10")
         .attr("height", "10")
         .style("fill","#ffd24d")
         .text(function(d) { return text_truncate(d.content, 16); });
 
-    // var cursor = svg.append("circle")
-    //     .attr("r", 30)
-    //     .attr("transform", "translate(-100,-100)")
-    //     .attr("class", "cursor");
-
-
     var simulation = d3.forceSimulation()
       .force("collision", d3.forceCollide().radius(70))
         .force("link", d3.forceLink().id(function(d, i){ return d.id; }))
         .force("charge", d3.forceManyBody().strength(1000).distanceMin(30))
         .force("center", d3.forceCenter(700 , 700));
-
     simulation.nodes(data.nodes).on("tick", ticked);
     //console.log(data.links);
     simulation.force("link").links(data.links);
     //simulation.force("link").links(data.links);
 
-
-    var imageElement = svg.append("g").selectAll(".image").data(data.nodes);
-
     function mousemove(){
       mouseCoordinates = d3.pointer(this);
       //cursor.attr("transform", "translate(" + String(d3.mouse(this)) + ")");
     }
-
     function mouseoverNode(d, i) {
       var thisObject = d3.select(this)["_groups"][0][0];
       d3.select(node.nodes()[i])
@@ -1172,7 +1159,6 @@ function handleRetrievedDatabase(results){
       .attr("r", 2*thisObject["attributes"][0]["nodeValue"] )
       .duration(500);
     }
-
     function mouseoutNode(d, i) {
       console.log(node);
       console.log(d);
@@ -1183,7 +1169,6 @@ function handleRetrievedDatabase(results){
       .attr("r", thisObject["attributes"][0]["nodeValue"]/2 )
       .duration(500);
     }
-
     function ticked(){
       node.attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
@@ -1197,7 +1182,6 @@ function handleRetrievedDatabase(results){
           return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
       });
     }
-
     function clickOnTag(d, i){
       //console.log(d);
       closeAllFrames();
@@ -1211,7 +1195,6 @@ function handleRetrievedDatabase(results){
       //upvoteModalElement.top = String(mouseCoordinates[1])+"px";
       upvoteModalElement.display = "block";
     }
-
     function clickOnNode(d, i){
       //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
       //linkifyStr(previewFrame, linkifyOptions);
@@ -1226,7 +1209,6 @@ function handleRetrievedDatabase(results){
       previewContent.innerHTML = "<a href="+d.content+">"+d.content+"</a>";
       document.getElementById('previewframe').style.display = "block";
     }
-
     function restart(){
       node = node.data(data.nodes);
 
@@ -1251,25 +1233,74 @@ function handleRetrievedDatabase(results){
       simulation.force("link")
           .links(data.links);
     }
-
     function dragstarted(d){
       simulation.stop();
       if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
       d.fx = d.x;
       d.fy = d.y;
     }
-
     function dragged(d){
       d.fx = d3.event.x;
       d.fy = d3.event.y;
     }
-
     function dragended(d){
       if (!d3.event.active){simulation.alphaTarget(0);}
       d.fx = null;
       d.fy = null;
     }
   });
+
+
+    //   var myData = [  
+    //     { name:"John", age:37, height:193, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_captainamerica.png"},
+    //     { name:"Mafe", age:36, height:173, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_ironman.png"},  
+    //     { name:"Santi", age:9, height:120, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_hulk.png"},
+    //     { name:"David", age:3, height:70, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_wolverine.png"}, 
+    //     { name:"Sonia", age:73, height:150, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_blackwidow.png"},
+    //     { name:"Vicente", age:73, height:189, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_daredevil.png"}
+    //   ];
+    //   {
+    //    var xScale = d3.scaleLinear()
+    //   .domain([0, d3.max(myData, d => d.height) ])
+    //   .range([50, width + 100]);
+    //   var yScale = d3.scaleLinear()
+    //     .domain([0, d3.max(myData, d => d.age)])
+    //     .range([height + 50, 50]);
+    //     var height = 2000;
+    //     var width = 2000;
+    //       const svg = d3.select("svg");
+      
+    //   var node = svg.selectAll("g.node")
+    //     .data(myData, function(d) { return d.name; })
+        
+    //   var nodeEnter = node.enter()
+    //     .append("svg:g")
+    //     .attr("class", "node")
+      
+    // var defs = nodeEnter.append("defs");
+    // defs.append('pattern')
+    //   .attr("id", function(d) { return "image"+ d.name;}  )
+    //   .attr("width", 1)
+    //   .attr("height", 1)
+    //   .append("svg:image")
+    //   .attr("xlink:href", function(d) { return d.img;})
+    //   .attr("width", 100)
+    //   .attr("height", 150);
+
+    //   nodeEnter.append("svg:circle")
+    //       .attr("cx", d => xScale(d.height))
+    //       .attr("cy", d => yScale(d.age))  
+    //       .attr("fill",function(d) { return "url(#image"+ d.name +")" }  )
+    //       .attr("r", 60)
+    //    nodeEnter
+    //     .append("text")
+    //       .attr("x", d => xScale(d.height))
+    //       .attr("y", d => yScale(d.age) + 10)  
+    //       .attr("fill", "white")
+    //       .text(d => d.name)
+      
+    //   return svg.node();
+    // }
 }
 
 function autocomplete(inp, arr){

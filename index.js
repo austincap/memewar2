@@ -198,11 +198,11 @@ function requestTop20Posts(socket){
     OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
     OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
     RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
-    SKIP 0 LIMIT 20
+    SKIP 0 LIMIT 50
     `;
     var topTagQuery = `
     MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
-    WITH t.name AS tag, COUNT(p)+COUNT(ta) AS tagcount 
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
     RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
     `;
     session
@@ -646,7 +646,7 @@ io.on('connection', function(socket) {
     var topTagQuery = `
       MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
       WITH t.name AS tag, COUNT(ta) AS tagcount 
-      RETURN tag, tagcount ORDER BY tagcount
+      RETURN tag, tagcount ORDER BY tagcount DESC
       `;
       session
         .run(query, {postID: parseInt(postID)})
