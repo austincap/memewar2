@@ -11,6 +11,7 @@ const session = driver.session();
 // });
 const fetch = require('node-fetch');
 const express = require('express');
+const app = express();
 const path = require('path');
 var ObjectId = require('node-time-uuid');
 const sanitizeHtml = require('sanitize-html');
@@ -29,10 +30,14 @@ var storage = multer.diskStorage({
 });
 var upload = multer({storage:storage});
 
+var fs = require('fs');
+var credentials = {key:fs.readFileSync('key.pem','utf8'), cert:fs.readFileSync('cert.pem', 'utf8')};
+var httpsServer = require('https').createServer(credentials, app);
+const io = require('socket.io')(httpsServer);
 
-const app = express();
-const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const httpServer = require('http').createServer(app);
+// const io = require('socket.io')(httpServer);
+
 app.use(express.static(__dirname));
 
 // app.use(fileUpload({
@@ -998,4 +1003,6 @@ io.on('connection', function(socket) {
 
 
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
-server.listen(3000,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
+// httpServer.listen(3000,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
+httpsServer.listen(3030,function(){console.log('Meme War app listeningn on port 3030 like a prude!');});
+// server.listen(443,function(){console.log('Meme War app listeningn on port 443 like a prude!');});

@@ -106,6 +106,7 @@ function viewPost(postID){
   sessionStorage.setItem('currentPage', 'post');
   $("#contextButton").html("Home");
   $("#entryContainer").empty();
+  window.location.href='/?post='+postID;
   // socket.emit('viewpost', postID);
 }
 
@@ -651,7 +652,9 @@ socket.on('userChecked', function(resultOfCheck){
 });
 
 socket.on('tagsForPostData', function(tagsForPostData){
+  console.log('tagsForPostData');
   $('#existingTagsForThisPost').empty();
+  $('#popular-tag-span').empty();
   tagsForPostData.forEach(function(tag){
       var mustacheData = {
         otherposts: tag[0],
@@ -661,6 +664,13 @@ socket.on('tagsForPostData', function(tagsForPostData){
       var tagtemplate = `<button class="postTag" tagname="{{tagname}}">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag({{tagname}});">{{otherposts}}</a>)&nbsp;-&nbsp;<span class="tagName">{{tagname}}</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost({{tagname}}, $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">{{tagupvotes}}</a>)</button>&nbsp;&nbsp;`;
         var html = Mustache.render(tagtemplate, mustacheData);
       $('#existingTagsForThisPost').append(html);
+      var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[1]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[0]+'</span>)</button>&nbsp;';
+      $('#popular-tag-span').append(processedTag);
+  });
+  $(".popular-tag-button").on("click", function(){
+    console.log($(this).children(".tag-name").html());
+    $("#entryContainer").empty();
+    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
   });
 });
 
@@ -683,10 +693,6 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   var viewedPost = dataFromServer[0];
   var repliesToPost = dataFromServer[1];
   var tags = dataFromServer[2];
-  if(is_url(viewedPost.content)){
-    var linkblockUrl = "<iframe src='https://web.archive.org/web/"+viewedPost.content+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
-    $("#entryContainer").prepend("<div class='container'><div class='"+linkblockArray[i].type+" block' id='id"+String(linkblockArray[i].blockID)+"'><div class='metadata-container'><div class='time-and-date'>"+timeConverter(linkblockArray[i].blockID)+"</div>-<button class='blockID not-button' onclick="+onclickTextX+onclickTextY+onclickTextID+">"+linkblockArray[i].blockID+"</button><div class='userID'>userID goes here</div><div class='special-action-buttons'><button onclick='window.alert(Post reported.);'>report</button></div><div class='replylinks'></div><div class='labels'></div></div><div><a href='"+linkblockArray[i]['url']+"' ><div class='content-container'>"+linkblockUrl+"</div></a><div class='lower-metadata-container'><div class='replylinks'></div></div></div></div>");
-  }
   var viewedPostData = new Date(viewedPost.postID * 1000).toDateString();
   var viewedPostMustacheData = {
     postID:viewedPost.postID,
@@ -739,6 +745,12 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
   //$('#result').html( html );
   $('#entryContainer').append(html);
+  if(is_url(viewedPost.content)){
+    console.log("EISISISI");
+    $('#advanced-post-content').empty();
+    var urlIframe = "<iframe src='https://web.archive.org/web/"+viewedPost.content+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
+    $('#advanced-post-content').append(urlIframe);
+  }
   viewedPost.favoritedBy.forEach(function(userWhoFaved){
     $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage('+String(userWhoFaved[0])+')">'+userWhoFaved[1]+'</button>');
   });
@@ -747,7 +759,7 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   console.log(postsOnThisPage)
   console.log("TESTS");
   postsOnThisPage.push(viewedPostMustacheData);
-  console.log(tags);
+  $('#popular-tag-span').empty();
   tags.forEach(function(tag){
     var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
     $('#popular-tag-span').append(processedTag); 
@@ -1033,6 +1045,7 @@ var text_truncate = function(str, length, ending){
 var previewContent = document.getElementById("previewContent");
 
 function handleRetrievedDatabase(results){
+
   var promise1 = new Promise(function(resolve, reject){
     console.log("DBRESULTSNODES");
     console.log(dbresults.nodes);
@@ -1112,31 +1125,36 @@ function handleRetrievedDatabase(results){
          .text(function(d){ return d.tag; })
          .on("mousedown", clickOnTag);
 
-    var node = svg.append("g")
-        .attr("class", "nodes")
-        .selectAll("circle")
-        .data(data.nodes)
-        .enter()
+    var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(data.nodes).enter()
         .append("circle")
           .attr("r", function(d){ return (d.upvotes != null || d.upvotes != 0) ? 5*d.upvotes : 5;})
           .attr("id", function(d){return "linkId_"+d.id})
           .attr("color", "#cccccc")
           .on("mousedown", clickOnNode)
+          .on("mouseover", mouseoverNode)
+        .append("svg:image")
+          .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
           .call(d3.drag()
               .on("start", dragstarted)
               .on("drag", dragged)
               .on("end", dragended));
 
-    var postTitle = svg.selectAll(".mytext")
-      .data(data.nodes)
-      .enter()
-      .append("text")
-      .on("mousedown", clickOnNode);
+    var postTitle = svg.selectAll(".mytext").data(data.nodes).enter()
+        .append("text")
+        .on("mousedown", clickOnNode);
     postTitle.style("fill", "#cccccc")
       .attr("width", "10")
-        .attr("height", "10")
-        .style("fill","#ffd24d")
-        .text(function(d) { return text_truncate(d.content, 16); });
+      .attr("height", "10")
+      .style("fill","#ffd24d")
+      .text(function(d) { return text_truncate(d.content, 16); });
+
+          svg.selectAll(".nodes").data(data.nodes).enter()
+          .append('svg:image')
+            .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
+            .attr("x", function(d){console.log(d);console.log(d.x);return d.x;})
+            .attr("y", function(d){return d.y;})
+            .attr("width", "50")
+            .attr("height", "50");
 
     var simulation = d3.forceSimulation()
       .force("collision", d3.forceCollide().radius(70))
@@ -1170,12 +1188,8 @@ function handleRetrievedDatabase(results){
       .duration(500);
     }
     function ticked(){
-      node.attr("cx", function(d) { return d.x; })
-            .attr("cy", function(d) { return d.y; });
-
-      postTitle.attr("x", function(d) { return d.x; })
-            .attr("y", function(d) { return d.y; });      
-
+      node.attr("cx", function(d) { return d.x; }).attr("cy", function(d) { return d.y; });
+      postTitle.attr("x", function(d) { return d.x; }).attr("y", function(d) { return d.y; });      
       path.attr("d", function(d) {
           var dx = d.target.x - d.source.x,
               dy = d.target.y - d.source.y;
@@ -1198,7 +1212,6 @@ function handleRetrievedDatabase(results){
     function clickOnNode(d, i){
       //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
       //linkifyStr(previewFrame, linkifyOptions);
-
       console.log(i.id);
       window.location.href='/?post='+String(i.id);
       closeAllFrames();
@@ -1251,56 +1264,6 @@ function handleRetrievedDatabase(results){
   });
 
 
-    //   var myData = [  
-    //     { name:"John", age:37, height:193, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_captainamerica.png"},
-    //     { name:"Mafe", age:36, height:173, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_ironman.png"},  
-    //     { name:"Santi", age:9, height:120, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_hulk.png"},
-    //     { name:"David", age:3, height:70, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_wolverine.png"}, 
-    //     { name:"Sonia", age:73, height:150, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_blackwidow.png"},
-    //     { name:"Vicente", age:73, height:189, img: "http://marvel-force-chart.surge.sh/marvel_force_chart_img/top_daredevil.png"}
-    //   ];
-    //   {
-    //    var xScale = d3.scaleLinear()
-    //   .domain([0, d3.max(myData, d => d.height) ])
-    //   .range([50, width + 100]);
-    //   var yScale = d3.scaleLinear()
-    //     .domain([0, d3.max(myData, d => d.age)])
-    //     .range([height + 50, 50]);
-    //     var height = 2000;
-    //     var width = 2000;
-    //       const svg = d3.select("svg");
-      
-    //   var node = svg.selectAll("g.node")
-    //     .data(myData, function(d) { return d.name; })
-        
-    //   var nodeEnter = node.enter()
-    //     .append("svg:g")
-    //     .attr("class", "node")
-      
-    // var defs = nodeEnter.append("defs");
-    // defs.append('pattern')
-    //   .attr("id", function(d) { return "image"+ d.name;}  )
-    //   .attr("width", 1)
-    //   .attr("height", 1)
-    //   .append("svg:image")
-    //   .attr("xlink:href", function(d) { return d.img;})
-    //   .attr("width", 100)
-    //   .attr("height", 150);
-
-    //   nodeEnter.append("svg:circle")
-    //       .attr("cx", d => xScale(d.height))
-    //       .attr("cy", d => yScale(d.age))  
-    //       .attr("fill",function(d) { return "url(#image"+ d.name +")" }  )
-    //       .attr("r", 60)
-    //    nodeEnter
-    //     .append("text")
-    //       .attr("x", d => xScale(d.height))
-    //       .attr("y", d => yScale(d.age) + 10)  
-    //       .attr("fill", "white")
-    //       .text(d => d.name)
-      
-    //   return svg.node();
-    // }
 }
 
 function autocomplete(inp, arr){
