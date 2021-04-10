@@ -13,7 +13,10 @@ function onloadFunction(){
   }else if(getQueryParam("tag")!==""){
     socket.emit('requestPostsWithTag', getQueryParam("tag"));
   }else{
-    socket.emit('requestTop20Posts');
+    if(getQueryParam("page")!==""){
+      socket.emit('requestTop20Posts', getQueryParam("page"));
+    }
+    socket.emit('requestTop20Posts', 0);
   }
   console.log(document.URL);
   window.setTimeout(function(){
@@ -81,13 +84,20 @@ function contextButtonFunction(currentContext){
     case 'Home':
       d3.select('svg').selectAll('*').remove();
       $('#d3frame').css('display', 'none');
+      document.getElementById('contextButton').innerHTML = 'Alt';
       sessionStorage.setItem('currentPage', 'home');
-      socket.emit('requestTop20Posts');
+      socket.emit('requestTop20Posts', 1);
     case 'Alt':
       $('#entryContainer').empty();
       sessionStorage.setItem('currentPage', 'alt');
-      document.getElementById('contextButton').innerHTML = 'Home';
+      document.getElementById('contextButton').innerHTML = 'Grid';
       socket.emit('retrieveDatabase');
+      break;
+    case 'Grid':
+      $('#entryContainer').empty();
+      sessionStorage.setItem('currentPage', 'grid');
+      document.getElementById('contextButton').innerHTML = 'Home';
+      socket.emit('retrieveDatabaseGrid');
       break;
   }
 }
@@ -381,7 +391,11 @@ function showAdvancedButtons(postID){
 
 
 //DATA PROCESSING FUNCTIONS
-
+function visitpage(pagenum){
+  $("#contextButton").html("Home");
+  $("#entryContainer").empty();
+  window.location.href='/?page='+String(pagenum);
+}
 function controversialSort(){
   console.log(postsOnThisPage);
   postsOnThisPage.sort((a,b) => (parseInt(a.up)+parseInt(a.down)+parseInt(a.replycount) < parseInt(b.up)+parseInt(b.down)+parseInt(b.replycount)) ? 1 : -1);
@@ -858,6 +872,12 @@ socket.on('sendDatabase', function(results){
   handleRetrievedDatabase(results);
 });
 
+socket.on('receiveTop20DataGrid', function(results){
+  $('#entryContainer').empty();
+  $('#adjacentBlocks').empty();
+  $('#gridview').empty();
+  console.log(results);
+});
 
 
 var dbresults = {"nodes":[], "links":[]};

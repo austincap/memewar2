@@ -35,7 +35,7 @@ var credentials = {key:fs.readFileSync('key.pem','utf8'), cert:fs.readFileSync('
 var httpsServer = require('https').createServer(credentials, app);
 const io = require('socket.io')(httpsServer);
 
-const httpServer = require('http').createServer(app);
+// const httpServer = require('http').createServer(app);
 // const io = require('socket.io')(httpServer);
 
 app.use(express.static(__dirname));
@@ -45,7 +45,7 @@ app.use(express.static(__dirname));
 //   useTempFiles : true,
 //   tempFileDir : '/tmp/'
 // }));
-
+const PAGESIZE = 10;
 
 ///////
 //CODE FOLDING LEVEL 3
@@ -195,7 +195,57 @@ function requestTagsForThisPost(socket, postID){
       });
 }
 
-function requestTop20Posts(socket){
+function requestTop20Posts(socket, pagenum){
+  var topPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (p:Post)
+    WITH p ORDER BY p.upvotes-p.downvotes DESC
+    OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
+    OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
+    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
+    SKIP `+String(PAGESIZE*pagenum)+` LIMIT `+String(PAGESIZE);
+    //`;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    session
+      .run(topPostQuery)
+      .then(function(result){
+        var dataForClient = [];
+        result.records.forEach(function(record){
+          var processedPostObject = record["_fields"][0]["properties"];
+          record["_fields"][1].forEach(function(tagAndVote){
+            processedPostObject.tagnames = tagAndVote[0];
+            processedPostObject.tagvotes = tagAndVote[1];
+          });
+          processedPostObject.replycount = record["_fields"][2];
+          dataForClient.push(processedPostObject);
+        });
+        topPostsAndTags.push(dataForClient);
+          session
+            .run(topTagQuery)
+            .then(function(result){
+              var tagdataForClient = [];
+              result.records.forEach(function(record){
+                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+              });
+              topPostsAndTags.push(tagdataForClient);
+              console.log(topPostsAndTags);
+              console.log("TOP "+String(pagenum)+" POSTS");
+              socket.emit('receiveTop20Data', topPostsAndTags);
+            })
+            .catch(function(error){
+              console.log(error);
+            });
+      })
+      .catch(function(error){
+        console.log(error);
+      });
+}
+
+function requestTop20PostsGrid(socket){
   var topPostsAndTags = [];
     var topPostQuery = `
     MATCH (p:Post)
@@ -233,8 +283,8 @@ function requestTop20Posts(socket){
               });
               topPostsAndTags.push(tagdataForClient);
               console.log(topPostsAndTags);
-              console.log("TOP 20 POSTS");
-              socket.emit('receiveTop20Data', topPostsAndTags);
+              console.log("TOP 20 POSTS GRID");
+              socket.emit('receiveTop20DataGrid', topPostsAndTags);
             })
             .catch(function(error){
               console.log(error);
@@ -244,7 +294,6 @@ function requestTop20Posts(socket){
         console.log(error);
       });
 }
-
 
 function retrievePostsForNetView(socket){
   var dataForClient = [];
@@ -297,9 +346,12 @@ io.on('connection', function(socket) {
     retrievePostsForNetView(socket);
   });
 
+  socket.on('retrieveDatabaseGrid', function(){
+    requestTop20PostsGrid(socket);
+  });
 
-  socket.on('requestTop20Posts', function(){
-    requestTop20Posts(socket);
+  socket.on('requestTop20Posts', function(pagenum){
+    requestTop20Posts(socket, pagenum);
   });
 
   socket.on('requestTagsForPost', function(postID){
