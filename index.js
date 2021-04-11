@@ -196,6 +196,7 @@ function requestTagsForThisPost(socket, postID){
 }
 
 function requestTop20Posts(socket, pagenum){
+  console.log(String(PAGESIZE*pagenum));
   var topPostsAndTags = [];
     var topPostQuery = `
     MATCH (p:Post)
@@ -233,7 +234,7 @@ function requestTop20Posts(socket, pagenum){
               });
               topPostsAndTags.push(tagdataForClient);
               console.log(topPostsAndTags);
-              console.log("TOP "+String(pagenum)+" POSTS");
+              console.log("POSTS "+String(PAGESIZE*pagenum)+" TO "+String(PAGESIZE*pagenum+PAGESIZE));
               socket.emit('receiveTop20Data', topPostsAndTags);
             })
             .catch(function(error){
@@ -242,6 +243,109 @@ function requestTop20Posts(socket, pagenum){
       })
       .catch(function(error){
         console.log(error);
+      });
+}
+
+function requestRandPosts(socket, randPages, pagenum){
+  console.log(String(randPages));
+  console.log("pagenum "+pagenum);
+  var topPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (:Post) with COUNT(*) as docCount
+    MATCH (doc:Post)
+    WHERE rand() < `+String(randPages)+`.0/docCount
+    RETURN doc
+    `;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    session
+      .run(topPostQuery)
+      .then(function(result){
+        var dataForClient = [];
+        console.log(typeof(result.records));
+        result.records.entries(function(record){
+          console.log(record);
+          var processedPostObject = record["_fields"][0]["properties"];
+          record["_fields"][1].forEach(function(tagAndVote){
+            processedPostObject.tagnames = tagAndVote[0];
+            processedPostObject.tagvotes = tagAndVote[1];
+          });
+          processedPostObject.replycount = record["_fields"][2];
+          dataForClient.push(processedPostObject);
+        });
+        topPostsAndTags.push(dataForClient);
+          session
+            .run(topTagQuery)
+            .then(function(result){
+              var tagdataForClient = [];
+              result.records.forEach(function(record){
+                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+              });
+              topPostsAndTags.push(tagdataForClient);
+              console.log(topPostsAndTags);
+              console.log("RANDOM "+String(randPages)+" POSTS");
+              socket.emit('receiveTop20Data', topPostsAndTags);
+            })
+            .catch(function(error){
+              console.error(error);
+            });
+      })
+      .catch(function(error){
+        console.error(error);
+      });
+}
+
+
+function requestSortedPosts(socket, sortType, pagenum){
+  //console.log(String(randPages));
+  console.log("pagenum "+pagenum);
+  var topPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (:Post) with COUNT(*) as docCount
+    MATCH (doc:Post)
+    WHERE rand() < `+String(randPages)+`.0/docCount
+    RETURN doc
+    `;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    session
+      .run(topPostQuery)
+      .then(function(result){
+        var dataForClient = [];
+        result.record.forEach(function(record){
+          var processedPostObject = record["_fields"][0]["properties"];
+          record["_fields"][1].forEach(function(tagAndVote){
+            processedPostObject.tagnames = tagAndVote[0];
+            processedPostObject.tagvotes = tagAndVote[1];
+          });
+          processedPostObject.replycount = record["_fields"][2];
+          dataForClient.push(processedPostObject);
+        });
+        topPostsAndTags.push(dataForClient);
+          session
+            .run(topTagQuery)
+            .then(function(result){
+              var tagdataForClient = [];
+              result.records.forEach(function(record){
+                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+              });
+              topPostsAndTags.push(tagdataForClient);
+              console.log(topPostsAndTags);
+              console.log("RANDOM "+String(randPages)+" POSTS");
+              socket.emit('receiveTop20Data', topPostsAndTags);
+            })
+            .catch(function(error){
+              console.log(error);
+            });
+      })
+      .catch(function(error){
+        console.error(error);
       });
 }
 
@@ -266,10 +370,14 @@ function requestTop20PostsGrid(socket){
         var dataForClient = [];
         result.records.forEach(function(record){
           var processedPostObject = record["_fields"][0]["properties"];
+          console.log(record["_fields"][1]);
+          console.log("EOPUITHEIPOUTGHEIUOPGTHPIUEFHVEIPOUYFHIEPOUFHE");
+          processedPostObject.tagArray = [];
           record["_fields"][1].forEach(function(tagAndVote){
-            processedPostObject.tagnames = tagAndVote[0];
-            processedPostObject.tagvotes = tagAndVote[1];
+            processedPostObject.tagArray.push(tagAndVote[0]);
+            //processedPostObject.tagvotes = tagAndVote[1];
           });
+          //processedPostObject.tagArray = record["_fields"][1];
           processedPostObject.replycount = record["_fields"][2];
           dataForClient.push(processedPostObject);
         });
@@ -358,6 +466,25 @@ io.on('connection', function(socket) {
     requestTagsForThisPost(socket, postID);
   });
 
+  socket.on('requestRandPosts', function(randPages, pagenum){
+    requestRandPosts(socket, randPages, pagenum);
+  });
+
+  socket.on('requestSortedPosts', function(sortType, pagenum){
+    switch(sortType){
+      case 'loathed':
+      case 'controversial':
+      case 'latest':
+      case 'like':
+        requestSortedPosts(socket, sortType, pagenum);
+      case 'clks':
+        requestTop20Posts(socket, pagenum);
+      case 'rand':
+        requestRandPosts(socket, "10", pagenum);
+      default:
+        requestTop20Posts(socket, pagenum);
+    }
+  });
 
   /////////////////////
   //ACCOUNT STUFF

@@ -809,7 +809,13 @@ h3 {
     }
   }
 
-
+  .third{
+    width: 33.33% !important;
+    max-width: 33.33% !important;
+  }
+  #paginator{
+    display: inline ;
+  }
 
 /* RULE34 LAYOUT*/
 /*  .awesomplete [hidden]{display:none}

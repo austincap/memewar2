@@ -11,6 +11,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
   <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
   <link rel="stylesheet" href="index.css"></link>
   <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
@@ -72,15 +74,6 @@
     <div id="entryContainer">
     </div>
 
-    <div id="paginator">
-      <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
-      <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
-      <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
-      <button class="paginator" id="page3">3</button>
-      <button class="paginator" id="page4">4</button>
-      <button class="paginator" id="page5">5</button>
-      <button class="paginator" id="page6">6</button>
-    </div>
 
     <div id="divStorage">
 
@@ -160,7 +153,6 @@
 
       <div id="warningFloater">
       </div>
-
     </div>
 
 
@@ -168,6 +160,22 @@
 
 
   <div>
+    <div id="gridview">
+
+    </div>
+    <div class="header-container">
+      <div class="third"></div>
+       <div class="third">
+        <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
+        <button class="paginator" id="page3">3</button>
+        <button class="paginator" id="page4">4</button>
+        <button class="paginator" id="page5">5</button>
+        <button class="paginator" id="page6">6</button>
+      </div>
+      <div class="third"></div>
+    </div>
 
     <div id="adjacentblocks">
 
@@ -206,9 +214,7 @@
       </div>
     </div>
 
-    <div id="gridview">
 
-    </div>
     <!--     <div id="gridview">
 
 
