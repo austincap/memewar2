@@ -816,6 +816,26 @@ h3 {
   #paginator{
     display: inline ;
   }
+  #gridview{
+    width:92%;
+    padding-left:40px;
+    color:#badadd;
+    grid-template-columns: auto auto auto auto auto;
+    display:inline-grid;
+    text-align: center;
+    align-self:center;
+  }
+  .gridtitle{
+    width:100%;
+    overflow:auto;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .gridcell{
+    min-width:15vw;
+    min-height:10vw;
+    border:solid;
+  }
 
 /* RULE34 LAYOUT*/
 /*  .awesomplete [hidden]{display:none}

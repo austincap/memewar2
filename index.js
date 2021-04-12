@@ -253,7 +253,7 @@ function requestRandPosts(socket, randPages, pagenum){
     var topPostQuery = `
     MATCH (:Post) with COUNT(*) as docCount
     MATCH (doc:Post)
-    WHERE rand() < `+String(randPages)+`.0/docCount
+    WHERE rand() < `+randPages+`.0/docCount
     RETURN doc
     `;
     var topTagQuery = `
@@ -265,14 +265,15 @@ function requestRandPosts(socket, randPages, pagenum){
       .run(topPostQuery)
       .then(function(result){
         var dataForClient = [];
-        console.log(typeof(result.records));
-        result.records.entries(function(record){
+        console.log(result['records']);
+        console.log("eoigheoiuhg");
+        result['records'].forEach(function(record){
           console.log(record);
           var processedPostObject = record["_fields"][0]["properties"];
-          record["_fields"][1].forEach(function(tagAndVote){
-            processedPostObject.tagnames = tagAndVote[0];
-            processedPostObject.tagvotes = tagAndVote[1];
-          });
+          // record["_fields"][1].forEach(function(tagAndVote){
+          //   processedPostObject.tagnames = tagAndVote[0];
+          //   processedPostObject.tagvotes = tagAndVote[1];
+          // });
           processedPostObject.replycount = record["_fields"][2];
           dataForClient.push(processedPostObject);
         });
@@ -467,7 +468,7 @@ io.on('connection', function(socket) {
   });
 
   socket.on('requestRandPosts', function(randPages, pagenum){
-    requestRandPosts(socket, randPages, pagenum);
+    requestRandPosts(socket, "10", pagenum);
   });
 
   socket.on('requestSortedPosts', function(sortType, pagenum){
