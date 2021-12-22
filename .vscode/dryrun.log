@@ -1,0 +1,9 @@
+C:\Users\Austin\make.exe -f "C:\\Users\Austin\Documents\GitHub\InteractiveWoodCombustion\Makefile" --dry-run --always-make --keep-going --print-directory
+make: Entering directory 'c:/Users/Austin/Documents/GitHub/memewar2'
+make: Leaving directory 'c:/Users/Austin/Documents/GitHub/memewar2'
+ 
+make: C:\\Users\Austin\Documents\GitHub\InteractiveWoodCombustion\Makefile: No such file or directory
+make: *** No rule to make target 'C:\\Users\Austin\Documents\GitHub\InteractiveWoodCombustion\Makefile'.
+make: Failed to remake makefile 'C:\\Users\Austin\Documents\GitHub\InteractiveWoodCombustion\Makefile'.
+make: *** No targets specified and no makefile found.  Stop.
+ 

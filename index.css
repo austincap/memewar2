@@ -837,6 +837,11 @@ h3 {
     border:solid;
   }
 
+/* GAME VIEW */
+ #gameview {
+  display: none;
+ }
+
 /* RULE34 LAYOUT*/
 /*  .awesomplete [hidden]{display:none}
   .awesomplete .visually-hidden{position:absolute;clip:rect(0,0,0,0)}

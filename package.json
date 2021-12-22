@@ -28,7 +28,9 @@
     "node-fetch": "^2.6.1",
     "node-time-uuid": "^0.1.5",
     "path": "^0.12.7",
+    "phaser": "^3.55.2",
     "sanitize-html": "^2.1.2",
+    "savjeecoin": "^1.0.1",
     "socket.io": "^3.0.1"
   }
 }

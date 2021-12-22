@@ -31,9 +31,77 @@ var storage = multer.diskStorage({
 var upload = multer({storage:storage});
 
 var fs = require('fs');
-var credentials = {key:fs.readFileSync('key.pem','utf8'), cert:fs.readFileSync('cert.pem', 'utf8')};
-var httpsServer = require('https').createServer(credentials, app);
-const io = require('socket.io')(httpsServer);
+
+// var credentials = {key:fs.readFileSync('key.pem','utf8'), cert:fs.readFileSync('cert.pem', 'utf8')};
+// var httpsServer = require('https').createServer(credentials, app);
+// const io = require('socket.io')(httpsServer);
+
+var privateKey = fs.readFileSync('memewar.io.key');
+var certificate = fs.readFileSync('austintest.cer');
+var options = {key: privateKey, cert: certificate, requestCert: true, rejectUnauthorized: false};
+var https = require('https');
+var httpsServer = https.createServer(options, app);
+var io = require('socket.io')(httpsServer);
+
+//var sessionStore = new session.MemoryStore();
+const {Blockchain, Transaction} = require('savjeecoin');
+
+
+//const { Blockchain, Transaction } = require('./blockchain');
+const EC = require('elliptic').ec;
+const ec = new EC('secp256k1');
+
+// Your private key goes here
+const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
+
+// From that we can calculate your public key (which doubles as your wallet address)
+const myWalletAddress = myKey.getPublic('hex');
+
+// Create new instance of Blockchain class
+const savjeeCoin = new Blockchain();
+
+// Mine first block
+savjeeCoin.minePendingTransactions(myWalletAddress);
+
+// Create a transaction & sign it with your key
+const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+tx1.signTransaction(myKey);
+savjeeCoin.addTransaction(tx1);
+
+// Mine block
+//savjeeCoin.minePendingTransactions(myWalletAddress);
+
+// Create second transaction
+const tx2 = new Transaction(myWalletAddress, 'address1', 50);
+tx2.signTransaction(myKey);
+savjeeCoin.addTransaction(tx2);
+
+// Mine block
+savjeeCoin.minePendingTransactions(myWalletAddress);
+
+console.log();
+console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
+
+// Uncomment this line if you want to test tampering with the chain
+// savjeeCoin.chain[1].transactions[0].amount = 10;
+
+// Check if the chain is valid
+console.log();
+console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
+
+
+
+
+
+
+
+
+
+httpsServer.listen(8443, function (){
+  //  http://[2606:a000:101a:101:0:5a8b:1cd5:fa71]:3000/index.html
+  console.log('Meme War app listening on port 8443 like a prude!');
+});
+
 
 // const httpServer = require('http').createServer(app);
 // const io = require('socket.io')(httpServer);
@@ -51,6 +119,13 @@ const PAGESIZE = 10;
 //CODE FOLDING LEVEL 3
 ///////
 
+
+function blockchainTx(amount, walletfrom, walletto){
+  // Create a transaction & sign it with your key
+  const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+  tx1.signTransaction(myKey);
+  savjeeCoin.addTransaction(tx1);
+}
 
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
   console.log("UPLOAD POST");
@@ -485,6 +560,11 @@ io.on('connection', function(socket) {
       default:
         requestTop20Posts(socket, pagenum);
     }
+  });
+
+
+  socket.on('blockchaintx', function(transaction){
+
   });
 
   /////////////////////
@@ -1183,6 +1263,5 @@ io.on('connection', function(socket) {
 
 
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
-// httpServer.listen(3000,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
-httpsServer.listen(3030,function(){console.log('Meme War app listeningn on port 3030 like a prude!');});
+//httpServer.listen(3030,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
 // server.listen(443,function(){console.log('Meme War app listeningn on port 443 like a prude!');});

@@ -7,6 +7,8 @@
   <meta property="og:description" content="Meme War: The battlefield of ideas.">
   <meta property="og:url" content="http://memewar.io">
   <title>Meme War 2</title>
+  <script src="phaser.min.js"></script>
+  <script src="blockchain.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
@@ -39,6 +41,7 @@
 
     <div id="right-buttons">
       <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
+      <div><button id="gamebutton" class="raise" onclick="openGameView();">Open game view</button></div>
       <!--  <div><button id="store">store</button></div> -->
     </div>
   </div>
@@ -151,8 +154,6 @@
 
 
   <div>
-    <div id="gridview">
-    </div>
     <div class="header-container">
       <div></div>
        <div>
@@ -204,6 +205,12 @@
     </div>
   </div>
 
+<div id="gridview">
+</div>
+<div id="gameview">
+  <div id="contentdisplayed"></div>
+  <img id="picdisplayed"></div>
+</div>
 <script src="client.js" type="text/javascript"></script>
 </body>
 </html>
