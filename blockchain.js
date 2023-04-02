@@ -1,6 +1,6 @@
 const SHA256 = require('crypto-js/sha256');
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
+// const EC = require('elliptic').ec;
+// const ec = new EC('secp256k1');
 
 class Transaction {
   /**
@@ -250,7 +250,7 @@ class Blockchain {
     // Check if the Genesis block hasn't been tampered with by comparing
     // the output of createGenesisBlock with the first block on our chain
     const realGenesis = JSON.stringify(this.createGenesisBlock());
-
+    console.log(realGenesis);
     if (realGenesis !== JSON.stringify(this.chain[0])) {
       return false;
     }

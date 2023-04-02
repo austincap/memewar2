@@ -18,6 +18,9 @@
   "homepage": "https://github.com/austincap/memewar2#readme",
   "dependencies": {
     "base64-img": "^1.0.4",
+    "cesium": "^1.93.0",
+    "d3-geo": "^3.0.1",
+    "datamaps": "^0.5.9",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "http": "0.0.1-security",

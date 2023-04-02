@@ -2,123 +2,231 @@ const socket = io();
 var postsOnThisPage = []
 
 
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
+// const EC = require('elliptic').ec;
+// const ec = new EC('secp256k1');
 
-// Your private key goes here
-const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
+// // Your private key goes here
+// const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
 
-// From that we can calculate your public key (which doubles as your wallet address)
-const myWalletAddress = myKey.getPublic('hex');
+// // From that we can calculate your public key (which doubles as your wallet address)
+// const myWalletAddress = myKey.getPublic('hex');
+
+// Copyright 2021 Observable, Inc.
+// Released under the ISC license.
+// https://observablehq.com/@d3/bubble-chart
+function BubbleChart(data, {
+  name = ([x]) => x, // alias for label
+  label = name, // given d in data, returns text to display on the bubble
+  value = ([, y]) => y, // given d in data, returns a quantitative size
+  group, // given d in data, returns a categorical value for color
+  title, // given d in data, returns text to show on hover
+  link, // given a node d, its link (if any)
+  linkTarget = "_blank", // the target attribute for links, if any
+  width = 640, // outer width, in pixels
+  height = width, // outer height, in pixels
+  padding = 3, // padding between circles
+  margin = 1, // default margins
+  marginTop = margin, // top margin, in pixels
+  marginRight = margin, // right margin, in pixels
+  marginBottom = margin, // bottom margin, in pixels
+  marginLeft = margin, // left margin, in pixels
+  groups, // array of group names (the domain of the color scale)
+  colors = d3.schemeTableau10, // an array of colors (for groups)
+  fill = "#ccc", // a static fill color, if no group channel is specified
+  fillOpacity = 0.7, // the fill opacity of the bubbles
+  stroke, // a static stroke around the bubbles
+  strokeWidth, // the stroke width around the bubbles, if any
+  strokeOpacity, // the stroke opacity around the bubbles, if any
+} = {}) {
+  // Compute the values.
+  const D = d3.map(data, d => d);
+  const V = d3.map(data, value);
+  const G = group == null ? null : d3.map(data, group);
+  const I = d3.range(V.length).filter(i => V[i] > 0);
+
+  // Unique the groups.
+  if (G && groups === undefined) groups = I.map(i => G[i]);
+  groups = G && new d3.InternSet(groups);
+
+  // Construct scales.
+  const color = G && d3.scaleOrdinal(groups, colors);
+
+  // Compute labels and titles.
+  const L = label == null ? null : d3.map(data, label);
+  const T = title === undefined ? L : title == null ? null : d3.map(data, title);
+
+  // Compute layout: create a 1-deep hierarchy, and pack it.
+  const root = d3.pack()
+      .size([width - marginLeft - marginRight, height - marginTop - marginBottom])
+      .padding(padding)
+    (d3.hierarchy({children: I})
+        .sum(i => V[i]));
+
+
+
+  const svg = d3.create("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", [-marginLeft, -marginTop, width, height])
+      .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
+      .attr("fill", "currentColor")
+      .attr("font-size", 10)
+      .attr("font-family", "sans-serif")
+      .attr("text-anchor", "middle");
+
+
+  const leaf = svg.selectAll("a")
+    .data(root.leaves())
+    .join("a")
+      .attr("xlink:href", link == null ? null : (d, i) => link(D[d.data], i, data))
+      .attr("target", link == null ? null : linkTarget)
+      .attr("transform", d => `translate(${d.x},${d.y})`);
+
+  leaf.append("circle")
+      .attr("stroke", stroke)
+      .attr("stroke-width", strokeWidth)
+      .attr("stroke-opacity", strokeOpacity)
+      .attr("fill", G ? d => color(G[d.data]) : fill == null ? "none" : fill)
+      .attr("fill-opacity", fillOpacity)
+      .attr("r", d => d.r);
+
+  if (T) leaf.append("title")
+      .text(d => T[d.data]);
+
+  if (L) {
+    // A unique identifier for clip paths (to avoid conflicts).
+    const uid = `O-${Math.random().toString(16).slice(2)}`;
+
+    leaf.append("clipPath")
+        .attr("id", d => `${uid}-clip-${d.data}`)
+      .append("circle")
+        .attr("r", d => d.r);
+
+    leaf.append("text")
+        .attr("clip-path", d => `url(${new URL(`#${uid}-clip-${d.data}`, location)})`)
+      .selectAll("tspan")
+      .data(d => `${L[d.data]}`.split(/\n/g))
+      .join("tspan")
+        .attr("x", 0)
+        .attr("y", (d, i, D) => `${i - D.length / 2 + 0.85}em`)
+        .attr("fill-opacity", (d, i, D) => i === D.length - 1 ? 0.7 : null)
+        .text(d => d);
+  }
+
+  return Object.assign(svg.node(), {scales: {color}});
+}
 
 
 
 function onloadFunction(){
-  var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
-  if(isMobile){ console.log("MOBILE"); }
-  else{ console.log("NOT MOBILE"); }
-  if(getQueryParam("post")!==""){
-    //
-    socket.emit("viewpost", getQueryParam("post"));
-  }else if(getQueryParam("user")!==""){
-    console.log('USER');
-    socket.emit('viewuser', getQueryParam("user"));
-  }else if(getQueryParam("tag")!==""){
-    //
-    socket.emit('requestPostsWithTag', getQueryParam("tag"));
-  }else if(getQueryParam("sort")=="like"){
-    if(getQueryParam("page")!==""){
-      socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
+    var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
+    if(isMobile){ console.log("MOBILE"); }
+    else{ console.log("NOT MOBILE"); }
+    if(getQueryParam("post")!==""){
+      //
+      socket.emit("viewpost", getQueryParam("post"));
+    }else if(getQueryParam("user")!==""){
+      console.log('USER');
+      socket.emit('viewuser', getQueryParam("user"));
+    }else if(getQueryParam("tag")!==""){
+      //
+      socket.emit('requestPostsWithTag', getQueryParam("tag"));
+    }else if(getQueryParam("sort")=="like"){
+      if(getQueryParam("page")!==""){
+        socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
+      }else{
+        socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
+      }
+    }else if(getQueryParam("sort")=="rand"){
+      if(getQueryParam("page")!==""){
+        socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
+      }else{
+        socket.emit('requestRandPosts', getQueryParam("rand"), "0");
+      }
     }else{
-      socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
+      if(getQueryParam("page")!==""){
+        socket.emit('requestTop20Posts', getQueryParam("page"));
+      }else{
+        socket.emit('requestTop20Posts', '0');
+      }
     }
-  }else if(getQueryParam("sort")=="rand"){
-    if(getQueryParam("page")!==""){
-      socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
-    }else{
-      socket.emit('requestRandPosts', getQueryParam("rand"), "0");
-    }
-  }else{
-    if(getQueryParam("page")!==""){
-      socket.emit('requestTop20Posts', getQueryParam("page"));
-    }else{
-      socket.emit('requestTop20Posts', '0');
-    }
+    console.log(document.URL);
+    //$('#gameview').css('display', 'none');
+
+    d3.selectAll('.datamaps-subunit')
+        .on('mouseover', function (d) {
+            //var $this = d3.select(this);
+            console.log(d.id);
+        });
+
+    window.setTimeout(function(){
+      if(sessionStorage.getItem('userID') !== null){
+        console.log(sessionStorage.getItem('userID'));
+        $('#signinstuff').css('display', 'none');
+        $('#userprofilestuff').css('display', 'inline-block');
+        $('.profallow').css('display', 'inline');
+        $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+        $('#userID-newpost').val(sessionStorage.getItem('userID'));
+        $('#userID-reply').val(sessionStorage.getItem('userID'));
+        $('#posttype-newpost').val("text_post");
+        $('#posttype-reply').val("text_post");
+      }else{
+        console.log(sessionStorage.getItem('userID'));
+        $('#userID-newpost').val("ANON");
+        $('#userID-reply').val("ANON");
+        $('#posttype-newpost').val("text_post");
+        $('#posttype-reply').val("text_post");
+      }
+      document.querySelectorAll('img').forEach(function(img){
+      img.onerror = function(){this.style.display='none';};
+     });
+    }, 800);
   }
-  console.log(document.URL);
-  //$('#gameview').css('display', 'none')
-  window.setTimeout(function(){
-    if(sessionStorage.getItem('userID') !== null){
-      console.log(sessionStorage.getItem('userID'));
-      $('#signinstuff').css('display', 'none');
-      $('#userprofilestuff').css('display', 'inline-block');
-      $('.profallow').css('display', 'inline');
-      $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
-      $('#userID-newpost').val(sessionStorage.getItem('userID'));
-      $('#userID-reply').val(sessionStorage.getItem('userID'));
-      $('#posttype-newpost').val("text_post");
-      $('#posttype-reply').val("text_post");
-    }else{
-      console.log(sessionStorage.getItem('userID'));
-      $('#userID-newpost').val("ANON");
-      $('#userID-reply').val("ANON");
-      $('#posttype-newpost').val("text_post");
-      $('#posttype-reply').val("text_post");
-    }
-    document.querySelectorAll('img').forEach(function(img){
-    img.onerror = function(){this.style.display='none';};
-   });
-  }, 800);
-}
-function randomInt(max) {
-  return Math.floor(Math.random() * max);
-}
-  var ROWS = 50;
-  var COLS = 50;
-  // font size
-  var FONT = 36;
-  // map dimensions
-
-      // number of actors per level, including player
-
-      // the structure of the map
-      var map;
-      // the ascii display, as a 2d array of characters
-      var asciidisplay;
-      // a list of all actors, 0 is the player
-      var player;
-      var actorList;
-      var livingEnemies;
-      // points to each actor in its position, for quick searching
-      var actorMap;
-  var ACTORS = 11;
+  function randomInt(max) {
+    return Math.floor(Math.random() * max);
+  }
+    // map dimensions
+    var ROWS = 50;
+    var COLS = 50;
+    // font size
+    var FONT = 36;
+    
+    // the structure of the map
+    var map;
+    // the ascii display, as a 2d array of characters
+    var asciidisplay;
+    // a list of all actors, 0 is the player
+    var player;
+    var actorList;
+    var livingEnemies;
+    // points to each actor in its position, for quick searching
+    var actorMap;
+    var ACTORS = 11; // number of actors per level, including player
 function openGameView(){
 
+    function create() {
+      // init keyboard commands
+      game.input.keyboard.addCallbacks(null, null, onKeyUp);
 
-      function create() {
-        // init keyboard commands
-        game.input.keyboard.addCallbacks(null, null, onKeyUp);
+      // initialize map
+      initMap();
 
-        // initialize map
-        initMap();
-
-        // initialize ascii display
-        asciidisplay = [];
-        for (var y = 0; y < ROWS; y++) {
-          var newRow = [];
-          asciidisplay.push(newRow);
-          for (var x = 0; x < COLS; x++)
-            newRow.push(initCell('', x, y));
-        }
-
-        // initialize actors
-        initActors();
-
-        // draw level
-        drawMap();
-        drawActors();
+      // initialize ascii display
+      asciidisplay = [];
+      for (var y = 0; y < ROWS; y++) {
+        var newRow = [];
+        asciidisplay.push(newRow);
+        for (var x = 0; x < COLS; x++)
+          newRow.push(initCell('', x, y));
       }
 
+      // initialize actors
+      initActors();
+
+      // draw level
+      drawMap();
+      drawActors();
+    }
 
     function initCell(chr, x, y) {
       // add a single cell in a given position to the ascii display
@@ -156,16 +264,12 @@ function openGameView(){
         for (var x = 0; x < COLS; x++)
           asciidisplay[y][x].content = map[y][x];
     }
-
-
-
     function drawActors() {
       for (var a in actorList) {
         if (actorList[a] != null && actorList[a].hp > 0) 
           asciidisplay[actorList[a].y][actorList[a].x].content = a == 0 ? '' + player.hp : 'e';
       }
     }
-
     function canGo(actor,dir) {
       return  actor.x+dir.x >= 0 &&
           actor.x+dir.x <= COLS - 1 &&
@@ -173,7 +277,6 @@ function openGameView(){
           actor.y+dir.y <= ROWS - 1 &&
           map[actor.y+dir.y][actor.x +dir.x] == '.';
     }
-
     function moveTo(actor, dir) {
       // check if actor can move in the given direction
       if (!canGo(actor,dir)) 
@@ -253,7 +356,6 @@ function openGameView(){
       // draw actors in new positions
       drawActors();
     }
-
     function aiAct(actor) {
       var directions = [ { x: -1, y:0 }, { x:1, y:0 }, { x:0, y: -1 }, { x:0, y:1 } ];  
       var dx = player.x - actor.x;
@@ -289,49 +391,181 @@ function openGameView(){
       }
     }
 
-function initActors() {
-  console.log(postsOnThisPage);
-  // create actors at random locations
-  actorList = [];
-  actorMap = {};
-  for (var e = 0; e < ACTORS; e++) {
-    // create new actor
-    var actor = {
-      x: 0,
-      y: 0,
-      hp: e == 0 ? 3 : 1,
-      link:postsOnThisPage[randomInt(10)]['content']
-    };
-    do {
-      // pick a random position that is both a floor and not occupied
-      actor.y = randomInt(ROWS);
-      actor.x = randomInt(COLS);
-    } while (map[actor.y][actor.x] == '#' || actorMap[actor.y + "_" + actor.x] != null);
+    function initActors() {
+      console.log(postsOnThisPage);
+      // create actors at random locations
+      actorList = [];
+      actorMap = {};
+      for (var e = 0; e < ACTORS; e++) {
+        // create new actor
+        var actor = {
+          x: 0,
+          y: 0,
+          hp: e == 0 ? 3 : 1,
+          link:postsOnThisPage[randomInt(10)]['content']
+        };
+        do {
+          // pick a random position that is both a floor and not occupied
+          actor.y = randomInt(ROWS);
+          actor.x = randomInt(COLS);
+        } while (map[actor.y][actor.x] == '#' || actorMap[actor.y + "_" + actor.x] != null);
 
-    // add references to the actor to the actors list & map
-    actorMap[actor.y + "_" + actor.x] = actor;
-    actorList.push(actor);
+        // add references to the actor to the actors list & map
+        actorMap[actor.y + "_" + actor.x] = actor;
+        actorList.push(actor);
+      }
+
+      // the player is the first actor in the list
+      player = actorList[0];
+      livingEnemies = ACTORS - 1;
+    }
+    $("#big-container").hide();
+    $( "#gameview" ).show();
+    var game = new Phaser.Game(COLS * FONT * 0.6, ROWS * FONT, Phaser.AUTO, null, { create: create });
+    //window.location.href = "game.html";
+}
+
+
+
+
+(function() {
+  var canvas = document.getElementById('basicGlobe');
+  var planet = planetaryjs.planet();
+  // Loading this plugin technically happens automatically,
+  // but we need to specify the path to the `world-110m.json` file.
+  planet.loadPlugin(planetaryjs.plugins.earth({
+    topojson: { file: 'world-110m.json' }
+  }));
+  // Scale the planet's radius to half the canvas' size
+  // and move it to the center of the canvas.
+  planet.projection
+    .scale(canvas.width / 2)
+    .translate([canvas.width / 2, canvas.height / 2]);
+  planet.draw(canvas);
+})();
+
+
+
+function openHistoryView(){
+  $('#entryContainer').hide();
+  $('#historyview').show();
+
+  var globe = planetaryjs.planet();
+  // Load our custom `autorotate` plugin; see below.
+  globe.loadPlugin(autorotate(10));
+  // The `earth` plugin draws the oceans and the land; it's actually
+  // a combination of several separate built-in plugins.
+  //
+  // Note that we're loading a special TopoJSON file
+  // (world-110m-withlakes.json) so we can render lakes.
+  globe.loadPlugin(planetaryjs.plugins.earth({
+    topojson: { file:   'world-110m-withlakes.json' },
+    oceans:   { fill:   '#000080' },
+    land:     { fill:   '#339966' },
+    borders:  { stroke: '#008000' }
+  }));
+  // Load our custom `lakes` plugin to draw lakes; see below.
+  globe.loadPlugin(lakes({
+    fill: '#000080'
+  }));
+  // The `pings` plugin draws animated pings on the globe.
+  globe.loadPlugin(planetaryjs.plugins.pings());
+  // The `zoom` and `drag` plugins enable
+  // manipulating the globe with the mouse.
+  globe.loadPlugin(planetaryjs.plugins.zoom({
+    scaleExtent: [100, 300]
+  }));
+  globe.loadPlugin(planetaryjs.plugins.drag({
+    // Dragging the globe should pause the
+    // automatic rotation until we release the mouse.
+    onDragStart: function() {
+      this.plugins.autorotate.pause();
+    },
+    onDragEnd: function() {
+      this.plugins.autorotate.resume();
+    }
+  }));
+  // Set up the globe's initial scale, offset, and rotation.
+  globe.projection.scale(175).translate([175, 175]).rotate([0, -10, 0]);
+
+  // Every few hundred milliseconds, we'll draw another random ping.
+  var colors = ['red', 'yellow', 'white', 'orange', 'green', 'cyan', 'pink'];
+  setInterval(function() {
+    var lat = Math.random() * 170 - 85;
+    var lng = Math.random() * 360 - 180;
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    globe.plugins.pings.add(lng, lat, { color: color, ttl: 2000, angle: Math.random() * 10 });
+  }, 150);
+
+  var canvas = document.getElementById('rotatingGlobe');
+  // Special code to handle high-density displays (e.g. retina, some phones)
+  // In the future, Planetary.js will handle this by itself (or via a plugin).
+  if (window.devicePixelRatio == 2) {
+    canvas.width = 800;
+    canvas.height = 800;
+    context = canvas.getContext('2d');
+    context.scale(2, 2);
   }
+  // Draw that globe!
+  globe.draw(canvas);
 
-  // the player is the first actor in the list
-  player = actorList[0];
-  livingEnemies = ACTORS - 1;
+  // This plugin will automatically rotate the globe around its vertical
+  // axis a configured number of degrees every second.
+  function autorotate(degPerSec) {
+    // Planetary.js plugins are functions that take a `planet` instance
+    // as an argument...
+    return function(planet) {
+      var lastTick = null;
+      var paused = false;
+      planet.plugins.autorotate = {
+        pause:  function() { paused = true;  },
+        resume: function() { paused = false; }
+      };
+      // ...and configure hooks into certain pieces of its lifecycle.
+      planet.onDraw(function() {
+        if (paused || !lastTick) {
+          lastTick = new Date();
+        } else {
+          var now = new Date();
+          var delta = now - lastTick;
+          // This plugin uses the built-in projection (provided by D3)
+          // to rotate the globe each time we draw it.
+          var rotation = planet.projection.rotate();
+          rotation[0] += degPerSec * delta / 1000;
+          if (rotation[0] >= 180) rotation[0] -= 360;
+          planet.projection.rotate(rotation);
+          lastTick = now;
+        }
+      });
+    };
+  };
+
+  // This plugin takes lake data from the special
+  // TopoJSON we're loading and draws them on the map.
+  function lakes(options) {
+    options = options || {};
+    var lakes = null;
+
+    return function(planet) {
+      planet.onInit(function() {
+        // We can access the data loaded from the TopoJSON plugin
+        // on its namespace on `planet.plugins`. We're loading a custom
+        // TopoJSON file with an object called "ne_110m_lakes".
+        var world = planet.plugins.topojson.world;
+        lakes = topojson.feature(world, world.objects.ne_110m_lakes);
+      });
+
+      planet.onDraw(function() {
+        planet.withSavedContext(function(context) {
+          context.beginPath();
+          planet.path.context(context)(lakes);
+          context.fillStyle = options.fill || 'black';
+          context.fill();
+        });
+      });
+    };
+  }; 
 }
-  $("#big-container").hide();
-  $( "#gameview" ).show();
-  var game = new Phaser.Game(COLS * FONT * 0.6, ROWS * FONT, Phaser.AUTO, null, { create: create });
-  //window.location.href = "game.html";
-}
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -118,13 +118,21 @@ const PAGESIZE = 10;
 ///////
 //CODE FOLDING LEVEL 3
 ///////
-
+function writeToBlockchain(content){
+  fs.writeFile('blockchain.txt', content, { flag: 'a+' }, err => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  });
+}
 
 function blockchainTx(amount, walletfrom, walletto){
   // Create a transaction & sign it with your key
-  const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+  const tx1 = new Transaction(walletfrom, walletto, amount);
   tx1.signTransaction(myKey);
   savjeeCoin.addTransaction(tx1);
+  savjeeCoin.getLatestBlock();
 }
 
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
