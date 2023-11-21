@@ -589,7 +589,8 @@ io.on('connection', function(socket) {
           username: registrationData.username,
           userID: parseInt(newuserID),
           password: registrationData.password,
-          memecoin: 200
+          memecoin: 200,
+          role: registrationData.role
         };
       session
         .run(query, params)
@@ -633,10 +634,11 @@ io.on('connection', function(socket) {
     var params = {
       userID: stuffToCheck.userID,
       postID: stuffToCheck.postID,
-      data: stuffToCheck.data
+      data: stuffToCheck.data,
+      role: stuffToCheck.role
     };
     var query;
-    console.log(params);
+      console.log(params);
     switch(stuffToCheck.taskToCheck){
       case 'vote':
         query = `
@@ -972,7 +974,8 @@ io.on('connection', function(socket) {
       userID: makevotestuff.userID,
       postID: makevotestuff.postID,
       cost: parseInt(makevotestuff.cost) 
-    };
+      };
+
     switch(makevotestuff.voteType) {
       case 'firstvoteup':
         query = `

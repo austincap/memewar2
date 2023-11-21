@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta property="og:title" content="Meme War">
+    <!-- <meta property="og:image" content="http://memewar.io/images/promo/shoot-upvotes.png"> -->
+    <meta property="og:description" content="Meme War: The battlefield of ideas.">
+    <meta property="og:url" content="http://memewar.io">
+    <title>Meme War 2</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
+    <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
+    <script type="text/javascript" src="topojson.v1.min.js"></script>
+    <script type="text/javascript" src="planetaryjs.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet"></link>
+    <link rel="stylesheet" href="index.css"></link>
+    <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
+</head>
+<body>
+  <div class="header-container">
+    <div id="leftist-buttons">
+      <div>
+        <button id="contextButton" onclick="contextButtonFunction($(this).html());">Alt</button><br/>
+        <button id="accountButton" onclick="clickAccountButton(this);">Account</button>
+      </div>
+      <div id="signinstuff">
+        <div id="signInBox">
+          <div><input id="signInName" placeholder="username" type="text"/></div>
+          <div><input id="passwordvalue" placeholder="password" type="text"/></div>
+          <button id="submitSignInDetails" class="raise" onclick="loginUser();">Sign in</button><button class="raise" id="registerNewUser" onclick="registerNewUser();">Sign up</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="centerstage">
+      <button onclick="gohome();"><h1 id="pageID">Meme War 2<span id="pageID-tagname"></span></h1></button>
+      <div><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
+    </div>
+
+    <div id="right-buttons">
+      <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
+      <div><button id="gamebutton" class="raise" onclick="openGameView();">Open game view</button></div>
+      <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
+      <!--  <div><button id="store">store</button></div> -->
+    </div>
+  </div>
+
+
+  <div class="header-container">
+    <div class="lower-leftist-buttons">
+      <div class="w3-dropdown-click">
+        <button onclick="dropDownFunction()" class="w3-button w3-black">Sort by</button>
+        <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
+          <button onclick="controversialSort()" class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
+          <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
+          <button onclick="loathedSort()" class="w3-bar-item w3-button" id="sort-by-downvotes">Most loathed</button>
+          <button onclick="recentSort()" class="w3-bar-item w3-button" id="sort-by-time">Most recent</button>
+          <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
+          <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+        </div>
+      </div>
+      <div id="popular-tags">
+      <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for"/>&nbsp;<span id="popular-tag-span"><!-- <button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button> --></span>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="big-container">
+    <div id="entryContainer">
+    </div>
+
+    <div id="divStorage">
+
+      <div id="newPostContainer">
+        <form ref='uploadForm' 
+            id='uploadForm' 
+            action='/upload' 
+            onsubmit='submitNewPost();' 
+            method='post' 
+            encType='multipart/form-data'>
+            <input class="permahidden" id="userID-newpost" name="userID"/>
+            <input class="permahidden" id="posttype-newpost" name="type"/>
+            <input required id="tagForNewPost" name="tag" placeholder="you MUST provide a tag for your post. how do you want your post to be categorized?" type="text" maxlength="64"/>
+            <br/>
+            <input type="text" style='height:50px;' placeholder="you can treat this field like a title, or like a tweet if you're not putting anything in the box below" id="uploadTitle" name="title" maxlength="320"/>
+            <br/>
+            <textarea type="text" style='height:300px;' placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"></textarea>
+            <br/>
+            <img id="myimg" src="" height="150" alt="Image preview...">
+            <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();"/>
+            <input class="raise" type='submit' value='Submit!' />
+          </form>
+          <button id="cancelNewPost" class="raise" onclick="returnNewPostBox();">Cancel</button>
+      </div>
+
+      <div id="replyContainer">
+        <form ref='uploadFormReply' 
+            id='uploadFormReply' 
+            action='/uploadreply' 
+            onsubmit='submitReply();'
+            method='post' 
+            encType='multipart/form-data'>
+            <input class="permahidden" id="title-reply" name="title"/>
+            <input class="permahidden" id="replytoPostID" name="replyto"/>
+            <input class="permahidden" id="userID-reply" name="userID"/>
+            <input class="permahidden" id="posttype-reply" name="type"/>
+            <input id="tagForNewReply" name="tag" placeholder="you may provide a tag for your post" type="text" maxlength="64"/>
+            <br/>
+            <textarea type="text" style='height:300px;' placeholder="your reply content can be a straight link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent-reply" name="content" maxlength="25000"></textarea>
+            <br/>
+            <img id="myimg-reply" src="" height="150" alt="Image preview...">
+            <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();"/>
+            <input class="raise" type='submit' value='Submit!' />
+          </form>
+          <button id="cancelNewPost-reply" class="raise" onclick="returnReplyBox();">Cancel</button> 
+      </div>
+
+      <div id="tagContainer">
+        <div id="existingTagsForThisPost">
+          Existing tags for this post:&nbsp;
+        </div>
+        <div id="addNewTag">
+          <input id="newTagSuggestion" type="text" title="'keyboard smash' tags won't be deleted, but will be consolidated into the JUNK tag at the admin's pleasure" maxlength="24"/><button id="submitTag" onclick="submitTag(document.getElementById('newTagSuggestion').value, $(this).parent().parent().parent().parent().parent().attr('postID'));">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
+        </div>
+      </div>
+
+      <div id="newStatsContainer">
+        <div>For each individual post, for each + or - after the first vote costs double the memecoin it did prior. </div>
+        <div>To vote again will cost you:&nbsp;<span id="cost-of-next-vote">?</span>&nbsp;memecoin</div>
+        <div>Current votes:&nbsp;<span id="upvotestat">84</span>&nbsp;&#10133;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="downvotestat">50</span>&nbsp;&#10134;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="totalvotestat"></span></div>
+      </div>
+
+      <div id="censorShieldHarvestContainer">
+        <div class="harvestmessage"><span id="harvestmessage-span">harvesting your post converts its profit into memecoin, but deletes the post</span></div>
+        <div class="censormessage"><span id="censormessage-span">are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoin...</span></div>
+        <div class="shieldmessage"><span id="shieldmessage-span">free speech shields cost half as much and block 1 censor attempt!</span></div>
+        <div><button class="censormessage" id="confirmCensor" onclick="confirmCensor($(this).parent().parent().parent().parent().parent().attr('postID'));">CENSOR</button><button class="shieldmessage" id="confirmShield" onclick="confirmShield($(this).parent().parent().parent().parent().parent().attr('postID'));">SHIELD</button>
+            <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent().attr('postID'));">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button></div>
+      </div>
+
+      <div id="shareButtonContainer">
+        I understand how shitty other platforms are, but it's only by mingling with the lower races that we can bring them up... This is the memelord's burden.
+        <div>
+          <a href="https://twitter.com/share?ref_src=twsrc%5Etfw/+463634643" class="twitter-share-button" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+      </div>
+
+      <div id="warningFloater">
+      </div>
+    </div>
+  </div>
+
+
+  <div>
+    <div class="header-container">
+      <div></div>
+       <div>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
+        <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
+      </div>
+      <div></div>
+    </div>
+
+    <div id="adjacentblocks">
+      <div id="previewframe">
+        <div id="previewframeTopSpace"></div>
+        <div id="postNameInModalPostOnly"></div>
+        <button id="upvote" onclick="upvotePost()">Upvote it</button>
+        <button id="downvote">Hate it</button> 
+        <button id="tagIt" onclick="tagPost()">Tag it</button>
+        <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+        <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)"/></div>
+          <br/>
+          <hr/>
+        <div id="previewContent">test</div>
+      </div>
+
+      <div id="d3frame" >
+        <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+        <svg ></svg>
+      </div>
+
+      <div id="upvoteTagModal">
+        <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
+        <div id="contentInModal"></div>
+        <hr/>
+        <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
+        <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+      </div>
+
+      <div id="submitnew">
+        <input type="text" id="nodename"  maxlength="150" class="submissionslot" placeholder="post title goes here"/>
+        <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here"/><br/>
+        <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)"/><br/>
+        <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)"/><br/>
+        <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="historyview">
+      <form ref='uploadForm'
+            id='uploadForm'
+            action='/upload'
+            onsubmit='submitGeoHistoryPost();'
+            method='post'
+            encType='multipart/form-data'>
+          <input type="date" />
+      </form>
+
+      <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+      <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+      <script src="node_modules/datamaps/dist/datamaps.world.js"></script>
+
+      <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
+      <script>
+          var map = new Datamap({ element: document.getElementById('container') });
+      </script>
+      <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
+      <canvas id="basicGlobe" width='400' height='400'>
+      </canvas>
+  </div>
+
+
+
+<div id="gridview">
+</div>
+<div id="bubbiview">
+</div>
+<div id="gameview">
+  <div id="contentdisplayed"></div>
+  <img id="picdisplayed"></div>
+</div>
+
+</body>
+  <script src="client.js" type="text/javascript"></script>
+  <script src="phaser.min.js"></script>
+  <script src="blockchain.js"></script>
+</html>

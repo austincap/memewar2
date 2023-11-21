@@ -571,10 +571,22 @@ function openHistoryView(){
 
 
 
+var root = document.documentElement;
+const lists = document.querySelectorAll('.hs');
+
+lists.forEach(el => {
+    const listItems = el.querySelectorAll('li');
+    const n = el.children.length;
+    el.style.setProperty('--total', n);
+});
+
+
+
 function registerNewUser(){
   var registrationData = {
     username: $('#signInName').val(),
-    password: $('#passwordvalue').val()
+      password: $('#passwordvalue').val(),
+      role: $('#submitRoleButton').val()
   };
   socket.emit('registerNewUser', registrationData);
 }
@@ -589,7 +601,8 @@ function clickAccountButton(thisButton){
   console.log($(thisButton).children()[0]);
   console.log($($(thisButton).children()[0]).attr('userid'));
   if($(thisButton).html()=="Account"){
-    $('#signinstuff').css('display', 'inline-block');
+      $('#signinstuff').css('display', 'inline-block');
+      $('#signup-overlay-box').css('display', 'inline-block');
     $(thisButton).html("Close");
   }else if($(thisButton).html()=="Close"){
     $('#signinstuff').css('display', 'none');
@@ -598,6 +611,10 @@ function clickAccountButton(thisButton){
     console.log("ETE");
     viewProfilePage(sessionStorage.getItem('userID'));
   }
+}
+function selectThisRole(roleName) {
+    console.log(roleName);
+    $('#submitRoleButton').text(roleName);
 }
 function contextButtonFunction(currentContext){
   console.log(currentContext);
@@ -791,7 +808,8 @@ function returnNewPostBox(){
 
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
-  var userID = parseInt(sessionStorage.getItem('userID'));
+    var userID = parseInt(sessionStorage.getItem('userID'));
+    var userrole = sessionStorage.getItem('role');
   returnTagBox();
   returnReplyBox();
   returnNewPostBox();
@@ -808,7 +826,7 @@ function showVoteBox(postID, upIfTrue){
   $('#upvotestat').html(postData.up);
   $('#downvotestat').html(postData.down);
   console.log(userID, postID, upIfTrue)
-  socket.emit('check', {taskToCheck:'vote', userID:userID, postID:postID, data:upIfTrue});
+  socket.emit('check', {taskToCheck:'vote', userID:userID, postID:postID, data:upIfTrue, role:userrole});
 }
 function returnNewStatsBox(){
   var newStatsContainer = $('#newStatsContainer');
@@ -1360,7 +1378,8 @@ socket.on('receiveSinglePostData', function(dataFromServer){
 socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('userID', loginData.userID);
   sessionStorage.setItem('username', loginData.name);
-  sessionStorage.setItem('memecoin', loginData.memecoin);
+    sessionStorage.setItem('memecoin', loginData.memecoin);
+    sessionStorage.setItem('role', loginData.role);
   $('#signinstuff').css('display', 'none');
   $('.profallow').css('display','inline');
   $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");

@@ -161,6 +161,99 @@ h3 {
   .w3-bar-block .w3-dropdown-hover .w3-button,.w3-bar-block .w3-dropdown-click .w3-button{width:100%;text-align:left;padding:8px 16px}
 
 /* signin registration profile stuff */
+
+    #signup-overlay-box {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        background: #666666;
+        opacity: .95;
+        z-index: 1000;
+    }
+
+    :root {
+        --gutter: 20px;
+    }
+
+    .app {
+        padding: var(--gutter) 0;
+        display: grid;
+        grid-gap: var(--gutter) 0;
+        grid-template-columns: var(--gutter) 1fr var(--gutter);
+        align-content: start;
+    }
+
+        .app > * {
+            grid-column: 2 / -2;
+        }
+
+        .app > .full {
+            grid-column: 1 / -1;
+        }
+
+    .hs {
+        display: grid;
+        grid-gap: calc(var(--gutter) / 2);
+        grid-template-columns: 10px repeat(var(--total), calc(50% - var(--gutter) * 2)) 10px;
+        grid-template-rows: minmax(450px, 1fr);
+        overflow-x: scroll;
+        scroll-snap-type: x proximity;
+        padding-bottom: calc(.75 * var(--gutter));
+        margin-bottom: calc(-.25 * var(--gutter));
+    }
+
+        .hs:before,
+        .hs:after {
+            content: '';
+        }
+
+
+    /* Demo styles */
+
+
+    #signup-overlay-box {
+        height: 100%;
+     
+        place-items: center;
+        background: #456173;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    h1,
+    h2,
+    h3 {
+        margin: 0;
+    }
+
+    .app {
+        width: 575px;
+        height: 667px;
+        background: #DBD0BC;
+        overflow-y: scroll;
+    }
+
+    .hs > li,
+    .item {
+        scroll-snap-align: center;
+        padding: calc(var(--gutter) / 2 * 1.5);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #fff;
+        border-radius: 8px;
+        color: black;
+    }
+
+
+
   #signinstuff {
     display:none;
     position:relative;
@@ -481,6 +574,9 @@ h3 {
     min-width: 70px;
     min-height: 40px;
     vertical-align: middle;
+  }
+  .roleraise {
+      width: 90%;
   }
   .up {
     --color: #e4cb58;
