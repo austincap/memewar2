@@ -1,3 +1,4 @@
+
 const socket = io();
 var postsOnThisPage = []
 
@@ -176,7 +177,44 @@ function onloadFunction(){
         $('#userID-reply').val("ANON");
         $('#posttype-newpost').val("text_post");
         $('#posttype-reply').val("text_post");
-      }
+        }
+        
+        if (sessionStorage.getItem("role")) {
+            switch (sessionStorage.getItem("role")) {
+                case "Lurker":
+                    $(".lurkers-only").css("display", "none");
+                    break;
+                case "Tagger":
+                    $(".taggers-only").css("display", "block");
+                    break;
+                case "Painter":
+                    $(".painters-only").css("display", "block");
+                    break;
+                case "Pollster":
+                    $(".pollsters-only").css("display", "block");
+                    break;
+                case "Tastemaker":
+                    $(".tastemakers-only").css("display", "block");
+                    break;
+                case "Explorer":
+                    $(".explorers-only").css("display", "block");
+                    break;
+                case "Summoner":
+                    $(".summoners-only").css("display", "block");
+                    break;
+                case "Silencer":
+                    $(".silencers-only").css("display", "block");
+                    break;
+                default:
+                    break;
+
+            }
+        }
+        else {
+            console.log("FE");
+            (Boolean(sessionStorage.getItem("Lurker"))) ? $(".lurkers-only").css("display", "block") : null ;
+            (sessionStorage.getItem("Pollster")=="true") ? $(".pollsters-only").css("display", "block") : null;
+        }
       document.querySelectorAll('img').forEach(function(img){
       img.onerror = function(){this.style.display='none';};
      });
@@ -581,7 +619,12 @@ lists.forEach(el => {
 });
 
 
-
+function signout(thisButton) {
+    sessionStorage.clear();
+    $('#accountButton').html("Account");
+    $('#signout').css('display', 'none');
+    location.reload("localhost");
+}
 function registerNewUser(){
   var registrationData = {
     username: $('#signInName').val(),
@@ -612,6 +655,14 @@ function clickAccountButton(thisButton){
     viewProfilePage(sessionStorage.getItem('userID'));
   }
 }
+function addRoles(rollString) {
+    (rollString[0] == "1") ? sessionStorage.setItem("Lurker", "true") : null;
+    (rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
+    (rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
+    (rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
+    location.reload("localhost");
+}
+
 function selectThisRole(roleName) {
     console.log(roleName);
     $('#submitRoleButton').text(roleName);
@@ -668,6 +719,35 @@ function viewProfilePage(userID){
   $("#entryContainer").empty();
   window.location.href='/?user='+userID;
   //socket.emit('viewuser', sessionStorage.getItem('userID'));
+}
+
+
+function showNewPollBox() {
+    var newPollContainer = $('#pollContainer');
+    newPollContainer.detach();
+    newPollContainer.appendTo('body');
+    newPollContainer.css('display', 'block');
+}
+function createElementFromHTML(htmlString) {
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
+    // Change this to div.childNodes to support multiple top-level nodes.
+    return div.firstChild;
+}
+
+function addPollOption() {
+    var pollOptionCounter = String($("#pollOptionContainer > textarea").length + 1);
+    if (parseInt(pollOptionCounter) > 6) { console.log("NO MORE"); }
+    else {
+        var newOptionId = "uploadPollOption-" + pollOptionCounter;
+        var newOptionName = "pollOption" + pollOptionCounter;
+        var foo = createElementFromHTML('<textarea type="text" style="height:30px;" placeholder="write a poll option here" id="' + newOptionId + '" name="' + newOptionName + '" maxlength="800"></textarea>');
+        $('#pollOptionContainer').append(foo);
+        $('#pollOptionContainer').append(document.createElement("br"));
+    }
+}
+function returnPollBox() {
+    $('#pollContainer').css('display', 'none');
 }
 
 
@@ -1094,14 +1174,17 @@ function populatePage(posts, tags){
       </div>
       <div class='post-buttons'>
         <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
-        <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-        <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+        <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+        <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
         <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
         <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
         <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
         <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
         <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
-        <button class='raise anonallow' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+        <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+        <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+        <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+        <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
         <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
       </div>
     </div>`;
@@ -1379,8 +1462,10 @@ socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('userID', loginData.userID);
   sessionStorage.setItem('username', loginData.name);
     sessionStorage.setItem('memecoin', loginData.memecoin);
-    sessionStorage.setItem('role', loginData.role);
-  $('#signinstuff').css('display', 'none');
+    addRoles(loginData.roles);
+    //sessionStorage.setItem('role', loginData.role);
+    $('#signinstuff').css('display', 'none');
+    $('#signup-overlay-box').css('display', 'none');
   $('.profallow').css('display','inline');
   $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
   $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
@@ -1426,6 +1511,7 @@ socket.on('userDataFound', function(userData){
             </div>
           </div>
           <div id="advanced-post-content">{{bio}}</div>
+          <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
   var html = Mustache.render(processedUserTemplate, user_mustacheData);
   $('#entryContainer').append(html);

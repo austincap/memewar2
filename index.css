@@ -105,8 +105,42 @@ h3 {
   }
   #tagForNewPost {
     min-width:70%;
-  }
+      }
+    #pollContainer {
+        display: none;
+        position: fixed;
+        z-index: 2;
+        top: 15vh;
+        left: 12vw;
+        background-color: #101011;
+        padding: 2vw;
+        min-height: 70vh;
+        min-width: 70vw;
+    }
 
+
+ /* roles */
+    .painters-only {
+       display: none !important;
+    }
+.explorers-only {
+    display: none !important;
+}
+.taggers-only {
+    display: none !important;
+}
+.summoners-only {
+    display: none !important;
+}
+.tastemakers-only {
+    display: none !important;
+}
+    .lurkers-only {
+        display: none;
+    }
+.pollsters-only {
+    display: none ;
+}
 
 /* links */
   a {

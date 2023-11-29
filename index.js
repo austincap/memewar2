@@ -247,6 +247,67 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
 });
 
 
+
+app.post('/uploadPoll', function (req, res, next) {
+    console.log("UPLOAD POLL");
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var fileName = "officialunofficialplaceholderlogo.jpg";
+    var postId = parseInt(blockId.getTimestamp());
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    var params = {
+        postID: postId,
+        upvotes: 1,
+        downvotes: 0,
+        type: req.body.type,
+        title: sanitizeHtml(req.body.title),
+        content: sanitizeHtml(req.body.content),
+        userID: parseInt(req.body.userID),
+        tag: req.body.tag,
+        file: fileName,
+        clicks: 1,
+        censorattempts: 0,
+        shields: 0,
+        memecoinsspent: 0,
+        replyto: parseInt(req.body.replyto),
+        tagupvotes: 1,
+        polloptions: "[test,]"
+    };
+    if (req.userID == "ANON") {
+        query = `
+    MATCH (origPost:Post {postID:$replyto})
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[rt:REPLYTO]->(origPost)
+    RETURN newpost, whichtag, origPost
+    `;
+    } else {
+        query = `
+    MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
+    MERGE (whichtag:Tag {name:$tag})
+    MERGE (newpoll:Post {type:"poll_post", title:"What is the best bear?", upvotes:1.0, downvotes:0.0, clicks:1, postID:18000200020, polloptions:["Grizzly, Black, Polar, Panda"], optionvotes:[0,0,0,0]})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[cb:CREATEDBY]->(whomadeit)
+    MERGE (newpost)-[rt:REPLYTO]->(origPost)
+    RETURN newpost, whichtag, origPost
+    `;
+    }
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            // });
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
+
 function requestTagsForThisPost(socket, postID){
   var params = {
     postID: parseInt(postID)
@@ -580,7 +641,24 @@ io.on('connection', function(socket) {
   socket.on('registerNewUser', function(registrationData){
       var newuserID = new ObjectId();
       newuserID = newuserID.getTimestamp();
+      var newuserRoles = "000000000000000";
       //newuserID = newuserID.toString("hex").substr(0,15);
+      switch (registrationData.role) {
+          case "Lurker":
+              newuserRoles = "100000000000000";
+          case "Tagger":
+              newuserRoles = "010000000000000";
+          case "Painter":
+              newuserRoles = "001000000000000";
+          case "Pollster":
+              newuserRoles = "000100000000000";
+          case "Tastemaker":
+              newuserRoles = "000010000000000";
+          case "Explorer":
+              newuserRoles = "000001000000000";
+          default:
+              newuserRoles = "000000000000000";
+      }
       var query = `
       CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin})
       RETURN newuser
@@ -590,7 +668,7 @@ io.on('connection', function(socket) {
           userID: parseInt(newuserID),
           password: registrationData.password,
           memecoin: 200,
-          role: registrationData.role
+          roles: newuserRoles
         };
       session
         .run(query, params)
@@ -619,7 +697,7 @@ io.on('connection', function(socket) {
         .run(query, params)
         .then(function(result){
           console.log("LOGGED IN USER");
-          console.log(result.records[0]["_fields"][0]["properties"]);
+            console.log(result.records[0]["_fields"][0]["properties"]);
           var loginresult = result.records[0]["_fields"][0]["properties"];
           socket.emit('loggedIn', loginresult);
         })
