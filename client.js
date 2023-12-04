@@ -723,6 +723,8 @@ function viewProfilePage(userID){
 
 
 function showNewPollBox() {
+    $('#userID-poll').val(sessionStorage.getItem('userID'));
+    $('#posttype-poll').val('poll_post');
     var newPollContainer = $('#pollContainer');
     newPollContainer.detach();
     newPollContainer.appendTo('body');
@@ -749,7 +751,19 @@ function addPollOption() {
 function returnPollBox() {
     $('#pollContainer').css('display', 'none');
 }
-
+function submitNewPoll() {
+    console.log("submit poll");
+    $("#uploadTitle-poll").empty();
+    $("#uploadPollOption-1").empty();
+    $("#uploadPollOption-2").empty();
+    $("#uploadPollOption-3").empty();
+    $("#uploadPollOption-4").empty();
+    $("#uploadPollOption-5").empty();
+    $("#uploadPollOption-6").empty();
+    $("#sampleFile-poll").empty();
+    document.querySelector('#myimg').src = "";
+    returnPollBox();
+}
 
 
 function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement){

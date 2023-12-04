@@ -146,16 +146,16 @@
                 <button id="cancelNewPost-reply" class="raise" onclick="returnReplyBox();">Cancel</button>
             </div>
 
-            
+
             <div id="pollContainer">
                 <form ref='uploadPoll'
                       id='uploadPoll'
                       action='/uploadpoll'
-                      onsubmit='submitpoll();'
+                      onsubmit='submitNewPoll();'
                       method='post'
                       encType='multipart/form-data'>
                     <input type="text" style='height:50px;' placeholder="What is the question you want to ask?" id="uploadTitle-poll" name="title" maxlength="320" />
-                    <input class="permahidden" id="replytoPostID-poll" name="replyto" />
+                    <!--<input class="permahidden" id="replytoPostID-poll" name="replyto" />-->
                     <input class="permahidden" id="userID-poll" name="userID" />
                     <input class="permahidden" id="posttype-poll" name="type" />
                     <br />
@@ -163,50 +163,57 @@
                         <textarea type="text" style='height:30px;' placeholder="write a poll option here" id="uploadPollOption-1" name="pollOption1" maxlength="800"></textarea><br />
                         <textarea type="text" style='height:30px;' placeholder="write a poll option here" id="uploadPollOption-2" name="pollOption2" maxlength="800"></textarea><br />
                     </div>
-                    <!-- <img id="myimg-poll" src="" height="150" alt="Image preview...">
-                        <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
-                        <input class="raise" type='submit' value='Submit!' />
-                    </form>
-                    <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
-                    <button onclick="addPollOption()">Add Poll Option</button>
+                        <img id="myimg-poll" class="permahidden" src="" height="150" alt="Image preview..." />
+                        <input type="file" class="permahidden" id="sampleFile-poll" name="sampleFile-poll" onchange="previewFile();" />
+                    <br/>
+                    <input class="raise" type='submit' value='Submit!' />
+                </form>
+                <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
+                <button onclick="addPollOption()">Add Poll Option</button>
+            </div>
+            <!--
+                <br />
+                <div id="pollOptionContainer">
                 </div>
+                 <img id="myimg-poll" src="" height="150" alt="Image preview...">
+    <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
 
-                <div id="tagContainer">
-                    <div id="existingTagsForThisPost">
-                        Existing tags for this post:&nbsp;
-                    </div>
-                    <div id="addNewTag" class="taggers-only">
-                        <input id="newTagSuggestion" type="text" title="'keyboard smash' tags won't be deleted, but will be consolidated into the JUNK tag at the admin's pleasure" maxlength="24" /><button id="submitTag" onclick="submitTag(document.getElementById('newTagSuggestion').value, $(this).parent().parent().parent().parent().parent().attr('postID'));">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
-                    </div>
+            <div id="tagContainer">
+                <div id="existingTagsForThisPost">
+                    Existing tags for this post:&nbsp;
                 </div>
-
-                <div id="newStatsContainer">
-                    <div>For each individual post, for each + or - after the first vote costs double the memecoin it did prior. </div>
-                    <div>To vote again will cost you:&nbsp;<span id="cost-of-next-vote">?</span>&nbsp;memecoin</div>
-                    <div>Current votes:&nbsp;<span id="upvotestat">84</span>&nbsp;&#10133;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="downvotestat">50</span>&nbsp;&#10134;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="totalvotestat"></span></div>
-                </div>
-
-                <div id="censorShieldHarvestContainer">
-                    <div class="harvestmessage"><span id="harvestmessage-span">harvesting your post converts its profit into memecoin, but deletes the post</span></div>
-                    <div class="censormessage"><span id="censormessage-span">are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoin...</span></div>
-                    <div class="shieldmessage"><span id="shieldmessage-span">free speech shields cost half as much and block 1 censor attempt!</span></div>
-                    <div>
-                        <button class="censormessage" id="confirmCensor" onclick="confirmCensor($(this).parent().parent().parent().parent().parent().attr('postID'));">CENSOR</button><button class="shieldmessage" id="confirmShield" onclick="confirmShield($(this).parent().parent().parent().parent().parent().attr('postID'));">SHIELD</button>
-                        <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent().attr('postID'));">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button>
-                    </div>
-                </div>
-
-                <div id="shareButtonContainer">
-                    I understand how shitty other platforms are, but it's only by mingling with the lower races that we can bring them up... This is the memelord's burden.
-                    <div>
-                        <a href="https://twitter.com/share?ref_src=twsrc%5Etfw/+463634643" class="twitter-share-button" data-show-count="false">Tweet</a>
-                        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                    </div>
-                </div>
-
-                <div id="warningFloater">
+                <div id="addNewTag" class="taggers-only">
+                    <input id="newTagSuggestion" type="text" title="'keyboard smash' tags won't be deleted, but will be consolidated into the JUNK tag at the admin's pleasure" maxlength="24" /><button id="submitTag" onclick="submitTag(document.getElementById('newTagSuggestion').value, $(this).parent().parent().parent().parent().parent().attr('postID'));">Tag this post</button><button id="cancelTag" onclick="returnTagBox();">Cancel</button>
                 </div>
             </div>
+
+            <div id="newStatsContainer">
+                <div>For each individual post, for each + or - after the first vote costs double the memecoin it did prior. </div>
+                <div>To vote again will cost you:&nbsp;<span id="cost-of-next-vote">?</span>&nbsp;memecoin</div>
+                <div>Current votes:&nbsp;<span id="upvotestat">84</span>&nbsp;&#10133;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="downvotestat">50</span>&nbsp;&#10134;'s&nbsp;&nbsp;|&nbsp;&nbsp;<span id="totalvotestat"></span></div>
+            </div>
+
+            <div id="censorShieldHarvestContainer">
+                <div class="harvestmessage"><span id="harvestmessage-span">harvesting your post converts its profit into memecoin, but deletes the post</span></div>
+                <div class="censormessage"><span id="censormessage-span">are you sure you want to attempt to delete this person's post? if they have a free speech shield, you'll waste your memecoin...</span></div>
+                <div class="shieldmessage"><span id="shieldmessage-span">free speech shields cost half as much and block 1 censor attempt!</span></div>
+                <div>
+                    <button class="censormessage" id="confirmCensor" onclick="confirmCensor($(this).parent().parent().parent().parent().parent().attr('postID'));">CENSOR</button><button class="shieldmessage" id="confirmShield" onclick="confirmShield($(this).parent().parent().parent().parent().parent().attr('postID'));">SHIELD</button>
+                    <button class="harvestmessage" id="confirmHarvest" onclick="confirmHarvest($(this).parent().parent().parent().parent().parent().attr('postID'));">HARVEST</button><button onclick="$('#censorShieldHarvestContainer').css('display', 'none');" id="cancelCensor">CANCEL</button>
+                </div>
+            </div>
+
+            <div id="shareButtonContainer">
+                I understand how shitty other platforms are, but it's only by mingling with the lower races that we can bring them up... This is the memelord's burden.
+                <div>
+                    <a href="https://twitter.com/share?ref_src=twsrc%5Etfw/+463634643" class="twitter-share-button" data-show-count="false">Tweet</a>
+                    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+                </div>
+            </div>
+
+            <div id="warningFloater">
+            </div>
+        </div>
         </div>
 
 

@@ -248,59 +248,71 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
 
 
 
-app.post('/uploadPoll', function (req, res, next) {
+app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, next) {
     console.log("UPLOAD POLL");
     console.log(req.body);
     var blockId = new ObjectId();
     var query;
     var fileName = "officialunofficialplaceholderlogo.jpg";
     var postId = parseInt(blockId.getTimestamp());
+    var polltitle = sanitizeHtml(req.body.title);
+    var polluserID = parseInt(req.body.userID);
+    var polltype = req.body.type;
+    var pollOptions = [];
+    for (let i = 1; i <= 6; i++) {
+        if (req.body["pollOption" + String(i)] != null) {
+            pollOptions.push(req.body["pollOption" + String(i)]);
+        }
+    }
     if (typeof req.file === 'object') { fileName = req.file.filename; }
     var params = {
         postID: postId,
         upvotes: 1,
         downvotes: 0,
-        type: req.body.type,
-        title: sanitizeHtml(req.body.title),
-        content: sanitizeHtml(req.body.content),
-        userID: parseInt(req.body.userID),
-        tag: req.body.tag,
+        type: polltype,
+        title: polltitle,
+        userID: polluserID,
+        tag: "poll",
         file: fileName,
         clicks: 1,
         censorattempts: 0,
         shields: 0,
         memecoinsspent: 0,
-        replyto: parseInt(req.body.replyto),
+        replyto: 453453453445,
         tagupvotes: 1,
-        polloptions: "[test,]"
+        content: pollOptions,
+        optionvotes: [0, 0, 0, 0, 0, 0]
     };
     if (req.userID == "ANON") {
         query = `
-    MATCH (origPost:Post {postID:$replyto})
-    MERGE (whichtag:Tag {name:$tag})
-    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-    MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[rt:REPLYTO]->(origPost)
-    RETURN newpost, whichtag, origPost
-    `;
+        MATCH (origPost:Post {postID:$replyto})
+        MERGE (whichtag:Tag {name:$tag})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+        MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[rt:REPLYTO]->(origPost)
+        RETURN newpost, whichtag, origPost
+        `;
     } else {
         query = `
-    MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
-    MERGE (whichtag:Tag {name:$tag})
-    MERGE (newpoll:Post {type:"poll_post", title:"What is the best bear?", upvotes:1.0, downvotes:0.0, clicks:1, postID:18000200020, polloptions:["Grizzly, Black, Polar, Panda"], optionvotes:[0,0,0,0]})
-    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
-    MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[cb:CREATEDBY]->(whomadeit)
-    MERGE (newpost)-[rt:REPLYTO]->(origPost)
-    RETURN newpost, whichtag, origPost
-    `;
+        MATCH (whomadeit:User {userID:$userID})
+        MERGE (whichtag:Tag {name:$tag})
+        MERGE (newpoll:Post {type:$type, title:$title, upvotes:$upvotes, downvotes:$downvotes, clicks:$clicks, postID:$postID, content:$content, optionvotes:$optionvotes, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+        MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpoll)-[cb:CREATEDBY]->(whomadeit)
+        WITH newpoll AS ne
+        OPTIONAL MATCH (ne)-[r2:REPLYTO]-(re:Post {postID:$replyto})
+        FOREACH (o IN CASE WHEN re IS NOT NULL THEN [re] ELSE [] END |
+          MERGE (ne)-[r2:REPLYTO]->(re)
+        )
+        RETURN ne
+        `;
     }
     session
         .run(query, params)
         .then(function (result) {
-            console.log(result);
-            // result.records[0]["_fields"].forEach(function(record){
-            //   console.log(record);
-            // });
-            // session.close();
+            //console.log(result);
+             result.records[0]["_fields"].forEach(function(record){
+               console.log(record);
+             });
+             //session.close();
         })
         .catch(function (error) {
             console.log(error);
@@ -660,7 +672,7 @@ io.on('connection', function(socket) {
               newuserRoles = "000000000000000";
       }
       var query = `
-      CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin})
+      CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
       RETURN newuser
       `;
       var params = {
