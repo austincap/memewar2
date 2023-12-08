@@ -293,7 +293,7 @@ app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, ne
         `;
     } else {
         query = `
-        MATCH (whomadeit:User {userID:$userID})
+        MATCH (whomadeit:User {userID:$userID})-[:HASROLE]->(ro:Role {name:"Pollster"})
         MERGE (whichtag:Tag {name:$tag})
         MERGE (newpoll:Post {type:$type, title:$title, upvotes:$upvotes, downvotes:$downvotes, clicks:$clicks, postID:$postID, content:$content, optionvotes:$optionvotes, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
         MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpoll)-[cb:CREATEDBY]->(whomadeit)
@@ -910,7 +910,31 @@ io.on('connection', function(socket) {
           socket.emit('userChecked', {task:'failedTagUpvote', userID:params.userID, postID:params.postID, cost:0});
           console.log(error);
         });
-        break;
+            break;
+        case 'arbitrate':
+            query = `
+            MATCH (u:User {userID:$userID})-[:HASROLE]->(r:Role {name:"Juror"})
+            OPTIONAL MATCH (p:Post {type:"dispute"})
+            RETURN p
+            `;
+                session
+                    .run(query, params)
+                    .then(function (result) {
+                        console.log(result.records);
+                        if (result.records[0] == null) {
+                            socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
+                            console.log("user doesnt exist or isn't a juror");
+                        } else {
+                            var memecoin = parseInt(result.records[0]['_fields'][0]);
+                            console.log("user can receive dispute list");
+                            socket.emit('userChecked', { task: 'successfulDisputeReq', userID: params.userID, posts:params.p });
+                        }
+                    })
+                    .catch(function (error) {
+                        socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
+                        console.log(error);
+                    });
+            break;
       default:
         break;
     } 
@@ -1359,6 +1383,29 @@ io.on('connection', function(socket) {
     }
 
   });
+
+
+
+  ///////////////////
+  //REPORT POST
+
+
+  //////////////////
+  //SEND MESSAGE TO COUNSELOR
+
+
+  /////////////////
+  //LEADER CREATE GROUP
+
+
+  ////////////////
+  //VIEW USER INFO
+
+
+
+  ///////////////////////
+  //CHANGE PAINT
+
 
 });
 
