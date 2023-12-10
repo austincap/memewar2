@@ -123,29 +123,32 @@ function onloadFunction(){
     var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
     if(isMobile){ console.log("MOBILE"); }
     else{ console.log("NOT MOBILE"); }
-    if(getQueryParam("post")!==""){
-      //
-      socket.emit("viewpost", getQueryParam("post"));
-    }else if(getQueryParam("user")!==""){
-      console.log('USER');
-      socket.emit('viewuser', getQueryParam("user"));
-    }else if(getQueryParam("tag")!==""){
-      //
-      socket.emit('requestPostsWithTag', getQueryParam("tag"));
-    }else if(getQueryParam("sort")=="like"){
-      if(getQueryParam("page")!==""){
-        socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
-      }else{
-        socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
-      }
-    }else if(getQueryParam("sort")=="rand"){
-      if(getQueryParam("page")!==""){
-        socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
-      }else{
-        socket.emit('requestRandPosts', getQueryParam("rand"), "0");
-      }
-    }else{
-      if(getQueryParam("page")!==""){
+    if (getQueryParam("post") !== "") {
+        //
+        socket.emit("viewpost", getQueryParam("post"));
+    } else if (getQueryParam("user") !== "") {
+        console.log('USER');
+        socket.emit('viewuser', getQueryParam("user"));
+    } else if (getQueryParam("tag") !== "") {
+        //
+        socket.emit('requestPostsWithTag', getQueryParam("tag"));
+    } else if (getQueryParam("sort") == "like") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
+        } else {
+            socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
+        }
+    } else if (getQueryParam("sort") == "rand") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
+        } else {
+            socket.emit('requestRandPosts', getQueryParam("rand"), "0");
+        }
+    } else if (getQueryParam("sort") == "recd") {
+        socket.emit('requestRecommendedPosts', '0');
+    } else if (getQueryParam("sort") == "multi") {
+        socket.emit('requestMulti');
+    } else if(getQueryParam("page")!==""){
         socket.emit('requestTop20Posts', getQueryParam("page"));
       }else{
         socket.emit('requestTop20Posts', '0');
@@ -178,37 +181,16 @@ function onloadFunction(){
         $('#posttype-newpost').val("text_post");
         $('#posttype-reply').val("text_post");
         }
-        
         if (sessionStorage.getItem("role")) {
-            switch (sessionStorage.getItem("role")) {
-                case "Lurker":
-                    $(".lurkers-only").css("display", "none");
-                    break;
-                case "Tagger":
-                    $(".taggers-only").css("display", "block");
-                    break;
-                case "Painter":
-                    $(".painters-only").css("display", "block");
-                    break;
-                case "Pollster":
-                    $(".pollsters-only").css("display", "block");
-                    break;
-                case "Tastemaker":
-                    $(".tastemakers-only").css("display", "block");
-                    break;
-                case "Explorer":
-                    $(".explorers-only").css("display", "block");
-                    break;
-                case "Summoner":
-                    $(".summoners-only").css("display", "block");
-                    break;
-                case "Silencer":
-                    $(".silencers-only").css("display", "block");
-                    break;
-                default:
-                    break;
+            (rollString[0] == "1") ? $(".lurkers-only").css("display", "none") : null;
+            (rollString[1] == "1") ? $(".taggers-only").css("display", "block") : null;
+            (rollString[2] == "1") ? $(".painters-only").css("display", "block") : null;
+            (rollString[3] == "1") ? $(".pollsters-only").css("display", "block") : null;
+            (rollString[4] == "1") ? $(".tastemakers-only").css("display", "block") : null;
+            (rollString[5] == "1") ? $(".explorers-only").css("display", "block") : null;
+            (rollString[7] == "1") ? $(".summoners-only").css("display", "block") : null;
+            (rollString[8] == "1") ? $(".silencers-only").css("display", "block") : null;
 
-            }
         }
         else {
             console.log("FE");
@@ -660,6 +642,10 @@ function addRoles(rollString) {
     (rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
     (rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
     (rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
+    (rollString[4] == "1") ? sessionStorage.setItem("Tastemaker", "true") : null;
+    (rollString[5] == "1") ? sessionStorage.setItem("Explorer", "true") : null;
+    (rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
+    (rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
     location.reload("localhost");
 }
 
@@ -945,6 +931,14 @@ function confirmHarvest(postElement){
 }
 
 
+function recommendPost(postID){
+    var dataPacket = {
+        userID: sessionStorage.getItem('userID'),
+        postID: postID
+    };
+    socket.emit('recommendPost', dataPacket);
+}
+
 
 function submitNewPost(){
   console.log("submit");
@@ -1029,6 +1023,9 @@ function visitpage(pagenum){
   $("#entryContainer").empty();
   window.location.href='/?page='+String(pagenum);
 }
+function multistreamView() {
+    window.location.href = "/?sort=multi";
+}
 function controversialSort(){
   console.log(postsOnThisPage);
   postsOnThisPage.sort((a,b) => (parseInt(a.up)+parseInt(a.down)+parseInt(a.replycount) < parseInt(b.up)+parseInt(b.down)+parseInt(b.replycount)) ? 1 : -1);
@@ -1063,6 +1060,9 @@ function viewedSort(){
 }
 function randomSort(){
   window.location.href="/?sort=rand";
+}
+function recommendedSort() {
+  window.location.href = "/?sort=recd";
 }
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
@@ -1198,38 +1198,38 @@ function populatePage(posts, tags){
                 <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
-                <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
-        }
-        else if (post.type == "poll_post") {
-            var date = new Date(post.postID * 1000).toDateString();
-            console.log(post.optionvotes);
-            var percentagearray = [];
-            var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
-            for (var i = 0; i < post.content.length; ++i) {
-                percentagearray[i] = (100*post.optionvotes[i]/percentagetotal).toFixed(1);
-            } 
-            console.log(percentagearray);
+        } else
+            if (post.type == "poll_post") {
+                var date = new Date(post.postID * 1000).toDateString();
+                console.log(post.optionvotes);
+                var percentagearray = [];
+                var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
+                for (var i = 0; i < post.content.length; ++i) {
+                    percentagearray[i] = (100 * post.optionvotes[i] / percentagetotal).toFixed(1);
+                }
+                console.log(percentagearray);
 
-            var mustacheData = {
-                postID: String(post.postID),
-                profit: String(post.upvotes - post.downvotes),
-                up: String(post.upvotes),
-                down: String(post.downvotes),
-                file: String(post.file),
-                date: date,
-                replycount: String(post.replycount),
-                clicks: String(post.clicks),
-                title: String(post.title),
-                content: post.content,
-                percentagearray: percentagearray
-            };
-            postsOnThisPage.push(mustacheData);
-            //console.log(date); <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'> </a>  {{#percentagearray}}<ul class="chartlist"> <li><span class='count'>{{.}}</span><span class='index' style='width: {{.}}%'></span></li></ul>{{/percentagearray}}
-            var processedPostTemplate = `
+                var mustacheData = {
+                    postID: String(post.postID),
+                    profit: String(post.upvotes - post.downvotes),
+                    up: String(post.upvotes),
+                    down: String(post.downvotes),
+                    file: String(post.file),
+                    date: date,
+                    replycount: String(post.replycount),
+                    clicks: String(post.clicks),
+                    title: String(post.title),
+                    content: post.content,
+                    percentagearray: percentagearray
+                };
+                postsOnThisPage.push(mustacheData);
+                //console.log(date); <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'> </a>  {{#percentagearray}}<ul class="chartlist"> <li><span class='count'>{{.}}</span><span class='index' style='width: {{.}}%'></span></li></ul>{{/percentagearray}}
+                var processedPostTemplate = `
             <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
               <div class='post'>
                 
@@ -1270,11 +1270,16 @@ function populatePage(posts, tags){
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
-        }
-  
-    var html = Mustache.render(processedPostTemplate, mustacheData);
-    $('#entryContainer').append(html);
-  });
+            } else {
+                var processedPostTemplate = `<span></span>`;
+                console.log("UNKNOWN POST TYPE");
+            }
+
+        console.log(processedPostTemplate);
+        var html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#entryContainer').append(html);
+    
+    });
   console.log(tags);
   tags.forEach(function(tag){
     var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
@@ -1287,10 +1292,11 @@ function populatePage(posts, tags){
   });
 }
 
-/*{{#content}}<span>{{.}}</span> | {{/content}}<br />
-{ { #percentagearray } } <button><span>{{.}}</span></button>{
-    {
-        /percentagearray}}*/
+
+function populateMultifeed(posts1, posts2, posts3) {
+
+}
+
 
 function populateGrid(postsAndAllTagData){
   console.log(postsAndAllTagData);
@@ -1460,6 +1466,11 @@ socket.on('receiveTagData', function(topPostsForTag){
 socket.on('receiveTop20Data', function(topPostsAndTags){
   postsOnThisPage = [];
   populatePage(topPostsAndTags[0], topPostsAndTags[1]);
+});
+
+socket.on('receiveRecommendedData', function (recommendedData) {
+    postsOnThisPage = [];
+    populatePage(recommendedData[0], recommendedData[1]);
 });
 
 socket.on('receiveSinglePostData', function(dataFromServer){
@@ -1649,6 +1660,10 @@ socket.on('receiveTop20DataGrid', function(results){
   console.log(results);
 });
 
+socket.on('receiveMultifeedData', function (results) {
+    postsOnThisPage = [];
+    populateMultifeed(results[0], results[1], results[2]);
+});
 
 var dbresults = {"nodes":[], "links":[]};
 var mouseCoordinates = [0, 0];
