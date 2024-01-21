@@ -153,7 +153,7 @@ function onloadFunction(){
       }else{
         socket.emit('requestTop20Posts', '0');
       }
-    }
+    
     console.log(document.URL);
     //$('#gameview').css('display', 'none');
 
@@ -1294,7 +1294,263 @@ function populatePage(posts, tags){
 
 
 function populateMultifeed(posts1, posts2, posts3) {
+    console.log(posts1);
+    // $("#entryContainer").empty();
+    // postsOnThisPage = posts;
+    posts1.forEach(function (post) {
+        if (post.type == "text_post") {
+            var date = new Date(post.postID * 1000).toDateString();
+            var mustacheData = {
+                postID: String(post.postID),
+                profit: String(post.upvotes - post.downvotes),
+                up: String(post.upvotes),
+                down: String(post.downvotes),
+                file: String(post.file),
+                date: date,
+                replycount: String(post.replycount),
+                clicks: String(post.clicks),
+                title: String(post.title),
+                content: String(post.content)
+            };
+            postsOnThisPage.push(mustacheData);
+            //console.log(date);
+            var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+              <div class='post'>
+                <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
+                </a>
+                <div class='post-header'><span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+                  <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
+                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
+                <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+                <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+              </div>
+            </div>`;
+        } else
+            if (post.type == "poll_post") {
+                var date = new Date(post.postID * 1000).toDateString();
+                console.log(post.optionvotes);
+                var percentagearray = [];
+                var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
+                for (var i = 0; i < post.content.length; ++i) {
+                    percentagearray[i] = (100 * post.optionvotes[i] / percentagetotal).toFixed(1);
+                }
+                console.log(percentagearray);
 
+                var mustacheData = {
+                    postID: String(post.postID),
+                    profit: String(post.upvotes - post.downvotes),
+                    up: String(post.upvotes),
+                    down: String(post.downvotes),
+                    file: String(post.file),
+                    date: date,
+                    replycount: String(post.replycount),
+                    clicks: String(post.clicks),
+                    title: String(post.title),
+                    content: post.content,
+                    percentagearray: percentagearray
+                };
+                postsOnThisPage.push(mustacheData);
+                //console.log(date); <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'> </a>  {{#percentagearray}}<ul class="chartlist"> <li><span class='count'>{{.}}</span><span class='index' style='width: {{.}}%'></span></li></ul>{{/percentagearray}}
+                var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+              <div class='post'>
+                
+                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content">
+                    <div class="post-content-span">
+
+
+                          <div display='table'>
+                            <div style='float:left; width:8%;'>{{#percentagearray}} <div style='font-size:2.25vw; line-height:1.2;'><span class='tooltiptext'>vote for poll option</span>{{.}}</div>{{/percentagearray}}</div>
+                            <div>{{#content}}<div style='font-size:2.25vw; line-height:1.2;'>{{.}} </div> {{/content}}</div>
+                          </div>
+
+                    </div>
+                
+                <div class='post-header'><span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+                  <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
+                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
+                <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+                <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+              </div>
+            </div>`;
+            } else {
+                var processedPostTemplate = `<span></span>`;
+                console.log("UNKNOWN POST TYPE");
+            }
+
+        //console.log(processedPostTemplate);
+        var html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#multi-left').append(html);
+
+    });
+
+    console.log(posts2);
+    posts2.forEach(function (post) {
+        if (post.type == "text_post") {
+            var date = new Date(post.postID * 1000).toDateString();
+            var mustacheData = {
+                postID: String(post.postID),
+                profit: String(post.upvotes - post.downvotes),
+                up: String(post.upvotes),
+                down: String(post.downvotes),
+                file: String(post.file),
+                date: date,
+                replycount: String(post.replycount),
+                clicks: String(post.clicks),
+                title: String(post.title),
+                content: String(post.content)
+            };
+            postsOnThisPage.push(mustacheData);
+            //console.log(date);
+            var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+              <div class='post'>
+                <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
+                </a>
+                <div class='post-header'><span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+                  <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
+                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
+                <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+                <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+              </div>
+            </div>`;
+        } else
+            if (post.type == "poll_post") {
+                var date = new Date(post.postID * 1000).toDateString();
+                console.log(post.optionvotes);
+                var percentagearray = [];
+                var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
+                for (var i = 0; i < post.content.length; ++i) {
+                    percentagearray[i] = (100 * post.optionvotes[i] / percentagetotal).toFixed(1);
+                }
+                console.log(percentagearray);
+
+                var mustacheData = {
+                    postID: String(post.postID),
+                    profit: String(post.upvotes - post.downvotes),
+                    up: String(post.upvotes),
+                    down: String(post.downvotes),
+                    file: String(post.file),
+                    date: date,
+                    replycount: String(post.replycount),
+                    clicks: String(post.clicks),
+                    title: String(post.title),
+                    content: post.content,
+                    percentagearray: percentagearray
+                };
+                postsOnThisPage.push(mustacheData);
+                //console.log(date); <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'> </a>  {{#percentagearray}}<ul class="chartlist"> <li><span class='count'>{{.}}</span><span class='index' style='width: {{.}}%'></span></li></ul>{{/percentagearray}}
+                var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+              <div class='post'>
+                
+                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content">
+                    <div class="post-content-span">
+
+
+                          <div display='table'>
+                            <div style='float:left; width:8%;'>{{#percentagearray}} <div style='font-size:2.25vw; line-height:1.2;'><span class='tooltiptext'>vote for poll option</span>{{.}}</div>{{/percentagearray}}</div>
+                            <div>{{#content}}<div style='font-size:2.25vw; line-height:1.2;'>{{.}} </div> {{/content}}</div>
+                          </div>
+
+                    </div>
+                
+                <div class='post-header'><span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+                  <span class='upvotecount'>{{profit}}</span>&nbsp;profit</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
+                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
+                <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+                <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+              </div>
+            </div>`;
+            } else {
+                var processedPostTemplate = `<span></span>`;
+                console.log("UNKNOWN POST TYPE");
+            }
+
+        //console.log(processedPostTemplate);
+        var html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#multi-center').append(html);
+
+    });
 }
 
 
@@ -1661,6 +1917,7 @@ socket.on('receiveTop20DataGrid', function(results){
 });
 
 socket.on('receiveMultifeedData', function (results) {
+    console.log(results);
     postsOnThisPage = [];
     populateMultifeed(results[0], results[1], results[2]);
 });

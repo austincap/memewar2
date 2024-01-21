@@ -23,6 +23,7 @@
     "datamaps": "^0.5.9",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
+    "html2canvas": "^1.4.1",
     "http": "0.0.1-security",
     "multer": "^1.4.2",
     "mustache": "^4.0.1",
@@ -35,5 +36,8 @@
     "sanitize-html": "^2.1.2",
     "savjeecoin": "^1.0.1",
     "socket.io": "^3.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0"
   }
 }

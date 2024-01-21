@@ -105,7 +105,7 @@ h3 {
   }
   #tagForNewPost {
     min-width:70%;
-      }
+  }
     #pollContainer {
         display: none;
         position: fixed;
@@ -117,7 +117,28 @@ h3 {
         min-height: 70vh;
         min-width: 70vw;
     }
+    #multiContainer {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        border: double;
+        padding: 1%;
+    }
+    #multi-left {
+        background-color: #101011;
 
+        height:100vh;
+        overflow-y: scroll;
+    }
+    #multi-center {
+
+        height: 100vh;
+        overflow-y: scroll;
+    
+    }
+    #multi-right {
+        height: 100vh;
+        overflow-y: scroll;
+    }
 
  /* roles */
     .painters-only {

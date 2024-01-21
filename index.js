@@ -135,6 +135,13 @@ function blockchainTx(amount, walletfrom, walletto){
   savjeeCoin.getLatestBlock();
 }
 
+app.post('/clicked', function (req, res) {
+
+    console.log('clicked');
+    res.send('<div>fuck</div>');
+});
+
+
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
   console.log("UPLOAD POST");
   var blockId = new ObjectId();
@@ -519,12 +526,12 @@ function requestMultifeedPosts(socket) {
     RETURN doc
     `;
     session
-        .run(topPostQuery)
+        .run(topPost1Query)
         .then(function (result) {
 
             console.log(result['records']);
             result['records'].forEach(function (record) {
-                console.log(record);
+                //console.log(record);
                 var processedPostObject = record["_fields"][0]["properties"];
                 processedPostObject.replycount = record["_fields"][2];
                 posts1.push(processedPostObject);
@@ -543,11 +550,11 @@ function requestMultifeedPosts(socket) {
                 .then(function (result) {
                     result.records.forEach(function (record) {
                         var processedPostObject = record["_fields"][0]["properties"];
-
                         processedPostObject.replycount = record["_fields"][2];
                         posts2.push(processedPostObject);
                     });
                     dataForClient.push(posts2);
+                    dataForClient.push(posts3);
                     socket.emit('receiveMultifeedData', dataForClient);
                     console.log("MULTIFEED DATA SENT");
                 })
