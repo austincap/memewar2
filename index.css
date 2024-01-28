@@ -139,6 +139,9 @@ h3 {
         height: 100vh;
         overflow-y: scroll;
     }
+#map {
+    height: 180px;
+}
 
  /* roles */
     .painters-only {

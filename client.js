@@ -212,7 +212,7 @@ function onloadFunction(){
     var FONT = 36;
     
     // the structure of the map
-    var map;
+var randommap;
     // the ascii display, as a 2d array of characters
     var asciidisplay;
     // a list of all actors, 0 is the player
@@ -266,7 +266,7 @@ function openGameView(){
       }
       console.log(contentBucket);
       // create a new random map
-      map = [];
+      randommap = [];
       for (var y = 0; y < ROWS; y++) {
         var newRow = [];
         for (var x = 0; x < COLS; x++) {
@@ -275,14 +275,14 @@ function openGameView(){
           else 
             newRow.push('.');
         }
-        map.push(newRow);
+          randommap.push(newRow);
       }
     }
 
     function drawMap() {
       for (var y = 0; y < ROWS; y++)
         for (var x = 0; x < COLS; x++)
-          asciidisplay[y][x].content = map[y][x];
+            asciidisplay[y][x].content = randommap[y][x];
     }
     function drawActors() {
       for (var a in actorList) {
@@ -295,7 +295,7 @@ function openGameView(){
           actor.x+dir.x <= COLS - 1 &&
           actor.y+dir.y >= 0 &&
           actor.y+dir.y <= ROWS - 1 &&
-          map[actor.y+dir.y][actor.x +dir.x] == '.';
+          randommap[actor.y+dir.y][actor.x +dir.x] == '.';
     }
     function moveTo(actor, dir) {
       // check if actor can move in the given direction
@@ -428,7 +428,7 @@ function openGameView(){
           // pick a random position that is both a floor and not occupied
           actor.y = randomInt(ROWS);
           actor.x = randomInt(COLS);
-        } while (map[actor.y][actor.x] == '#' || actorMap[actor.y + "_" + actor.x] != null);
+        } while (randommap[actor.y][actor.x] == '#' || actorMap[actor.y + "_" + actor.x] != null);
 
         // add references to the actor to the actors list & map
         actorMap[actor.y + "_" + actor.x] = actor;
@@ -1423,6 +1423,9 @@ function populateMultifeed(posts1, posts2, posts3) {
         $('#multi-left').append(html);
 
     });
+
+
+
 
     console.log(posts2);
     posts2.forEach(function (post) {

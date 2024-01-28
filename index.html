@@ -13,6 +13,8 @@
     <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
     <script type="text/javascript" src="topojson.v1.min.js"></script>
     <script type="text/javascript" src="planetaryjs.js"></script>
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css?family=Nunito|Cute+Font|East+Sea+Dokdo|Orbitron|Press+Start+2P|Quantico|Stalinist+One" rel="stylesheet" />
     <link rel="stylesheet" href="index.css" />
@@ -25,6 +27,7 @@
                 <button id="contextButton" onclick="contextButtonFunction($(this).html());">Alt</button><button id="multistreamButton" onclick="multistreamView();">Multi</button><br />
                 <button id="accountButton" onclick="clickAccountButton(this);">Account</button>
                 <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
+
             </div>
             <div id="signinstuff">
                 <div id="signInBox">
@@ -97,7 +100,9 @@
 
 
     <div id="big-container">
+
         <div id="entryContainer">
+
         </div>
 
         <div id="multiContainer">
@@ -109,6 +114,29 @@
         <div id="divStorage">
 
             <div id="newPostContainer">
+
+                <div id="map" style="width: 600px; height: 400px;"></div>
+                <script>
+
+                    const map = L.map('map').setView([51.505, -0.09], 13);
+
+                    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    }).addTo(map);
+
+                    var popup = L.popup();
+
+                    function onMapClick(e) {
+                        popup
+                            .setLatLng(e.latlng)
+                            .setContent("You clicked the map at " + e.latlng.toString())
+                            .openOn(map);
+                    }
+
+                    map.on('click', onMapClick);
+
+                </script>
                 <form ref='uploadForm'
                       id='uploadForm'
                       action='/upload'
@@ -291,7 +319,7 @@
 
             <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
             <script>
-                var map = new Datamap({ element: document.getElementById('container') });
+               // var map = new Datamap({ element: document.getElementById('container') });
             </script>
             <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
             <canvas id="basicGlobe" width='400' height='400'>
