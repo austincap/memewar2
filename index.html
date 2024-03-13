@@ -25,7 +25,7 @@
         <div id="leftist-buttons">
             <div>
                 <button id="contextButton" onclick="contextButtonFunction($(this).html());">Alt</button><button id="multistreamButton" onclick="multistreamView();">Multi</button><br />
-                <button id="accountButton" onclick="clickAccountButton(this);">Account</button>
+                <button id="accountButton" onclick="clickAccountButton(this);">Account</button><span id="currentrole">test</span>
                 <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
 
             </div>
@@ -48,6 +48,7 @@
             <div><button id="make-new-poll" class="raise pollsters-only" onclick="showNewPollBox();">Create new poll</button></div>
             <div><button id="gamebutton" class="raise" onclick="openGameView();">Open game view</button></div>
             <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
+            <div><button id="make-new-poll" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
             <!--  <div><button id="store">store</button></div> -->
         </div>
     </div>
@@ -72,6 +73,35 @@
             <div class="container">
                 <div class="item">
                     <button><h3>Select the role <span id="submitRoleButton"></span></h3></button>
+                    <button id="cancelChooseRole" class="raise" onclick="returnChooseRoleBox();">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="algomancy-overlay-box">
+        <div class="app">
+            <div class="container">
+                <form ref='uploadAlgorithmic changes'
+                      id='uploadAlgomancy'
+                      action='/uploadAlgomod
+                      onsubmit='submitNewAlgomance();'
+                      method='post'
+                      encType='multipart/form-data'>
+                    <label for="likeweight">Like weight:</label><input type="number" id="likeweight" name="likeweight" min="-10" max="10">
+                    <label for="viewsweight">View weight:</label><input type="number" id="viewsweight" name="viewsweight" min="-10" max="10">
+                    <label for="sizeweight">Size weight:</label><input type="number" id="sizeweight" name="sizeweight" min="-10" max="10">
+                    <label for="timeweight">Time weight:</label><input type="number" id="timeweight" name="timeweight" min="-10" max="10">
+                    <label for="commentsweight">Comment weight:</label><input type="number" id="commentsweight" name="commentsweight" min="-10" max="10">
+                    <br />
+                    <input class="raise" type='submit' value='Submit!' />
+                </form>
+            </div>
+            <div class="container">
+                <div class="item">
+                    <button><h3>Cast algomancy<span id="algomancycost"></span></h3></button>
+                    <button id="cancelAlgomancy" class="raise" onclick="returnAlgomancyBox();">Cancel</button>
                 </div>
             </div>
         </div>
@@ -83,7 +113,8 @@
             <div class="w3-dropdown-click">
                 <button onclick="dropDownFunction()" class="w3-button w3-black">Sort by</button>
                 <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
-                    <button onclick="controversialSort()" class="w3-bar-item w3-button" id="sort-by-controversial">Most controversial</button>
+                    <button onclick="algomancerSort()" class="w3-bar-item w3-button" id="sort-by-random">Algomancer</button>
+                    <button onclick="controversialSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-controversial">Most controversial</button>
                     <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
                     <button onclick="loathedSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-downvotes">Most loathed</button>
                     <button onclick="recentSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-time">Most recent</button>
@@ -197,9 +228,9 @@
                         <textarea type="text" style='height:30px;' placeholder="write a poll option here" id="uploadPollOption-1" name="pollOption1" maxlength="800"></textarea><br />
                         <textarea type="text" style='height:30px;' placeholder="write a poll option here" id="uploadPollOption-2" name="pollOption2" maxlength="800"></textarea><br />
                     </div>
-                        <img id="myimg-poll" class="permahidden" src="" height="150" alt="Image preview..." />
-                        <input type="file" class="permahidden" id="sampleFile-poll" name="sampleFile-poll" onchange="previewFile();" />
-                    <br/>
+                    <img id="myimg-poll" class="permahidden" src="" height="150" alt="Image preview..." />
+                    <input type="file" class="permahidden" id="sampleFile-poll" name="sampleFile-poll" onchange="previewFile();" />
+                    <br />
                     <input class="raise" type='submit' value='Submit!' />
                 </form>
                 <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
@@ -251,94 +282,94 @@
     </div>
 
 
-        <div>
-            <div class="header-container">
-                <div></div>
-                <div>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
-                    <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
-                </div>
-                <div></div>
+    <div>
+        <div class="header-container">
+            <div></div>
+            <div>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
+            </div>
+            <div></div>
+        </div>
+
+        <div id="adjacentblocks">
+            <div id="previewframe">
+                <div id="previewframeTopSpace"></div>
+                <div id="postNameInModalPostOnly"></div>
+                <button id="upvote" onclick="upvotePost()">Upvote it</button>
+                <button id="downvote">Hate it</button>
+                <button id="tagIt" onclick="tagPost()">Tag it</button>
+                <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+                <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)" /></div>
+                <br />
+                <hr />
+                <div id="previewContent">test</div>
             </div>
 
-            <div id="adjacentblocks">
-                <div id="previewframe">
-                    <div id="previewframeTopSpace"></div>
-                    <div id="postNameInModalPostOnly"></div>
-                    <button id="upvote" onclick="upvotePost()">Upvote it</button>
-                    <button id="downvote">Hate it</button>
-                    <button id="tagIt" onclick="tagPost()">Tag it</button>
-                    <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-                    <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)" /></div>
-                    <br />
-                    <hr />
-                    <div id="previewContent">test</div>
-                </div>
+            <div id="d3frame">
+                <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+                <svg></svg>
+            </div>
 
-                <div id="d3frame">
-                    <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
-                    <svg></svg>
-                </div>
+            <div id="upvoteTagModal">
+                <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
+                <div id="contentInModal"></div>
+                <hr />
+                <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
+                <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+            </div>
 
-                <div id="upvoteTagModal">
-                    <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
-                    <div id="contentInModal"></div>
-                    <hr />
-                    <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
-                    <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-                </div>
-
-                <div id="submitnew">
-                    <input type="text" id="nodename" maxlength="150" class="submissionslot" placeholder="post title goes here" />
-                    <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here" /><br />
-                    <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)" /><br />
-                    <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)" /><br />
-                    <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
-                </div>
+            <div id="submitnew">
+                <input type="text" id="nodename" maxlength="150" class="submissionslot" placeholder="post title goes here" />
+                <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here" /><br />
+                <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)" /><br />
+                <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)" /><br />
+                <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
             </div>
         </div>
+    </div>
 
-        <div id="historyview">
-            <form ref='uploadForm'
-                  id='uploadForm'
-                  action='/upload'
-                  onsubmit='submitGeoHistoryPost();'
-                  method='post'
-                  encType='multipart/form-data'>
-                <input type="date" />
-            </form>
+    <div id="historyview">
+        <form ref='uploadForm'
+              id='uploadForm'
+              action='/upload'
+              onsubmit='submitGeoHistoryPost();'
+              method='post'
+              encType='multipart/form-data'>
+            <input type="date" />
+        </form>
 
-            <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
-            <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
-            <script src="node_modules/datamaps/dist/datamaps.world.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+        <script src="node_modules/datamaps/dist/datamaps.world.js"></script>
 
-            <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
-            <script>
-               // var map = new Datamap({ element: document.getElementById('container') });
-            </script>
-            <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
-            <canvas id="basicGlobe" width='400' height='400'>
-            </canvas>
-        </div>
-
-
-
-        <div id="gridview">
-        </div>
-        <div id="bubbiview">
-        </div>
-        <div id="gameview">
-            <div id="contentdisplayed"></div>
-            <img id="picdisplayed">
-        </div>
+        <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
+        <script>
+            // var map = new Datamap({ element: document.getElementById('container') });
+        </script>
+        <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
+        <canvas id="basicGlobe" width='400' height='400'>
+        </canvas>
+    </div>
 
 
-    </body>
+
+    <div id="gridview">
+    </div>
+    <div id="bubbiview">
+    </div>
+    <div id="gameview">
+        <div id="contentdisplayed"></div>
+        <img id="picdisplayed">
+    </div>
+
+
+</body>
     <script type="text/javascript" src="client.js"></script>
     <script src="phaser.min.js"></script>
     <script src="blockchain.js"></script>

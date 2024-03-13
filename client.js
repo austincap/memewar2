@@ -188,9 +188,15 @@ function onloadFunction(){
             (rollString[3] == "1") ? $(".pollsters-only").css("display", "block") : null;
             (rollString[4] == "1") ? $(".tastemakers-only").css("display", "block") : null;
             (rollString[5] == "1") ? $(".explorers-only").css("display", "block") : null;
+            (rollString[6] == "1") ? $(".silencers-only").css("display", "block") : null;
             (rollString[7] == "1") ? $(".summoners-only").css("display", "block") : null;
-            (rollString[8] == "1") ? $(".silencers-only").css("display", "block") : null;
-
+            (rollString[8] == "1") ? $(".jurors-only").css("display", "block") : null;
+            (rollString[9] == "1") ? $(".stalkers-only").css("display", "block") : null;
+            (rollString[10] == "1") ? $(".editors-only").css("display", "block") : null;
+            (rollString[11] == "1") ? $(".leaders-only").css("display", "block") : null;
+            (rollString[12] == "1") ? $(".counselors-only").css("display", "block") : null;
+            (rollString[13] == "1") ? $(".founders-only").css("display", "block") : null;
+            (rollString[14] == "1") ? $(".algomancers-only").css("display", "block") : null;
         }
         else {
             console.log("FE");
@@ -646,7 +652,47 @@ function addRoles(rollString) {
     (rollString[5] == "1") ? sessionStorage.setItem("Explorer", "true") : null;
     (rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
     (rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
-    location.reload("localhost");
+    //location.reload("localhost");
+}
+function getFirstRole(rollString) {
+    for (let i = 0; i < rollString.length; i++) {
+        if (rollString[i] == '1') {
+            switch (i) {
+                case 0:
+                    return "Lurker";
+                case 1:
+                    return "Tagger";
+                case 2:
+                    return "Painter";
+                case 3:
+                    return "Pollster";
+                case 4:
+                    return "Tastemaker";
+                case 5:
+                    return "Explorer";
+                case 6:
+                    return "Summoner";
+                case 7:
+                    return "Silencer";
+                case 8:
+                    return "Juror";
+                case 9:
+                    return "Stalker";
+                case 10:
+                    return "Editor";
+                case 11:
+                    return "Leader";
+                case 12:
+                    return "Counselor";
+                case 13:
+                    return "Founder";
+                case 14:
+                    return "Algomancer";
+                default:
+                    return "No thing found";
+            }
+        } 
+    }
 }
 
 function selectThisRole(roleName) {
@@ -682,7 +728,9 @@ function contextButtonFunction(currentContext){
       break;
   }
 }
-
+function returnChooseRoleBox() {
+    $('#signup-overlay-box').css('display', 'none');
+}
 
 
 function getAllPostsWithThisTag(tagname){
@@ -751,6 +799,21 @@ function submitNewPoll() {
     returnPollBox();
 }
 
+
+function showAlgomancyBox() {
+    $('#algomancy-overlay-box').css('display', 'block');
+    $("#likeweight").bind('keyup change click', function (e) {
+        if (!$(this).data("previousValue") ||
+            $(this).data("previousValue") != $(this).val()
+        ) {
+            console.log("changed");
+            $(this).data("previousValue", $(this).val());
+        }
+    });
+    $("#likeweight").each(function () {
+        $(this).data("previousValue", $(this).val());
+    });
+}
 
 function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement){
   var userID = (sessionStorage.getItem('userID') !== null) ? sessionStorage.getItem('userID') : "ANON";
@@ -1822,12 +1885,14 @@ socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('username', loginData.name);
     sessionStorage.setItem('memecoin', loginData.memecoin);
     addRoles(loginData.roles);
+    console.log(loginData);
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
     $('#signup-overlay-box').css('display', 'none');
   $('.profallow').css('display','inline');
   $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
-  $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
+    $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
+    $('#currentrole').html(getFirstRole(loginData.roles));
 });
 
 socket.on('userDataFound', function(userData){
