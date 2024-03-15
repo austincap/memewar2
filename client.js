@@ -164,7 +164,8 @@ function onloadFunction(){
         });
 
     window.setTimeout(function(){
-      if(sessionStorage.getItem('userID') !== null){
+        if (sessionStorage.getItem('userID') !== null) {
+            addRoles(sessionStorage.getItem('userroles'));
         console.log(sessionStorage.getItem('userID'));
         $('#signinstuff').css('display', 'none');
         $('#userprofilestuff').css('display', 'inline-block');
@@ -173,7 +174,10 @@ function onloadFunction(){
         $('#userID-newpost').val(sessionStorage.getItem('userID'));
         $('#userID-reply').val(sessionStorage.getItem('userID'));
         $('#posttype-newpost').val("text_post");
-        $('#posttype-reply').val("text_post");
+          $('#posttype-reply').val("text_post");
+            $(".explorers-only").css("display", "block!important");
+          $('#currentrole').html(getFirstRole(sessionStorage.getItem('userroles')));
+  
       }else{
         console.log(sessionStorage.getItem('userID'));
         $('#userID-newpost').val("ANON");
@@ -181,13 +185,16 @@ function onloadFunction(){
         $('#posttype-newpost').val("text_post");
         $('#posttype-reply').val("text_post");
         }
-        if (sessionStorage.getItem("role")) {
+        var rollString = sessionStorage.getItem('userroles');
+        if (sessionStorage.getItem('userroles') != null) {
+            console.log("ROLOLSTRING");
+            console.log(sessionStorage.getItem('userroles'));
             (rollString[0] == "1") ? $(".lurkers-only").css("display", "none") : null;
             (rollString[1] == "1") ? $(".taggers-only").css("display", "block") : null;
-            (rollString[2] == "1") ? $(".painters-only").css("display", "block") : null;
+            (rollString[2] == "1") ? document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
             (rollString[3] == "1") ? $(".pollsters-only").css("display", "block") : null;
             (rollString[4] == "1") ? $(".tastemakers-only").css("display", "block") : null;
-            (rollString[5] == "1") ? $(".explorers-only").css("display", "block") : null;
+            (rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
             (rollString[6] == "1") ? $(".silencers-only").css("display", "block") : null;
             (rollString[7] == "1") ? $(".summoners-only").css("display", "block") : null;
             (rollString[8] == "1") ? $(".jurors-only").css("display", "block") : null;
@@ -205,7 +212,8 @@ function onloadFunction(){
         }
       document.querySelectorAll('img').forEach(function(img){
       img.onerror = function(){this.style.display='none';};
-     });
+      });
+       
     }, 800);
   }
   function randomInt(max) {
@@ -613,13 +621,16 @@ function signout(thisButton) {
     $('#signout').css('display', 'none');
     location.reload("localhost");
 }
-function registerNewUser(){
-  var registrationData = {
-    username: $('#signInName').val(),
-      password: $('#passwordvalue').val(),
-      role: $('#submitRoleButton').val()
-  };
-  socket.emit('registerNewUser', registrationData);
+function registerNewUser() {
+    console.log($('#rolenumbers').html());
+    console.log($('#submitRoleButton').html());
+    var registrationData = {
+        username: $('#signInName').val(),
+        password: $('#passwordvalue').val(),
+        newuserRoles: $('#rolenumbers').html(),
+        role: $('#submitRoleButton').html()
+    };
+    socket.emit('registerNewUser', registrationData);
 }
 function loginUser(){
   var logindata = {
@@ -644,12 +655,13 @@ function clickAccountButton(thisButton){
   }
 }
 function addRoles(rollString) {
+    console.log("ADD ROLES");
     (rollString[0] == "1") ? sessionStorage.setItem("Lurker", "true") : null;
     (rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
     (rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
     (rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
     (rollString[4] == "1") ? sessionStorage.setItem("Tastemaker", "true") : null;
-    (rollString[5] == "1") ? sessionStorage.setItem("Explorer", "true") : null;
+    (rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
     (rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
     (rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
     //location.reload("localhost");
@@ -697,6 +709,34 @@ function getFirstRole(rollString) {
 
 function selectThisRole(roleName) {
     console.log(roleName);
+    var rolenumber = '000000000000000';
+    switch (roleName) {
+        case "Lurker":
+            rolenumber = '100000000000000';
+            break;
+        case "Tagger":
+            rolenumber = '010000000000000';
+            break;
+        case "Painter":
+            rolenumber = '001000000000000';
+            break;
+        case "Pollster":
+            rolenumber = '000100000000000';
+            break;
+        case "Tastemaker":
+            rolenumber = '000010000000000';
+            break;
+        case "Explorer":
+            console.log("SWITCH WORK?");
+            rolenumber = '000001000000000';
+            break;
+        default:
+            rolenumber = '000000000000000';
+            break;
+        
+    }
+    console.log(rolenumber);
+    $('#rolenumbers').text(rolenumber);
     $('#submitRoleButton').text(roleName);
 }
 function contextButtonFunction(currentContext){
@@ -801,6 +841,7 @@ function submitNewPoll() {
 
 
 function showAlgomancyBox() {
+
     $('#algomancy-overlay-box').css('display', 'block');
     $("#likeweight").bind('keyup change click', function (e) {
         if (!$(this).data("previousValue") ||
@@ -814,6 +855,35 @@ function showAlgomancyBox() {
         $(this).data("previousValue", $(this).val());
     });
 }
+function submitNewAlgomance() {
+    console.log("ALGOMANCE SENT");
+    $("#likeweight").empty();
+    $("#sizeweight").empty();
+    $("#viewweight").empty();
+    $("#timeweight").empty();
+    $("#commentweight").empty();
+    $("#userweight").empty();
+    returnAlgomancyBox();
+}
+function returnAlgomancyBox() {
+    $('#algomancy-overlay-box').css('display', 'none');
+}
+
+
+function showPaintBox(postid) {
+    console.log("SHOW POSTID");
+    console.log(postid);
+    $('#paintPostId').val(postid);
+    $('#paintUserId').val(sessionStorage.getItem('userID'));
+    $('#paintContainer').css('display', 'block');
+}
+function returnPaintBox() {
+    $('#paintContainer').css('display', 'none');
+}
+function submitNewPaint() {
+    console.log("SUBMIT PAINT CHANGE");
+}
+
 
 function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement){
   var userID = (sessionStorage.getItem('userID') !== null) ? sessionStorage.getItem('userID') : "ANON";
@@ -1088,6 +1158,14 @@ function visitpage(pagenum){
 }
 function multistreamView() {
     window.location.href = "/?sort=multi";
+}
+
+function algomancerSort() {
+    var algomancyvalues = { commentweight: 1, likeweight: 6, sizeweight: 4, timeweight: 1, userweight: 7, viewweight: 1 };
+    console.log(postsOnThisPage);
+    postsOnThisPage.sort((a, b) => ( parseInt(a.postID) * algomancyvalues.timeweight + parseInt(a.up) * algomancyvalues.likeweight + parseInt(a.clicks) * algomancyvalues.viewweight + parseInt(a.replycount) * algomancyvalues.commentweight < parseInt(b.postID) * algomancyvalues.timeweight +parseInt(b.up) * algomancyvalues.likeweight + parseInt(b.clicks) * algomancyvalues.viewweight + parseInt(b.replycount) * algomancyvalues.commentweight) ? 1 : -1);
+    console.log(postsOnThisPage);
+    //socket.emit('requestAlgomancerPosts', 1, [6,1,4,1,1,7]);
 }
 function controversialSort(){
   console.log(postsOnThisPage);
@@ -1884,7 +1962,8 @@ socket.on('loggedIn', function(loginData){
   sessionStorage.setItem('userID', loginData.userID);
   sessionStorage.setItem('username', loginData.name);
     sessionStorage.setItem('memecoin', loginData.memecoin);
-    addRoles(loginData.roles);
+    sessionStorage.setItem("userroles", loginData.userroles);
+    addRoles(loginData.userroles);
     console.log(loginData);
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
@@ -1892,7 +1971,7 @@ socket.on('loggedIn', function(loginData){
   $('.profallow').css('display','inline');
   $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
     $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
-    $('#currentrole').html(getFirstRole(loginData.roles));
+    $('#currentrole').html(getFirstRole(loginData.userroles));
 });
 
 socket.on('userDataFound', function(userData){

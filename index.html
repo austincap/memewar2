@@ -85,15 +85,16 @@
             <div class="container">
                 <form ref='uploadAlgorithmic changes'
                       id='uploadAlgomancy'
-                      action='/uploadAlgomod
+                      action='/uploadAlgomod'
                       onsubmit='submitNewAlgomance();'
                       method='post'
                       encType='multipart/form-data'>
                     <label for="likeweight">Like weight:</label><input type="number" id="likeweight" name="likeweight" min="-10" max="10">
-                    <label for="viewsweight">View weight:</label><input type="number" id="viewsweight" name="viewsweight" min="-10" max="10">
+                    <label for="viewweight">View weight:</label><input type="number" id="viewweight" name="viewweight" min="-10" max="10">
                     <label for="sizeweight">Size weight:</label><input type="number" id="sizeweight" name="sizeweight" min="-10" max="10">
                     <label for="timeweight">Time weight:</label><input type="number" id="timeweight" name="timeweight" min="-10" max="10">
-                    <label for="commentsweight">Comment weight:</label><input type="number" id="commentsweight" name="commentsweight" min="-10" max="10">
+                    <label for="commentweight">Comment weight:</label><input type="number" id="commentweight" name="commentweight" min="-10" max="10">
+                    <label for="userweight">Unique user weight:</label><input type="number" id="userweight" name="userweight" min="-10" max="10">
                     <br />
                     <input class="raise" type='submit' value='Submit!' />
                 </form>
@@ -237,11 +238,11 @@
                 <button onclick="addPollOption()">Add Poll Option</button>
             </div>
             <!--
-                <br />
-                <div id="pollOptionContainer">
-                </div>
-                 <img id="myimg-poll" src="" height="150" alt="Image preview...">
-               <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
+        <br />
+        <div id="pollOptionContainer">
+        </div>
+         <img id="myimg-poll" src="" height="150" alt="Image preview...">
+       <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
 
             <div id="tagContainer">
                 <div id="existingTagsForThisPost">
@@ -274,6 +275,46 @@
                     <a href="https://twitter.com/share?ref_src=twsrc%5Etfw/+463634643" class="twitter-share-button" data-show-count="false">Tweet</a>
                     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 </div>
+            </div>
+
+            <div id="paintContainer">
+                <form ref='uploadPaintChange'
+                      id='uploadPaint'
+                      action='/uploadpaintmod'
+                      onsubmit='submitNewPaint();'
+                      method='post'
+                      encType='multipart/form-data'>
+                    <select id="paintFont" name="paintfont">
+                        <option value="courier">Courier</option>
+                        <option value="comicsans">Comic Sans</option>
+                        <option value="impact">Impact</option>
+                    </select><br />
+                    <select id="paintSize" name="paintsize">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="big">Big</option>
+                    </select>
+                    <br />
+                    <select id="paintBorder" name="paintborder">
+                        <option value="dashed">Dashed</option>
+                        <option value="doubledash">Double</option>
+                        <option value="nodash">None</option>
+                    </select>
+                    <br />
+                    <select id="paintBackground" name="paintbackground">
+                        <option value="au">Grey</option>
+                        <option value="blue">Blue</option>
+                        <option value="offwhite">Offwhite</option>
+                    </select>
+                    <br />
+                    <input class="permahidden" id="paintPostId" name="paintPostId" />
+                    <input class="permahidden" id="paintUserId" name="paintUserId" />
+                    <img id="myimg-paint" class="permahidden" src="" height="150" alt="Image preview..." />
+                    <input type="file" class="permahidden" id="sampleFile-paint" name="sampleFile-paint" onchange="previewFile();" />
+                    <br />
+                    <input class="raise" type='submit' value='Submit!' />
+                </form>
+                <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
             </div>
 
             <div id="warningFloater">
@@ -368,6 +409,7 @@
         <img id="picdisplayed">
     </div>
 
+    <div id="rolenumbers"></div>
 
 </body>
     <script type="text/javascript" src="client.js"></script>

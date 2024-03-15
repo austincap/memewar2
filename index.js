@@ -253,8 +253,6 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
   res.redirect('/');
 });
 
-
-
 app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, next) {
     console.log("UPLOAD POLL");
     console.log(req.body);
@@ -327,6 +325,125 @@ app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, ne
     res.redirect('/');
 });
 
+app.post('/uploadAlgomod', upload.single('sampleFile-algo'), function (req, res, next) {
+    console.log("UPLOAD ALGORITHM TWEAK");
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var fileName = "officialunofficialplaceholderlogo.jpg";
+    var postId = parseInt(blockId.getTimestamp());
+    var polltitle = sanitizeHtml(req.body.title);
+    var polluserID = parseInt(req.body.userID);
+    var polltype = req.body.type;
+    var pollOptions = [];
+    for (let i = 1; i <= 6; i++) {
+        if (req.body["pollOption" + String(i)] != null) {
+            pollOptions.push(req.body["pollOption" + String(i)]);
+        }
+    }
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    var params = {
+        postID: postId,
+        upvotes: 1,
+        downvotes: 0,
+        type: polltype,
+        title: polltitle,
+        userID: polluserID,
+        tag: "poll",
+        file: fileName,
+        clicks: 1,
+        censorattempts: 0,
+        shields: 0,
+        memecoinsspent: 0,
+        replyto: 453453453445,
+        tagupvotes: 1,
+        content: pollOptions,
+        optionvotes: [0, 0, 0, 0, 0, 0]
+    };
+    if (req.userID == "ANON") {
+        query = `
+        MATCH (origPost:Post {postID:$replyto})
+        MERGE (whichtag:Tag {name:$tag})
+        MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+        MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpost)-[rt:REPLYTO]->(origPost)
+        RETURN newpost, whichtag, origPost
+        `;
+    } else {
+        query = `
+        MATCH (whomadeit:User {userID:$userID})-[:HASROLE]->(ro:Role {name:"Pollster"})
+        MERGE (whichtag:Tag {name:$tag})
+        MERGE (newpoll:Post {type:$type, title:$title, upvotes:$upvotes, downvotes:$downvotes, clicks:$clicks, postID:$postID, content:$content, optionvotes:$optionvotes, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+        MERGE (whichtag)<-[ta:TAGGEDAS {upvotes:$tagupvotes}]-(newpoll)-[cb:CREATEDBY]->(whomadeit)
+        WITH newpoll AS ne
+        OPTIONAL MATCH (ne)-[r2:REPLYTO]-(re:Post {postID:$replyto})
+        FOREACH (o IN CASE WHEN re IS NOT NULL THEN [re] ELSE [] END |
+          MERGE (ne)-[r2:REPLYTO]->(re)
+        )
+        RETURN ne
+        `;
+    }
+    session
+        .run(query, params)
+        .then(function (result) {
+            //console.log(result);
+             result.records[0]["_fields"].forEach(function(record){
+               console.log(record);
+             });
+             //session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
+
+app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, res, next) {
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var fileName = "officialunofficialplaceholderlogo.jpg";
+    var postId = parseInt(blockId.getTimestamp());
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    var params = {
+        postID: postId,
+        upvotes: 1,
+        downvotes: 0,
+        type: "paintedit",
+        title: sanitizeHtml("paintedit"),
+        content: JSON.stringify(req.body),
+        userID: parseInt(req.body.userId),
+        tag: "req.body.tag",
+        file: fileName,
+        clicks: 1,
+        censorattempts: 0,
+        shields: 0,
+        memecoinsspent: 0,
+        replyto: parseInt(req.body.paintPostId),
+        tagupvotes: 1
+    };
+    query = `
+    MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
+    SET origPost.censorattempts = 1
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (newpost)-[cb:CREATEDBY]->(whomadeit)
+    MERGE (newpost)-[rt:PAINTS]->(origPost)
+    RETURN newpost, origPost
+    `;
+    
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            //});
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
 function requestTagsForThisPost(socket, postID){
   var params = {
     postID: parseInt(postID)
@@ -512,6 +629,9 @@ function requestRecommendedPosts(socket, pagenum) {
         });
 }
 
+function requestAlgomancerPosts(socket, pagenum) {
+
+}
 
 function requestMultifeedPosts(socket) {
     console.log("MULTIFEED REQUEST");
@@ -763,6 +883,10 @@ io.on('connection', function (socket) {
         requestRecommendedPosts(socket, pagenum);
     });
 
+    socket.on('requestAlgomancerPosts', function (pagenum) {
+        requestAlgomancerPosts(socket, pagenum);
+    });
+
     socket.on('blockchaintx', function (transaction) {
 
     });
@@ -770,26 +894,9 @@ io.on('connection', function (socket) {
     /////////////////////
     //ACCOUNT STUFF
     socket.on('registerNewUser', function (registrationData) {
+        console.log(registrationData);
         var newuserID = new ObjectId();
         newuserID = newuserID.getTimestamp();
-        var newuserRoles = "000000000000000";
-        //newuserID = newuserID.toString("hex").substr(0,15);
-        switch (registrationData.role) {
-            case "Lurker":
-                newuserRoles = "100000000000000";
-            case "Tagger":
-                newuserRoles = "010000000000000";
-            case "Painter":
-                newuserRoles = "001000000000000";
-            case "Pollster":
-                newuserRoles = "000100000000000";
-            case "Tastemaker":
-                newuserRoles = "000010000000000";
-            case "Explorer":
-                newuserRoles = "000001000000000";
-            default:
-                newuserRoles = "000000000000000";
-        }
         var query = `
       CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
       RETURN newuser
@@ -799,7 +906,7 @@ io.on('connection', function (socket) {
             userID: parseInt(newuserID),
             password: registrationData.password,
             memecoin: 200,
-            roles: newuserRoles
+            newuserRoles: registrationData.newuserRoles
         };
         session
             .run(query, params)
