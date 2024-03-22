@@ -1114,6 +1114,9 @@ function previewFile(){
     preview.src = "";
   }  
 }
+function showPaintedPosts() {
+    socket.emit('requestPaint');
+}
 
 
 
@@ -1958,9 +1961,24 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   });
 });
 
+socket.on('paintPosts', function (paintDataArray) {
+    paintDataArray.forEach(function (paintPostData) {
+        paintPostData = JSON.parse(paintPostData);
+        //console.log(paintPostData.paintPostId);
+        var postToPaint = $("[postid="+paintPostData.paintPostId+"]");
+        if (postToPaint !== undefined) {
+            console.log(postToPaint);
+            postToPaint.css("font-family", paintPostData.paintfont);
+            postToPaint.css("border-style", paintPostData.paintborder);
+            postToPaint.css("font-size", paintPostData.paintsize);
+            postToPaint.css("background-color", paintPostData.paintbackground);
+        }
+    });
+});
+
 socket.on('loggedIn', function(loginData){
-  sessionStorage.setItem('userID', loginData.userID);
-  sessionStorage.setItem('username', loginData.name);
+    sessionStorage.setItem('userID', loginData.userID);
+    sessionStorage.setItem('username', loginData.name);
     sessionStorage.setItem('memecoin', loginData.memecoin);
     sessionStorage.setItem("userroles", loginData.userroles);
     addRoles(loginData.userroles);
@@ -1968,8 +1986,8 @@ socket.on('loggedIn', function(loginData){
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
     $('#signup-overlay-box').css('display', 'none');
-  $('.profallow').css('display','inline');
-  $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('.profallow').css('display','inline');
+    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
     $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
     $('#currentrole').html(getFirstRole(loginData.userroles));
 });

@@ -399,6 +399,7 @@ app.post('/uploadAlgomod', upload.single('sampleFile-algo'), function (req, res,
 
 app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, res, next) {
     console.log(req.body);
+    console.log(parseInt(req.body.paintUserId));
     var blockId = new ObjectId();
     var query;
     var fileName = "officialunofficialplaceholderlogo.jpg";
@@ -411,7 +412,7 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
         type: "paintedit",
         title: sanitizeHtml("paintedit"),
         content: JSON.stringify(req.body),
-        userID: parseInt(req.body.userId),
+        userID: parseInt(req.body.paintUserId),
         tag: "req.body.tag",
         file: fileName,
         clicks: 1,
@@ -423,7 +424,6 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
     };
     query = `
     MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
-    SET origPost.censorattempts = 1
     MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
     MERGE (newpost)-[cb:CREATEDBY]->(whomadeit)
     MERGE (newpost)-[rt:PAINTS]->(origPost)
@@ -433,16 +433,14 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
     session
         .run(query, params)
         .then(function (result) {
-            console.log(result);
-            // result.records[0]["_fields"].forEach(function(record){
-            //   console.log(record);
-            //});
-            // session.close();
+            console.log(result.records);
+            result.records.forEach(function(record){
+              console.log(record);
+            });
         })
         .catch(function (error) {
             console.log(error);
         });
-    res.redirect('/');
 });
 function requestTagsForThisPost(socket, postID){
   var params = {
@@ -475,6 +473,29 @@ function requestTagsForThisPost(socket, postID){
       });
 }
 
+
+function requestPaintedPosts(socket) {
+    console.log("REUQEST PAINTER");
+    var paintDataArray = [];
+    var query;
+    query = `
+    MATCH (n:Post)<-[:PAINTS]-(m:Post)
+    RETURN n.postID, COLLECT(m.content)[0]
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('paintPosts', paintDataArray);
+            console.log(paintDataArray);
+            
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 function requestTop20Posts(socket, pagenum){
   console.log(String(PAGESIZE*pagenum));
   var topPostsAndTags = [];
@@ -526,7 +547,7 @@ function requestTop20Posts(socket, pagenum){
       });
 }
 
-function requestRandPosts(socket, randPages, pagenum){
+function requestRandPosts(socket, randPages, pagenum) {
   console.log(String(randPages));
   console.log("pagenum "+pagenum);
   var topPostsAndTags = [];
@@ -876,6 +897,10 @@ io.on('connection', function (socket) {
             default:
                 requestTop20Posts(socket, pagenum);
         }
+    });
+
+    socket.on('requestPaint', function () {
+        requestPaintedPosts(socket);
     });
 
 
