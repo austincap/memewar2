@@ -442,6 +442,40 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
             console.log(error);
         });
 });
+
+app.post('/uploadreport', upload.single('sampleFile-none'), function (req, res, next) {
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var postId = parseInt(blockId.getTimestamp());
+    var params = {
+        postID: postId,
+        upvotes: parseInt(req.body.carecost),
+        type: "report",
+        userID: parseInt(req.body.userIDreport),
+        reportReason: req.body.reportreason,
+        replyto: parseInt(req.body.postIDreport)
+     };
+     query = `
+        MATCH (whomadeit:User {userID:$userID}), (origPost:Post {postID:$replyto})
+        MERGE (origPost)<-[re:REPORTED]-(whomadeit)
+        SET re.upvotes=$upvotes, re.reason=$reportReason
+        RETURN origPost, re, whomadeit
+        `;
+     session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            // });
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
 function requestTagsForThisPost(socket, postID){
   var params = {
     postID: parseInt(postID)
@@ -473,7 +507,30 @@ function requestTagsForThisPost(socket, postID){
       });
 }
 
-
+function requestPostsForArbitration(socket) {
+    console.log("REUQEST POSTS FOR ARBITRATION");
+    var arbitrationPostsArray = [];
+    query = `
+    MATCH (n:Post)<-[re:REPORTED]-(m)
+    WITH n.postID AS postID, n.title AS title, COLLECT(re.reason) AS reasonarray, SUM(re.upvotes) AS totalcare
+    RETURN postID, title, reasonarray, totalcare ORDER BY totalcare DESC
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            //console.log(result);
+            result.records.forEach(function (record) {
+                console.log(record['_fields'][0]);
+                console.log(record['_fields'][1]);
+                console.log(record['_fields'][2]);
+                arbitrationPostsArray.push(record['_fields']);
+            });
+            socket.emit('receiveArbitrationPostsArray', arbitrationPostsArray);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 function requestPaintedPosts(socket) {
     console.log("REUQEST PAINTER");
     var paintDataArray = [];
@@ -903,6 +960,9 @@ io.on('connection', function (socket) {
         requestPaintedPosts(socket);
     });
 
+    socket.on('requestPostsForArbitration', function () {
+        requestPostsForArbitration(socket);
+    });
 
     socket.on('requestRecommendedPosts', function (pagenum) {
         requestRecommendedPosts(socket, pagenum);

@@ -195,9 +195,9 @@ function onloadFunction(){
             (rollString[3] == "1") ? $(".pollsters-only").css("display", "block") : null;
             (rollString[4] == "1") ? $(".tastemakers-only").css("display", "block") : null;
             (rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
-            (rollString[6] == "1") ? $(".silencers-only").css("display", "block") : null;
+            (rollString[6] == "1") ? $(".protectors-only").css("display", "block") : null;
             (rollString[7] == "1") ? $(".summoners-only").css("display", "block") : null;
-            (rollString[8] == "1") ? $(".jurors-only").css("display", "block") : null;
+            (rollString[8] == "1") ? $(".arbitrators-only").css("display", "block") : null;
             (rollString[9] == "1") ? $(".stalkers-only").css("display", "block") : null;
             (rollString[10] == "1") ? $(".editors-only").css("display", "block") : null;
             (rollString[11] == "1") ? $(".leaders-only").css("display", "block") : null;
@@ -687,7 +687,7 @@ function getFirstRole(rollString) {
                 case 7:
                     return "Silencer";
                 case 8:
-                    return "Juror";
+                    return "Arbitrator";
                 case 9:
                     return "Stalker";
                 case 10:
@@ -727,13 +727,38 @@ function selectThisRole(roleName) {
             rolenumber = '000010000000000';
             break;
         case "Explorer":
-            console.log("SWITCH WORK?");
             rolenumber = '000001000000000';
+            break;
+        case "Summoner":
+            rolenumber = '000000100000000';
+            break;
+        case "Protector":
+            rolenumber = '000000010000000';
+            break;
+        case "Arbitrator":
+            rolenumber = '000000001000000';
+            break;
+        case "Stalker":
+            rolenumber = '000000000100000';
+            break;
+        case "Editor":
+            rolenumber = '000000000010000';
+            break;
+        case "Leader":
+            rolenumber = '000000000001000';
+            break;
+        case "Counselor":
+            rolenumber = '000000000000100';
+            break;
+        case "Founder":
+            rolenumber = '000000000000010';
+            break;
+        case "Algomancer":
+            rolenumber = '000000000000001';
             break;
         default:
             rolenumber = '000000000000000';
             break;
-        
     }
     console.log(rolenumber);
     $('#rolenumbers').text(rolenumber);
@@ -1089,7 +1114,7 @@ function submitReply(postElement){
   $('#tagForNewReply').empty();
   $("#sampleFile-reply").empty();
   document.querySelector('#myimg-reply').src = "";
-  returnReplyBox()
+    returnReplyBox();
 }
 function previewFile(){
   var preview = document.querySelector('#myimg');
@@ -1118,6 +1143,42 @@ function showPaintedPosts() {
     socket.emit('requestPaint');
 }
 
+
+function showGroupCreatorBox() {
+    $('#userID_newgroup').val(sessionStorage.getItem('userID'));
+    var reportContainer = $('#groupCreatorContainer');
+    reportContainer.detach();
+    reportContainer.prependTo('#entryContainer');
+    reportContainer.css('display', 'block');
+}
+function returnNewGroupBox() {
+    var reportContainer = $('#groupCreatorContainer');
+    reportContainer.detach();
+    reportContainer.appendTo('#divStorage');
+    reportContainer.css('display', 'block');
+}
+
+
+function showReportBox(postID) {
+    console.log("SHOW REPORT FOR");
+    console.log(postID);
+    $('#postID_report').val(postID);
+    $('#userID_report').val(sessionStorage.getItem('userID'));
+    $('#reportBoxContainer').css('display', 'block');
+    var reportContainer = $('#reportBoxContainer');
+    reportContainer.detach();
+    reportContainer.appendTo('#' + postID);
+    reportContainer.css('display', 'block');
+}
+function submitReport(postID) {
+    returnReportBox();
+}
+function returnReportBox() {
+    var reportContainer = $('#reportBoxContainer');
+    reportContainer.detach();
+    reportContainer.appendTo('#divStorage');
+    reportContainer.css('display', 'none');
+}
 
 
 function upvoteThisTagForThisPost(tagname, postID){
@@ -1163,6 +1224,10 @@ function multistreamView() {
     window.location.href = "/?sort=multi";
 }
 
+
+function arbitratorSort() {
+    socket.emit('requestPostsForArbitration');
+}
 function algomancerSort() {
     var algomancyvalues = { commentweight: 1, likeweight: 6, sizeweight: 4, timeweight: 1, userweight: 7, viewweight: 1 };
     console.log(postsOnThisPage);
@@ -1343,7 +1408,8 @@ function populatePage(posts, tags){
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -2010,10 +2076,12 @@ socket.on('userDataFound', function(userData){
     upvotes:4224,
     downvotes:3223,
     postcount:String(posts.length),
-    bio:String(user.content)
-  };
-  var processedUserTemplate = `
-        <div userID="{{userid}}">
+      bio: String(user.content),
+    roles: String(user.userroles)
+    };
+    //check if user is viewing own profile
+    var processedUserTemplate = `
+            <div userID="{{userid}}">
           <div class="advanced-post-container">
             <div id="advanced-post-stats">
               <span id="advanced-post-upvotes">{{upvotes}}</span>&nbsp;upvotes dealt<br/>
@@ -2032,8 +2100,33 @@ socket.on('userDataFound', function(userData){
             </div>
           </div>
           <div id="advanced-post-content">{{bio}}</div>
+    `;
+    if (sessionStorage.getItem('userID') == user.userID) {
+        processedUserTemplate += `
+          <div><button id="change-user-settings">Change user settings</button></div>
           <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
+    } else {
+        if (user.userroles[11] == '1') {
+            console.log("VIEWING LEADER'S PAGE");
+            processedUserTemplate = `
+          <div><button id="follow-user">Follow user</button></div>
+          <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
+        </div>`;
+        } else if (user.userroles[6] == '1') {
+            console.log("VIEWING SUMMONER'S PAGE");
+            processedUserTemplate = `
+        <div><button id="message-user">Message user</button></div>
+            <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
+        </div>`;
+        } else {
+            processedUserTemplate = `
+          <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
+        </div>`;
+        }
+
+    }
+
   var html = Mustache.render(processedUserTemplate, user_mustacheData);
   $('#entryContainer').append(html);
   $('#pageID-tagname').html("&nbsp;:&nbsp;"+user.name);
@@ -2072,6 +2165,10 @@ socket.on('sendDatabase', function(results){
   handleRetrievedDatabase(results);
 });
 
+
+socket.on('receiveArbitrationPostsArray', function (results) {
+    console.log(results);
+});
 socket.on('receiveTop20DataGrid', function(results){
   postsOnThisPage = [];
   $('#entryContainer').empty();

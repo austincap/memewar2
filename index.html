@@ -50,7 +50,8 @@
             <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
             <div><button id="cast-algomancy" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
             <div><button id="show-paint" class="raise" onclick="showPaintedPosts();">Show painted posts</button></div>
-            <!--  <div><button id="store">store</button></div> -->
+            <div><button id="store" class="raise" onclick="arbitratorSort();">TEST</button></div>
+            <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
         </div>
     </div>
 
@@ -66,8 +67,14 @@
                 <li class="item roleraise" onclick="selectThisRole('Tastemaker');"><h2>Tastemaker</h2><div>Add threads to the recommended feed.<br />You know what people like.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Explorer');"><h2>Explorer</h2><div>Gain access to the recently added and loathed feed.<br />You go where others fear to tread.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Summoner');"><h2>Summoner</h2><div>Invite specific users to threads and comments.<br />You like bringing people together.</div></li>
-                <li class="item roleraise" onclick="selectThisRole('Silencer');"><h2>Silencer</h2><div>Attempt to censor or shield 3 comments per day, but you can't vote or comment.<br />You see the free market of ideas as a battlefield.</div></li>
-                <li class="item roleraise" onclick="selectThisRole('Juror');"><h2>Juror</h2><div>Arbitrate disputes other users have.<br />You believe everyone has the right to trial by a jury of their peers.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Protector');"><h2>Protector</h2><div>Attempt to censor or shield 3 comments per day.<br />You are both a protector of free speech and hate speech.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Arbitrator');"><h2>Arbitrator</h2><div>Arbitrate disputes other users have.<br />You believe everyone has the right to trial by a jury of their peers.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Stalker');"><h2>Stalker</h2><div>View the likes and bios of private users.<br />You prefer to know more about people than they know about you.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Editor');"><h2>Editor</h2><div>Suggest edits to any post.<br />You always see room for improvement.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Leader');"><h2>Leader</h2><div>Other users can follow you.<br />You relish the spotlight.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Counselor');"><h2>Counselor</h2><div>SHOULD I COMBINE THIS WITH SUMMONER??<br /></div></li>
+                <li class="item roleraise" onclick="selectThisRole('Founder');"><h2>Founder</h2><div>Create and manage groups.<br />You don't mind responsibility.</div></li>
+                <li class="item roleraise" onclick="selectThisRole('Algomancer');"><h2>Algomancer</h2><div>Edit the collective custom algorithm how you see fit.<br />You like to tinker.</div></li>
             </ul>
 
 
@@ -239,11 +246,11 @@
                 <button onclick="addPollOption()">Add Poll Option</button>
             </div>
             <!--
-        <br />
-        <div id="pollOptionContainer">
-        </div>
-         <img id="myimg-poll" src="" height="150" alt="Image preview...">
-       <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
+     <br />
+     <div id="pollOptionContainer">
+     </div>
+      <img id="myimg-poll" src="" height="150" alt="Image preview...">
+    <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
 
             <div id="tagContainer">
                 <div id="existingTagsForThisPost">
@@ -315,7 +322,62 @@
                     <br />
                     <input class="raise" type='submit' value='Submit!' />
                 </form>
-                <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
+                <button id="cancelPaint" class="raise" onclick="returnPaintBox();">Cancel</button>
+            </div>
+
+            <div id="reportBoxContainer">
+                <div>
+                    <form ref='uploadReportPost' id='uploadReport' action='/uploadreport' onsubmit='submitReport();' method='post' encType='multipart/form-data'>
+                        <input class="permahidden" id="postID_report" name="postIDreport" />
+                        <input class="permahidden" id="userID_report" name="userIDreport" />
+                        <label for="carecost">How much you care (burn upvotes to move your report to the top of the list):</label>
+                        <input type="number" id="carecost" name="carecost" min="0" max="20"><br />
+                        <label for="reportreason">Why this post should be deleted (you can only pick one):</label>
+                        <select id="reportreason" name="reportreason">
+                            <option value="cringe">Cringe</option>
+                            <option value="mean">Harassment</option>
+                            <option value="illegal">Illegal</option>
+                            <option value="disinfo">Disinformation</option>
+                            <option value="subversive">Subversive</option>
+                            <option value="spam">Spam</option>
+                        </select>
+                        <br />
+                        <input class="raise" type="submit" value="Submit" />
+                    </form>
+                    <button id="cancelReport" class="raise" onclick="returnReportBox();">Cancel</button>
+                </div>
+            </div>
+
+
+            <div id="groupCreatorContainer">
+                <div>
+                    <form ref='uploadNewGroup' id='upload_group' action='/uploadnewgroup' onsubmit='uploadnewgroup();' method='post' encType='multipart/form-data'>
+                        <input class="permahidden" id="postID_newgroup" name="postIDnewgroup" />
+                        <input class="permahidden" id="userID_newgroup" name="userIDnewgroup" />
+                        <label for="groupname">Group name:</label>
+                        <input type="text" id="group_name" name="groupname" placeholder="make it catchy"><br />
+                        <label for="groupfocus">What will the focus of this group be?</label>
+                        <select id="group_focus" name="groupfocus">
+                            <option value="discussion">Discussion</option>
+                            <option value="ideology">Ideology</option>
+                            <option value="porn">Porn</option>
+                            <option value="news">News</option>
+                            <option value="inquiry">Inquiry</option>
+                            <option value="memes">Memes</option>
+                            <option value="media">Media</option>
+                            <option value="personal">Personal</option>
+                        </select>
+                        <br />
+                        <label for="groupdescription">Describe your vision for this group. This will be at the top of the group page:</label>
+                        <textarea name="groupdescription" minlength="50" maxlength="800" required></textarea><br />
+                        <label for="groupsettings">Select any additional settings for your group you want:</label><br />
+                        <label for="byinvite">Invite only:</label><input type="checkbox" id="byinvite_group" name="byinvite" value="no" checked><br />
+                        <label for="nolinks">No links:</label><input type="checkbox" id="nolinks_group" name="nolinks" value="no" checked><br />
+                        <br />
+                        <input class="raise" type="submit" value="Submit" />
+                    </form>
+                    <button id="cancelGroup" class="raise" onclick="returnNewGroupBox();">Cancel</button>
+                </div>
             </div>
 
             <div id="warningFloater">

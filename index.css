@@ -412,13 +412,19 @@ select {
       display:none;
   }
 
-
-/* header stuff */
-  .header-container {
-    display:flex;
-    color:white;
-    padding:2px;
+  #groupCreatorContainer{
+      display:none;
   }
+
+    #reportBoxContainer {
+        display:none;
+    }
+/* header stuff */
+.header-container {
+    display: flex;
+    color: white;
+    padding: 2px;
+}
   .header-container > div {
     flex: 1;
   }
