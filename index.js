@@ -253,6 +253,32 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
   res.redirect('/');
 });
 
+app.post('/summonuser', upload.single('sampleFile-none'), function (req, res, next) {
+    console.log("SUMMON USER");
+    console.log(req.body);
+    var query;
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    var params = {
+        postID: parseInt(req.body.postIDsummon),
+        inviteename: req.body.userIDsummon,
+        userID: parseInt(req.body.userIDsummon)
+    };
+    query = `
+    MATCH (inviter:User {userID:$userID}), (p:Post {postID:$postID}), (invitee:User {name:$inviteename})
+    MERGE (invitee)-[cb:SUMMONEDTO]->(p)
+    RETURN invitee, cb, p
+    `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
+
 app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, next) {
     console.log("UPLOAD POLL");
     console.log(req.body);
@@ -441,6 +467,86 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
         .catch(function (error) {
             console.log(error);
         });
+});
+
+app.post('/uploadnewgroup', upload.single('sampleFile-group'), function (req, res, next) {
+    console.log("UPLOAD NEW GROUP");
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var newsettings = '';
+    newsettings += (req.body.byinvite == 'no') ? '0' : '1';
+    newsettings += (req.body.byinvite == 'no') ? '0' : '1';
+    console.log(newsettings);
+    var fileName = "officialunofficialplaceholderlogo.jpg";
+    var postId = parseInt(blockId.getTimestamp());
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    var params = {
+        postID: postId,
+        upvotes: 1,
+        downvotes: 0,
+        type: 'group',
+        focus: req.body.groupfocus,
+        title: sanitizeHtml(req.body.groupname),
+        content: sanitizeHtml(req.body.groupdescription),
+        userID: parseInt(req.body.userIDnewgroup),
+        file: fileName,
+        clicks: 1,
+        settings: newsettings
+    };
+    query = `
+    MATCH (whomadeit:User {userID:$userID})
+    MERGE (newgroup:Group {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, settings:$settings, focus:$focus})
+    MERGE (newgroup)-[cb:CREATEDBY]->(whomadeit)
+    RETURN newgroup
+    `;
+
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            // });
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
+
+app.post('/sendmessage', upload.single('sampleFile-message'), function (req, res, next) {
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var postId = parseInt(blockId.getTimestamp());
+    var params = {
+        userID: parseInt(messageData.fromUser),
+        title: messageData.messageTitle,
+        content: messageData.messageContent,
+        tousername: messageData.toUser,
+        postID: postId,
+        type: 'directmessage'
+    };
+    var query = `
+        MATCH(fromuser:User {userID:$userID}), (touser:User {name:$tousername})
+        MERGE (fromuser)-[a:SENTMSG]->(m:Post {postID:$postID, title:$title, type:$type, content:$content })-[b:RECEIVEDMSG]->(touser)
+        RETURN fromuser, a, m, b, touser
+        `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            // });
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
 });
 
 app.post('/uploadreport', upload.single('sampleFile-none'), function (req, res, next) {
@@ -711,6 +817,31 @@ function requestAlgomancerPosts(socket, pagenum) {
 
 }
 
+function requestGroups(socket, pagenum) {
+    console.log("REUQEST GROUPS");
+    var paintDataArray = [];
+    var query;
+    query = `
+    MATCH (g:Tag {type:'group'})-[:CREATEDBY]->(m:User)
+    OPTIONAL MATCH (p:Post)-[POSTEDIN]->(g)
+    RETURN p, g, m
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('paintPosts', paintDataArray);
+            console.log(paintDataArray);
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+
 function requestMultifeedPosts(socket) {
     console.log("MULTIFEED REQUEST");
     var dataForClient = [];
@@ -970,6 +1101,10 @@ io.on('connection', function (socket) {
 
     socket.on('requestAlgomancerPosts', function (pagenum) {
         requestAlgomancerPosts(socket, pagenum);
+    });
+
+    socket.on('requestGroups', function (pagenum) {
+        requestGroups(socket, pagenum);
     });
 
     socket.on('blockchaintx', function (transaction) {
@@ -1294,6 +1429,41 @@ io.on('connection', function (socket) {
             });
     });
 
+    socket.on('viewmessages', function (userID) {
+        var query = `
+        MATCH (recipient: {userID:$userID})
+        OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(p:Post)<-[:SENTMSG]-(fromuser)
+        RETURN recipient.name, p, fromuser.name
+        `;
+        session
+            .run(query, { userID: parseInt(userID) })
+            .then(function (result) {
+                if (result.records[0] == null) {
+                    socket.emit('noMsgDataFound', 'no messages found');
+                    console.log('NULL');
+                } else {
+                    console.log("NOT null");
+                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1]];
+                    let tempData = [];
+                    result.records[0]["_fields"][2].forEach(function (record) {
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    result.records[0]["_fields"][3].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    console.log(dataForClient);
+                    socket.emit('msgDataFound', dataForClient);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
+
     socket.on('viewuser', function (userID) {
         var query = `
       MATCH (u:User {userID:$userID})
@@ -1303,7 +1473,9 @@ io.on('connection', function (socket) {
       WITH u, tags, COLLECT(DISTINCT p) AS posts
       OPTIONAL MATCH (u)-[:FAVORITED]->(f:Post)
       WITH posts, u, tags, COLLECT(DISTINCT f) AS faves
-      RETURN u, tags, posts, faves
+      OPTIONAL MATCH (u)-[:SUMMONEDTO]->(s:Post)
+      WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
+      RETURN u, tags, posts, faves, summons
       `;
         session
             .run(query, { userID: parseInt(userID) })

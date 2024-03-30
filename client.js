@@ -165,51 +165,32 @@ function onloadFunction(){
 
     window.setTimeout(function(){
         if (sessionStorage.getItem('userID') !== null) {
+            var rollString = sessionStorage.getItem('userroles');
+            $('.profallow').css('display', 'inline');
             addRoles(sessionStorage.getItem('userroles'));
-        console.log(sessionStorage.getItem('userID'));
-        $('#signinstuff').css('display', 'none');
-        $('#userprofilestuff').css('display', 'inline-block');
-        $('.profallow').css('display', 'inline');
-        $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
-        $('#userID-newpost').val(sessionStorage.getItem('userID'));
-        $('#userID-reply').val(sessionStorage.getItem('userID'));
-        $('#posttype-newpost').val("text_post");
-          $('#posttype-reply').val("text_post");
-            $(".explorers-only").css("display", "block!important");
-          $('#currentrole').html(getFirstRole(sessionStorage.getItem('userroles')));
-  
+            console.log(sessionStorage.getItem('userID'));
+            $('#signinstuff').css('display', 'none');
+            $('#userprofilestuff').css('display', 'inline-block');
+            $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+            $('#userID-newpost').val(sessionStorage.getItem('userID'));
+            $('#userID-reply').val(sessionStorage.getItem('userID'));
+            $('#posttype-newpost').val("text_post");
+            $('#posttype-reply').val("text_post");
+            //$(".explorers-only").css("display", "block!important");
+            $('#currentrole').html(getFirstRole(sessionStorage.getItem('userroles')));
       }else{
         console.log(sessionStorage.getItem('userID'));
         $('#userID-newpost').val("ANON");
         $('#userID-reply').val("ANON");
         $('#posttype-newpost').val("text_post");
         $('#posttype-reply').val("text_post");
-        }
-        var rollString = sessionStorage.getItem('userroles');
-        if (sessionStorage.getItem('userroles') != null) {
-            console.log("ROLOLSTRING");
-            console.log(sessionStorage.getItem('userroles'));
-            (rollString[0] == "1") ? $(".lurkers-only").css("display", "none") : null;
-            (rollString[1] == "1") ? $(".taggers-only").css("display", "block") : null;
-            (rollString[2] == "1") ? document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
-            (rollString[3] == "1") ? $(".pollsters-only").css("display", "block") : null;
-            (rollString[4] == "1") ? $(".tastemakers-only").css("display", "block") : null;
-            (rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
-            (rollString[6] == "1") ? $(".protectors-only").css("display", "block") : null;
-            (rollString[7] == "1") ? $(".summoners-only").css("display", "block") : null;
-            (rollString[8] == "1") ? $(".arbitrators-only").css("display", "block") : null;
-            (rollString[9] == "1") ? $(".stalkers-only").css("display", "block") : null;
-            (rollString[10] == "1") ? $(".editors-only").css("display", "block") : null;
-            (rollString[11] == "1") ? $(".leaders-only").css("display", "block") : null;
-            (rollString[12] == "1") ? $(".counselors-only").css("display", "block") : null;
-            (rollString[13] == "1") ? $(".founders-only").css("display", "block") : null;
-            (rollString[14] == "1") ? $(".algomancers-only").css("display", "block") : null;
-        }
-        else {
-            console.log("FE");
-            (Boolean(sessionStorage.getItem("Lurker"))) ? $(".lurkers-only").css("display", "block") : null ;
-            (sessionStorage.getItem("Pollster")=="true") ? $(".pollsters-only").css("display", "block") : null;
-        }
+      }
+        
+        //else {
+        //    console.log("FE");
+        //    (Boolean(sessionStorage.getItem("Lurker"))) ? $(".lurkers-only").css("display", "block") : null ;
+        //    (sessionStorage.getItem("Pollster")=="true") ? $(".pollsters-only").css("display", "block") : null;
+        //}
       document.querySelectorAll('img').forEach(function(img){
       img.onerror = function(){this.style.display='none';};
       });
@@ -645,25 +626,77 @@ function clickAccountButton(thisButton){
   if($(thisButton).html()=="Account"){
       $('#signinstuff').css('display', 'inline-block');
       $('#signup-overlay-box').css('display', 'inline-block');
-    $(thisButton).html("Close");
+      $(thisButton).html("Close");
   }else if($(thisButton).html()=="Close"){
-    $('#signinstuff').css('display', 'none');
-    $(thisButton).html("Account");
+      $('#signinstuff').css('display', 'none');
+      $(thisButton).html("Account");
   }else if(String($($(thisButton).children()[0]).attr('userid'))==sessionStorage.getItem('userID')){
-    console.log("ETE");
-    viewProfilePage(sessionStorage.getItem('userID'));
+      console.log("ETE");
+      viewProfilePage(sessionStorage.getItem('userID'));
   }
 }
 function addRoles(rollString) {
     console.log("ADD ROLES");
-    (rollString[0] == "1") ? sessionStorage.setItem("Lurker", "true") : null;
-    (rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
-    (rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
-    (rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
-    (rollString[4] == "1") ? sessionStorage.setItem("Tastemaker", "true") : null;
-    (rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
-    (rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
-    (rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
+    console.log(sessionStorage.getItem('userroles'));
+
+    if (rollString[0] == '1') {
+        $(".lurkers-only").css("display", "none");
+    }
+    if (rollString[1] == '1') {
+        $(".taggers-only").css("display", "block");
+    }
+    if (rollString[2] == '1') {
+        $(".painters-only").css("display", "block");
+        document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+    }
+    if (rollString[3] == '1') {
+        $(".pollsters-only").css("display", "block");
+    }
+    if (rollString[4] == '1') {
+        $(".tastemakers-only").css("display", "block");
+    }
+    if (rollString[5] == '1') {
+        document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+    }
+    if (rollString[6] == '1') {
+        console.log("setgsegesge");
+        $(".summoners-only").css("display", "block !important");
+        document.querySelectorAll('.summoners-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+        
+    }
+    if (rollString[7] == '1') {
+        $(".protectors-only").css("display", "block");
+    }
+    if (rollString[8] == '1') {
+        $(".arbitrators-only").css("display", "block");
+    }
+    if (rollString[9] == '1') {
+        $(".stalkers-only").css("display", "block");
+    }
+    if (rollString[10] == '1') {
+        $(".editors-only").css("display", "block");
+    }
+    if (rollString[11] == '1') {
+        $(".leaders-only").css("display", "block");
+    }
+    if (rollString[12] == '1') {
+        $(".counselors-only").css("display", "block");
+    }
+    if (rollString[13] == '1') {
+        $(".founders-only").css("display", "block");
+    }
+    if (rollString[14] == '1') {
+        $(".algomancers-only").css("display", "block");
+    }
+
+    //(rollString[0] == "1") ? sessionStorage.setItem("Lurker", "true") : null;
+    //(rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
+    //(rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
+    //(rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
+    //(rollString[4] == "1") ? sessionStorage.setItem("Tastemaker", "true") : null;
+    //(rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
+    //(rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
+    //(rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
     //location.reload("localhost");
 }
 function getFirstRole(rollString) {
@@ -1144,6 +1177,15 @@ function showPaintedPosts() {
 }
 
 
+function showSummonBox() {
+    $('#userID_newgroup').val(sessionStorage.getItem('userID'));
+    var reportContainer = $('#groupCreatorContainer');
+    reportContainer.detach();
+    reportContainer.prependTo('#entryContainer');
+    reportContainer.css('display', 'block');
+}
+
+
 function showGroupCreatorBox() {
     $('#userID_newgroup').val(sessionStorage.getItem('userID'));
     var reportContainer = $('#groupCreatorContainer');
@@ -1224,6 +1266,11 @@ function multistreamView() {
     window.location.href = "/?sort=multi";
 }
 
+
+function requestGroups() {
+    console.log('request groups');
+    socket.emit('requestGroups', 0);
+}
 
 function arbitratorSort() {
     socket.emit('requestPostsForArbitration');
@@ -1398,11 +1445,11 @@ function populatePage(posts, tags){
               </div>
               <div class='post-buttons'>
                 <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
-                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-                <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
+                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
                 <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
-                <button class='raise profallow' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
-                <button class='raise profallow' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
                 <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
                 <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>

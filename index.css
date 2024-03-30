@@ -266,7 +266,8 @@ select {
 }
 
 .summoners-only {
-    display: none !important;
+    visibility: hidden;
+    display: none;
 }
 
 .tastemakers-only {
@@ -275,6 +276,10 @@ select {
 
 .lurkers-only {
     display: none;
+}
+
+.protectors-only{
+    display: none !important;
 }
 
 .pollsters-only {
