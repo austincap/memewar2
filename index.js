@@ -629,6 +629,7 @@ function requestPostsForArbitration(socket) {
                 console.log(record['_fields'][0]);
                 console.log(record['_fields'][1]);
                 console.log(record['_fields'][2]);
+                console.log(record['_fields'][3]);
                 arbitrationPostsArray.push(record['_fields']);
             });
             socket.emit('receiveArbitrationPostsArray', arbitrationPostsArray);
@@ -1118,9 +1119,9 @@ io.on('connection', function (socket) {
         var newuserID = new ObjectId();
         newuserID = newuserID.getTimestamp();
         var query = `
-      CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
-      RETURN newuser
-      `;
+          CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
+          RETURN newuser
+          `;
         var params = {
             username: registrationData.username,
             userID: parseInt(newuserID),
@@ -1431,31 +1432,24 @@ io.on('connection', function (socket) {
 
     socket.on('viewmessages', function (userID) {
         var query = `
-        MATCH (recipient: {userID:$userID})
+        MATCH (recipient:User {userID:$userID})
         OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(p:Post)<-[:SENTMSG]-(fromuser)
-        RETURN recipient.name, p, fromuser.name
+        RETURN recipient.name, p.title, p.content, fromuser.name
         `;
         session
             .run(query, { userID: parseInt(userID) })
             .then(function (result) {
+                var dataForClient = {};
                 if (result.records[0] == null) {
                     socket.emit('noMsgDataFound', 'no messages found');
                     console.log('NULL');
                 } else {
                     console.log("NOT null");
-                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1]];
-                    let tempData = [];
-                    result.records[0]["_fields"][2].forEach(function (record) {
-                        tempData.push(record["properties"]);
+                    console.log(result.records[0]["_fields"]);
+                    result.records.forEach(function (record) {
+                        console.log(record["_fields"]);
                     });
-                    dataForClient.push(tempData);
-                    tempData = [];
-                    result.records[0]["_fields"][3].forEach(function (record) {
-                        console.log(record.properties); console.log("record.properties");
-                        tempData.push(record["properties"]);
-                    });
-                    dataForClient.push(tempData);
-                    console.log(dataForClient);
+                    dataForClient[result.records[0]["_fields"][3]] = [result.records[0]["_fields"][1], result.records[0]["_fields"][2]];
                     socket.emit('msgDataFound', dataForClient);
                 }
             })
@@ -1870,8 +1864,8 @@ io.on('connection', function (socket) {
 
 
     ///////////////////
-    //REPORT POST
-
+    //REPORT
+    //TAKEN CARE OF IN POST SECTION
 
     //////////////////
     //SEND MESSAGE TO COUNSELOR
@@ -1896,7 +1890,7 @@ io.on('connection', function (socket) {
         RETURN n, m
         `;
         session
-            .run(query, { postID: parseInt(dataFromClient.postidORtagnameORuserid), userID: dataFromClient.userid })
+            .run(query, { postID: parseInt(dataFromClient.postID), userID: dataFromClient.userID })
             .then(function (result) {
                 console.log(result);
                 socket.emit('userChecked', { task: 'favoritedPost', userID: dataFromClient.userid, postID: dataFromClient.postidORtagnameORuserid, cost: 0 });

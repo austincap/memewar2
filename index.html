@@ -10,6 +10,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3-dispatch@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-quadtree@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-timer@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-force@3"></script>
+
     <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
     <script type="text/javascript" src="topojson.v1.min.js"></script>
     <script type="text/javascript" src="planetaryjs.js"></script>
@@ -50,9 +56,10 @@
             <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
             <div><button id="cast-algomancy" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
             <div><button id="show-paint" class="raise" onclick="showPaintedPosts();">Show painted posts</button></div>
-            <div><button id="store" class="raise" onclick="arbitratorSort();">arbitratorSort</button></div>
+            <div><button id="arbitrator" class="raise" onclick="arbitratorSort();">View reports</button></div>
             <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
             <div><button id="view-groups" class="raise" onclick="requestGroups();">Request groups</button></div>
+            <div><button id="new-grid" class="raise" onclick="requestNewGrid();">New grid view</button></div>
         </div>
     </div>
 
@@ -141,6 +148,12 @@
 
 
     <div id="big-container">
+
+        <div id="d3frame">
+            <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+            <svg id="svg"></svg>
+        </div>
+
 
         <div id="entryContainer">
 
@@ -247,11 +260,11 @@
                 <button onclick="addPollOption()">Add Poll Option</button>
             </div>
             <!--
-     <br />
-     <div id="pollOptionContainer">
-     </div>
-      <img id="myimg-poll" src="" height="150" alt="Image preview...">
-    <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
+         <br />
+         <div id="pollOptionContainer">
+         </div>
+          <img id="myimg-poll" src="" height="150" alt="Image preview...">
+        <input type="file" id="sampleFile-reply" name="sampleFile-reply" onchange="previewFile();" /> -->
 
             <div id="tagContainer">
                 <div id="existingTagsForThisPost">
@@ -349,6 +362,29 @@
                 </div>
             </div>
 
+            <div id="editBoxContainer">
+                <div>
+                    <form ref='editPostContainer' id='edit_box' action='/editpost' onsubmit='returnEditBox();' method='post' encType='multipart/form-data'>
+                        <input class="permahidden" id="postID_edit" name="postIDedit" />
+                        <input class="permahidden" id="userID_edit" name="userIDedit" />
+                        <label for="whichusertosummon">Group name:</label><input type="text" id="summon_which_user" name="whichusertosummon" minlength="1" maxlength="32" required placeholder="spell their username exactly right"><br />
+                        <input class="raise" type="submit" value="Submit" />
+                    </form>
+                    <button id="cancelEdit" class="raise" onclick="returnEditBox();">Cancel</button>
+                </div>
+            </div>
+
+            <div id="tastemakerContainer">
+                <div>
+                    <button onclick="submitRecommendation($(this).parent().parent().parent().parent().parent().attr('postID'));">Recommend?</button>
+                    <form ref='tastemakerForm' id='tastemaker_form' action='/recommend' onsubmit='returnTastemakerBox();' method='post' encType='multipart/form-data'>
+                        <input class="permahidden" id="postID_taste" name="postIDtaste" />
+                        <input class="permahidden" id="userID_taste" name="userIDtaste" />
+                        <input class="raise" type="submit" value="Submit" />
+                    </form>
+                    <button id="cancelTaste" class="raise" onclick="returnTastemakerBox();">Cancel</button>
+                </div>
+            </div>
 
             <div id="summonUserContainer">
                 <div>
@@ -413,6 +449,8 @@
             <div></div>
         </div>
 
+
+
         <div id="adjacentblocks">
             <div id="previewframe">
                 <div id="previewframeTopSpace"></div>
@@ -427,10 +465,6 @@
                 <div id="previewContent">test</div>
             </div>
 
-            <div id="d3frame">
-                <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
-                <svg></svg>
-            </div>
 
             <div id="upvoteTagModal">
                 <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
@@ -474,7 +508,6 @@
     </div>
 
 
-
     <div id="gridview">
     </div>
     <div id="bubbiview">
@@ -485,9 +518,16 @@
     </div>
 
     <div id="rolenumbers"></div>
-
-</body>
     <script type="text/javascript" src="client.js"></script>
-    <script src="phaser.min.js"></script>
-    <script src="blockchain.js"></script>
-    </html>
+</body>
+
+<script src="phaser.min.js"></script>
+<script src="blockchain.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-dispatch@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-quadtree@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-timer@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-force@3"></script>
+
+<script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
+<script type="text/javascript" src="topojson.v1.min.js"></script>
+</html>

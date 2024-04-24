@@ -145,7 +145,11 @@ function onloadFunction(){
             socket.emit('requestRandPosts', getQueryParam("rand"), "0");
         }
     } else if (getQueryParam("sort") == "recd") {
-        socket.emit('requestRecommendedPosts', '0');
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestRecommendedPosts', getQueryParam("page"));
+        } else {
+            socket.emit('requestRecommendedPosts', "0");
+        }
     } else if (getQueryParam("sort") == "multi") {
         socket.emit('requestMulti');
     } else if(getQueryParam("page")!==""){
@@ -653,7 +657,9 @@ function addRoles(rollString) {
         $(".pollsters-only").css("display", "block");
     }
     if (rollString[4] == '1') {
-        $(".tastemakers-only").css("display", "block");
+        console.log("tastemakers");
+        $(".tastemakers-only").css("display", "block !important");
+        document.querySelectorAll('.tastemakers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
     }
     if (rollString[5] == '1') {
         document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
@@ -688,16 +694,6 @@ function addRoles(rollString) {
     if (rollString[14] == '1') {
         $(".algomancers-only").css("display", "block");
     }
-
-    //(rollString[0] == "1") ? sessionStorage.setItem("Lurker", "true") : null;
-    //(rollString[1] == "1") ? sessionStorage.setItem("Tagger", "true") : null;
-    //(rollString[2] == "1") ? sessionStorage.setItem("Painter", "true") : null;
-    //(rollString[3] == "1") ? sessionStorage.setItem("Pollster", "true") : null;
-    //(rollString[4] == "1") ? sessionStorage.setItem("Tastemaker", "true") : null;
-    //(rollString[5] == "1") ? document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; }) : null;
-    //(rollString[7] == "1") ? sessionStorage.setItem("Summoner", "true") : null;
-    //(rollString[8] == "1") ? sessionStorage.setItem("Silencer", "true") : null;
-    //location.reload("localhost");
 }
 function getFirstRole(rollString) {
     for (let i = 0; i < rollString.length; i++) {
@@ -1178,13 +1174,18 @@ function showPaintedPosts() {
 
 
 function showSummonBox() {
-    $('#userID_newgroup').val(sessionStorage.getItem('userID'));
-    var reportContainer = $('#groupCreatorContainer');
+    $('#userIDsummon').val(sessionStorage.getItem('userID'));
+    var reportContainer = $('#summonUserContainer');
     reportContainer.detach();
     reportContainer.prependTo('#entryContainer');
     reportContainer.css('display', 'block');
 }
-
+function returnSummonBox() {
+    var reportContainer = $('#summonUserContainer');
+    reportContainer.detach();
+    reportContainer.appendTo('#divStorage');
+    reportContainer.css('display', 'block');
+}
 
 function showGroupCreatorBox() {
     $('#userID_newgroup').val(sessionStorage.getItem('userID'));
@@ -1221,6 +1222,41 @@ function returnReportBox() {
     reportContainer.appendTo('#divStorage');
     reportContainer.css('display', 'none');
 }
+
+
+
+function showRecommendBox(postID) {
+    console.log(postID);
+    $('#postID_taste').val(postID);
+    $('#userID_taste').val(sessionStorage.getItem('userID'));
+    $('#tastemakerContainer').css('display', 'block');
+    var tastemakerBox = $('#tastemakerContainer');
+    tastemakerBox.detach();
+    tastemakerBox.appendTo('#' + postID);
+    tastemakerBox.css('display', 'block');
+}
+function submitRecommendation(postID) {
+    console.log(postID);
+    var postToRec = { userID: sessionStorage.getItem("userID"), postID: postID };
+    socket.emit('recommendPost', postToRec);
+    returnTastemakerBox();
+}
+function returnTastemakerBox() {
+    var tastemakerBox = $('#tastemakerContainer');
+    tastemakerBox.detach();
+    tastemakerBox.appendTo('#divStorage');
+    tastemakerBox.css('display', 'none');
+}
+
+
+
+
+
+
+function viewUserMessages(userID) {
+    socket.emit('viewmessages', userID);
+}
+
 
 
 function upvoteThisTagForThisPost(tagname, postID){
@@ -1454,7 +1490,7 @@ function populatePage(posts, tags){
                 <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
-                <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
                 <button class='raise profallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
@@ -1809,10 +1845,44 @@ function populateMultifeed(posts1, posts2, posts3) {
         //console.log(processedPostTemplate);
         var html = Mustache.render(processedPostTemplate, mustacheData);
         $('#multi-center').append(html);
-
     });
 }
 
+function populateMessages(messages) {
+    console.log(messages);
+}
+
+function populatePageWithReports(reportarray) {
+    var html = `<table>
+              <tr>
+                <th>PostID</th>
+                <th>Title</th>
+                <th>Reasons</th>
+                <th>Upvotes</th>
+              </tr>`;
+    $('#entryContainer').append(html);
+    reportarray.forEach(function (post) {
+        var mustacheData = {
+            postID: String(post[0]),
+            title: post[1],
+            reasons: post[2],
+            upvotes: post[3]
+        }
+        postsOnThisPage.push(mustacheData);
+        //console.log(date);
+        var processedPostTemplate = `
+            <tr>
+            <td>{{postID}}</td><td>{{title}}</td><td>{{reasons}}</td><td>{{upvotes}}</td>
+            </tr>
+        `;
+        html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#entryContainer').append(html);
+    });
+    $('#entryContainer').append('</table>');
+}
+function requestNewGrid() {
+
+}
 
 function populateGrid(postsAndAllTagData){
   console.log(postsAndAllTagData);
@@ -2149,8 +2219,10 @@ socket.on('userDataFound', function(userData){
           <div id="advanced-post-content">{{bio}}</div>
     `;
     if (sessionStorage.getItem('userID') == user.userID) {
+        console.log("PROFILE VIEWED MATCHES CURRENTLY LOGGED IN USER");
         processedUserTemplate += `
           <div><button id="change-user-settings">Change user settings</button></div>
+          <div><button id="view-user-messages" onclick="viewUserMessages({{userid}});">View messages</button></div>
           <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
     } else {
@@ -2212,8 +2284,16 @@ socket.on('sendDatabase', function(results){
   handleRetrievedDatabase(results);
 });
 
+socket.on('msgDataFound', function (results) {
+    console.log(results);
+    for (const [key, value] of Object.entries(results)) {
+        console.log(`${key}: ${value}`);
+    }
+});
+
 
 socket.on('receiveArbitrationPostsArray', function (results) {
+    populatePageWithReports(results);
     console.log(results);
 });
 socket.on('receiveTop20DataGrid', function(results){
@@ -2415,228 +2495,311 @@ var text_truncate = function(str, length, ending){
 
 var previewContent = document.getElementById("previewContent");
 
-function handleRetrievedDatabase(results){
+function handleRetrievedDatabase(results) {
 
-  var promise1 = new Promise(function(resolve, reject){
-    console.log("DBRESULTSNODES");
-    console.log(dbresults.nodes);
-    //0 = id, 1 = upvotes, 2 = content, 3 = tag from results array
-    for(let i=0; i<results.length; i++){
-      k = i+1;
-      var foundPrev = false;
-      var thisPostID = results[i][0];
-      if(thisPostID==undefined){
-        continue;
-      }
-      for(obj of Object.values(dbresults.nodes)){
-        if(obj.id==thisPostID){
-          foundPrev=true;
-          thisPostID = obj.id;
-          break;
+    var promise1 = new Promise(function (resolve, reject) {
+        console.log("DBRESULTSNODES");
+        console.log(dbresults.nodes);
+        //0 = id, 1 = upvotes, 2 = content, 3 = tag from results array
+        for (let i = 0; i < results.length; i++) {
+            k = i + 1;
+            var foundPrev = false;
+            var thisPostID = results[i][0];
+            if (thisPostID == undefined) {
+                continue;
+            }
+            for (obj of Object.values(dbresults.nodes)) {
+                if (obj.id == thisPostID) {
+                    foundPrev = true;
+                    thisPostID = obj.id;
+                    break;
+                }
+            }
+            if (foundPrev == false) {
+                dbresults.nodes.push({ id: thisPostID, upvotes: results[i][1], content: results[i][2], img: results[i][5] });
+            }
+            if (results[k] == undefined) {
+                continue;
+            } else {
+                var thisNextPostID = results[k][0];
+                for (obj of Object.values(dbresults.nodes)) {
+                    if (obj.id == thisNextPostID) {
+                        foundPrev = true;
+                        thisNextPostID = obj.id;
+                        break;
+                    }
+                }
+                var thisPostTag = results[i][3];
+                //IF THIS POSTS TAG IS IDENTICAL TO THE NEXT POSTS TAG
+                if (thisPostTag == results[k][3] && thisNextPostID !== null) {
+                    //THEN CHECK IF THAT TAG IS ALREADY IN THE EXISTING TAG ARRAY. IF NOT? PUSH IT TO THAT LIST
+                    existingTagArray.indexOf(thisPostTag) === -1 ? existingTagArray.push(thisPostTag) : console.log("This item already exists");
+                    //BECAUSE THERE MUST BE AT LEAST TWO POSTS WITH THE SAME TAG FOR A LINK TO EXIST, 
+                    dbresults.links.push({ source: thisPostID, target: thisNextPostID, tag: thisPostTag });
+                }
+            }
         }
-      }
-      if(foundPrev==false){
-        dbresults.nodes.push({id:thisPostID, upvotes:results[i][1], content:results[i][2], img:results[i][5]});
-      }
-      if(results[k] == undefined){
-        continue;
-      }else{
-        var thisNextPostID = results[k][0];
-        for(obj of Object.values(dbresults.nodes)){
-          if(obj.id==thisNextPostID){
-            foundPrev=true;
-            thisNextPostID = obj.id;
-            break;
-          }
-        }
-        var thisPostTag = results[i][3];
-        //IF THIS POSTS TAG IS IDENTICAL TO THE NEXT POSTS TAG
-        if(thisPostTag==results[k][3] && thisNextPostID !== null){
-          //THEN CHECK IF THAT TAG IS ALREADY IN THE EXISTING TAG ARRAY. IF NOT? PUSH IT TO THAT LIST
-          existingTagArray.indexOf(thisPostTag) === -1 ? existingTagArray.push(thisPostTag) : console.log("This item already exists");
-          //BECAUSE THERE MUST BE AT LEAST TWO POSTS WITH THE SAME TAG FOR A LINK TO EXIST, 
-          dbresults.links.push({source:thisPostID, target:thisNextPostID, tag:thisPostTag});
-        }
-      }
-    }
-    resolve(dbresults);
-  });
 
-  promise1.then(function(data){
-    console.log("PROMISE1THEN START");
-    console.log(data);
-    //console.log(existingTagArray);
-    var svg = d3.select("svg")
-        .attr("width", 2000)
-        .attr("height", 2000)
-        .on("mousemove", mousemove);
+        resolve(dbresults);
+    });
 
-    var path = svg.append("g")
-        .selectAll("path")
-        .data(data.links)
-        .enter()
-        .append("path")
-        .attr("class", "linkpath")
-        .attr("id", function(d,i){ return "pathId_" + i; })
-        .attr("marker-end", function(d) { return "url(#" + d.tag + ")"; });
 
-    var linktext = svg.append("g").selectAll(".gLink").data(data.links);
     
-    linktext.enter().append("g").attr("class", "gLink")
-      .append("text")
-         .attr("class", "gLink")
-         .style("font-size", "11px")
-         .style("font-family", "sans-serif")
-         .attr("x", "50")
-         .attr("y", "-4")
-         .attr("text-anchor", "start")
-         .style("fill", "#f1d141")
-      .append("textPath")
-         .attr("xlink:href",function(d,i){ return "#pathId_" + i; })
-         .text(function(d){ return d.tag; })
-         .on("mousedown", clickOnTag);
+    promise1.then(function (data) {
 
-    var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(data.nodes).enter()
-        .append("circle")
-          .attr("r", function(d){ return (d.upvotes != null || d.upvotes != 0) ? 5*d.upvotes : 5;})
-          .attr("id", function(d){return "linkId_"+d.id})
-          .attr("color", "#cccccc")
-          .on("mousedown", clickOnNode)
-          .on("mouseover", mouseoverNode)
-        .append("image")
-          .attr("xlink:href", function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
-          ;
-        // .append("svg:image")
-        //   .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
-        //   .call(d3.drag()
-        //       .on("start", dragstarted)
-        //       .on("drag", dragged)
-        //       .on("end", dragended));
 
-    var postTitle = svg.selectAll(".mytext").data(data.nodes).enter()
-        .append("text")
-        .on("mousedown", clickOnNode);
-    postTitle.style("fill", "#cccccc")
-      .attr("width", "10")
-      .attr("height", "10")
-      .style("fill","#ffd24d")
-      .text(function(d) { return text_truncate(d.content, 16); });
+        var margin = { top: 10, right: 40, bottom: 30, left: 30 },
+            width = 450 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
 
-          // svg.selectAll(".nodes").data(data.nodes).enter()
-          // .append('svg:image')
-          //   .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
-          //   .attr("x", function(d){console.log(d);console.log(d.x);return d.x;})
-          //   .attr("y", function(d){return d.y;})
-          //   .attr("width", "50")
-          //   .attr("height", "50");
+        var svg = d3.select("#svg")
+            .attr("width", 1900)
+            .attr("height", 1900)
+            .on("mousemove", mousemove);
+    
+        console.log(d3);
+        console.log("PROMISE1THEN START");
+        console.log(data);
 
-    var simulation = d3.forceSimulation()
-      .force("collision", d3.forceCollide().radius(70))
-        .force("link", d3.forceLink().id(function(d, i){ return d.id; }))
-        .force("charge", d3.forceManyBody().strength(1000).distanceMin(30))
-        .force("center", d3.forceCenter(700 , 700));
-    simulation.nodes(data.nodes).on("tick", ticked);
-    //console.log(data.links);
-    simulation.force("link").links(data.links);
-    //simulation.force("link").links(data.links);
 
-    function mousemove(){
-      mouseCoordinates = d3.pointer(this);
-      //cursor.attr("transform", "translate(" + String(d3.mouse(this)) + ")");
-    }
-    function mouseoverNode(d, i) {
-      var thisObject = d3.select(this)["_groups"][0][0];
-      d3.select(node.nodes()[i])
-      .transition()
-      .attr("r", 2*thisObject["attributes"][0]["nodeValue"] )
-      .duration(500);
-    }
-    function mouseoutNode(d, i) {
-      console.log(node);
-      console.log(d);
-      console.log(i);
-      var thisObject = d3.select(this)["_groups"][0][0];
-      d3.select(node.nodes()[i])
-      .transition()
-      .attr("r", thisObject["attributes"][0]["nodeValue"]/2 )
-      .duration(500);
-    }
-    function ticked(){
-      node.attr("cx", function(d) { return d.x; }).attr("cy", function(d) { return d.y; });
-      postTitle.attr("x", function(d) { return d.x; }).attr("y", function(d) { return d.y; });      
-      path.attr("d", function(d) {
-          var dx = d.target.x - d.source.x,
-              dy = d.target.y - d.source.y;
-          return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
+
+        var nodeIndexToIdDict = {}
+        for (indexid in data.nodes) {
+            nodeIndexToIdDict[data.nodes[indexid]["id"]] = parseInt(indexid);
+        }
+        console.log(nodeIndexToIdDict);
+
+        var neoLinks = [];
+
+        //console.log(data.links);
+        for (linky in data.links) {
+            var templink = {};
+            //console.log(data.links[linky]["source"]);
+            //console.log(data.links[linky]["source"]);
+            var idToConvert = data.links[linky]["source"];
+            var newidToConvert = data.links[linky]["target"];
+            //console.log(nodeIndexToIdDict[data.links[linky]["source"]]);
+            templink["source"] = parseInt(nodeIndexToIdDict[idToConvert]);
+            //data.links[linky]["source"] = nodeIndexToIdDict[data.links[linky]["source"]];
+            //data.links[linky]["target"] = nodeIndexToIdDict[data.links[linky]["target"]];
+            templink["target"] = parseInt(nodeIndexToIdDict[newidToConvert]);
+            templink["tag"] = data.links[linky]["tag"];
+            neoLinks.push(templink);
+            
+        }
+        console.log(neoLinks);
+        //const links = data.links.map(d => ({ ...d }));
+        const links = neoLinks;//.map(d => ({ ...d }));
+        const nodes = data.nodes.map(d => ({ ...d }));
+
+        // Add a line for each link, and a circle for each node.
+
+
+
+        const node = svg.append("g")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1.5)
+            .selectAll("circle")
+            .data(nodes)
+            .join("circle")
+            .attr("r", 5)
+            .attr("fill", d3.color("#cccccc"));
+
+        const link = svg.append("g")
+            .attr("stroke", "#fff")
+            .attr("stroke-opacity", 0.9)
+            .selectAll("line")
+            .data(links)
+            .join("line")
+            .attr("stroke-width", 1);
+
+        var path = svg.append("g")
+            .selectAll("path")
+            .data(links)
+            .enter().insert("path")
+            .attr("class", "linkpath")
+            .attr("id", function (d, i) { return "pathId_" + i; })
+            .attr("marker-end", function (d) { return "url(#" + d.tag + ")"; });
+
+        var linktext = svg.append("g").selectAll(".gLink").data(links);
+
+        linktext.join("g").attr("class", "gLink")
+            .append("text")
+            .attr("class", "gLink")
+            .style("font-size", "11px")
+            .style("font-family", "sans-serif")
+            .attr("x", "50")
+            .attr("y", "-4")
+            .attr("text-anchor", "start")
+            .style("fill", "#f1d141")
+            .append("textPath")
+            .attr("xlink:href", function (d, i) { return "#pathId_" + i; })
+            .text(function (d) { return d.tag; })
+            .on("mousedown", clickOnTag);
+
+        var simulation = d3.forceSimulation(nodes)
+            .force("collision", d3.forceCollide().radius(1))
+            .force("link", d3.forceLink(links).id(function (d, i) { console.log(d); console.log(i); return i; }))
+            .force("charge", d3.forceManyBody().strength(-400).distanceMin(20))
+            .force("center", d3.forceCenter(600, 600));
+
+        function ticked(){
+          node.attr("cx", function(d) { return d.x; }).attr("cy", function(d) { return d.y; });
+            postTitle.attr("x", function (d) { return d.x; }).attr("y", function (d) { return d.y; });
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+          
+            //linktext
+            //    .attr("x1", d => d.source.x)
+            //    .attr("y1", d => d.source.y)
+            //    .attr("x2", d => d.target.x)
+            //    .attr("y2", d => d.target.y);
+
+          path.attr("d", function(d) {
+              var dx = d.target.x - d.source.x,
+                  dy = d.target.y - d.source.y;
+              return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
+          });
+        }
+
+        simulation.nodes(nodes).on("tick", ticked);
+        console.log(links);
+        //simulation.force("link").links(links);
+        //simulation.restart();
+        //console.log(existingTagArray);
+
+ 
+
+
+
+     
+
+
+        //var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(nodes).enter()
+        //    .append("circle")
+        //    .attr("r", function (d) { console.log("TEST");  return (d.upvotes != null || d.upvotes != 0) ? 5*d.upvotes : 5;})
+        //      .attr("id", function(d){return "linkId_"+d.id})
+        //      .attr("color", "#cccccc")
+        //      .on("mousedown", clickOnNode)
+        //      .on("mouseover", mouseoverNode)
+        //    .append("image")
+        //      .attr("xlink:href", function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
+        //      ;
+            // .append("svg:image")
+            //   .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
+            //   .call(d3.drag()
+            //       .on("start", dragstarted)
+            //       .on("drag", dragged)
+            //       .on("end", dragended));
+
+        var postTitle = svg.selectAll(".mytext").data(nodes).enter()
+            .append("text")
+            .on("mousedown", clickOnNode);
+        postTitle.style("fill", "#cccccc")
+          .attr("width", "10")
+          .attr("height", "10")
+          .style("fill","#ffd24d")
+          .text(function(d) { return text_truncate(d.content, 16); });
+
+              // svg.selectAll(".nodes").data(data.nodes).enter()
+              // .append('svg:image')
+              //   .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
+              //   .attr("x", function(d){console.log(d);console.log(d.x);return d.x;})
+              //   .attr("y", function(d){return d.y;})
+              //   .attr("width", "50")
+              //   .attr("height", "50");
+
+        function mousemove(){
+          mouseCoordinates = d3.pointer(this);
+          //cursor.attr("transform", "translate(" + String(d3.mouse(this)) + ")");
+        }
+        function mouseoverNode(d, i) {
+          var thisObject = d3.select(this)["_groups"][0][0];
+          d3.select(node.nodes()[i])
+          .transition()
+          .attr("r", 2*thisObject["attributes"][0]["nodeValue"] )
+          .duration(500);
+        }
+        function mouseoutNode(d, i) {
+          console.log(node);
+          console.log(d);
+          console.log(i);
+          var thisObject = d3.select(this)["_groups"][0][0];
+          d3.select(node.nodes()[i])
+          .transition()
+          .attr("r", thisObject["attributes"][0]["nodeValue"]/2 )
+          .duration(500);
+        }
+        
+        function clickOnTag(d, i){
+          //console.log(d);
+          closeAllFrames();
+          document.getElementById('uploadNewPostButton').innerHTML="-";
+          clickOnAddNewPost=true; 
+          var upvoteModalElement = document.getElementById('upvoteTagModal').style;
+          document.getElementById('tagNameInModal').innerHTML = d.tag;
+          document.getElementById('contentInModal').innerHTML = d.source.content;
+          document.getElementById('postNameInModal').innerHTML = d.source.id;
+          //upvoteModalElement.left = String(mouseCoordinates[0])+"px";
+          //upvoteModalElement.top = String(mouseCoordinates[1])+"px";
+          upvoteModalElement.display = "block";
+        }
+        function clickOnNode(d, i){
+          //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
+          //linkifyStr(previewFrame, linkifyOptions);
+          console.log(i.id);
+          window.location.href='/?post='+String(i.id);
+          closeAllFrames();
+          clickOnAddNewPost=true;
+          document.getElementById('uploadNewPostButton').innerHTML="-";
+          document.getElementById('postNameInModalPostOnly').innerHTML = d.id;
+          document.getElementById('contentInModal').innerHTML = d.content;
+          previewContent.innerHTML = "<a href="+d.content+">"+d.content+"</a>";
+          document.getElementById('previewframe').style.display = "block";
+        }
+        function restart(){
+          node = node.data(data.nodes);
+
+          node.enter().insert("circle", ".cursor")
+              .attr("class", "node")
+              .attr("r", 5)
+              .on("mousedown", mousedownNode);
+
+          node.exit()
+              .remove();
+
+          link = link.data(data.links);
+
+          link.enter().insert("line", ".node")
+              .attr("class", "link");
+          link.exit()
+              .remove();
+          simulation
+              .nodes(data.nodes)
+              .on("tick", ticked);
+
+          simulation.force("link")
+              .links(data.links);
+        }
+        function dragstarted(d){
+          simulation.stop();
+          if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
+          d.fx = d.x;
+          d.fy = d.y;
+        }
+        function dragged(d){
+          d.fx = d3.event.x;
+          d.fy = d3.event.y;
+        }
+        function dragended(d){
+          if (!d3.event.active){simulation.alphaTarget(0);}
+          d.fx = null;
+          d.fy = null;
+        }
       });
-    }
-    function clickOnTag(d, i){
-      //console.log(d);
-      closeAllFrames();
-      document.getElementById('uploadNewPostButton').innerHTML="-";
-      clickOnAddNewPost=true; 
-      var upvoteModalElement = document.getElementById('upvoteTagModal').style;
-      document.getElementById('tagNameInModal').innerHTML = d.tag;
-      document.getElementById('contentInModal').innerHTML = d.source.content;
-      document.getElementById('postNameInModal').innerHTML = d.source.id;
-      //upvoteModalElement.left = String(mouseCoordinates[0])+"px";
-      //upvoteModalElement.top = String(mouseCoordinates[1])+"px";
-      upvoteModalElement.display = "block";
-    }
-    function clickOnNode(d, i){
-      //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
-      //linkifyStr(previewFrame, linkifyOptions);
-      console.log(i.id);
-      window.location.href='/?post='+String(i.id);
-      closeAllFrames();
-      clickOnAddNewPost=true;
-      document.getElementById('uploadNewPostButton').innerHTML="-";
-      document.getElementById('postNameInModalPostOnly').innerHTML = d.id;
-      document.getElementById('contentInModal').innerHTML = d.content;
-      previewContent.innerHTML = "<a href="+d.content+">"+d.content+"</a>";
-      document.getElementById('previewframe').style.display = "block";
-    }
-    function restart(){
-      node = node.data(data.nodes);
-
-      node.enter().insert("circle", ".cursor")
-          .attr("class", "node")
-          .attr("r", 5)
-          .on("mousedown", mousedownNode);
-
-      node.exit()
-          .remove();
-
-      link = link.data(data.links);
-
-      link.enter().insert("line", ".node")
-          .attr("class", "link");
-      link.exit()
-          .remove();
-      simulation
-          .nodes(data.nodes)
-          .on("tick", ticked);
-
-      simulation.force("link")
-          .links(data.links);
-    }
-    function dragstarted(d){
-      simulation.stop();
-      if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-    function dragged(d){
-      d.fx = d3.event.x;
-      d.fy = d3.event.y;
-    }
-    function dragended(d){
-      if (!d3.event.active){simulation.alphaTarget(0);}
-      d.fx = null;
-      d.fy = null;
-    }
-  });
-
 
 }
 
