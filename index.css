@@ -994,7 +994,7 @@ select {
     min-width: 90vw;
     overflow: scroll;
     background-color: rgba(90, 90, 90, 0.3);
-    display: block !important;
+    display: block;
 }
   #previewframe{
     margin-top:65px;

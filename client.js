@@ -802,13 +802,15 @@ function contextButtonFunction(currentContext){
     console.log('ewogfuiherwgok;luihraeghui;kgrehi;kjlgrhijol');
       $('#gridview').css('display', 'none');
       d3.select('svg').selectAll('*').remove();
-      $('#d3frame').css('display', 'none');
+          $('#d3frame').css('display', 'block');
+          document.getElementById('d3frame').display = 'block !imporant';
       document.getElementById('contextButton').innerHTML = 'Alt';
       sessionStorage.setItem('currentPage', 'home');
       socket.emit('requestTop20Posts', 0);
     case 'Alt':
       $('#entryContainer').empty();
       sessionStorage.setItem('currentPage', 'alt');
+      $('#d3frame').css('display', 'none');
       document.getElementById('contextButton').innerHTML = 'Grid';
       socket.emit('retrieveDatabase');
       break;
@@ -1118,12 +1120,18 @@ function confirmHarvest(postElement){
 }
 
 
-function recommendPost(postID){
-    var dataPacket = {
-        userID: sessionStorage.getItem('userID'),
-        postID: postID
-    };
-    socket.emit('recommendPost', dataPacket);
+function deleteThisPost(postID) {
+    socket.emit('deletePost', postID);
+    //returnReportBox();
+}
+function showAdminBox(postID) {
+    console.log("SHOW POSTID");
+    console.log(postID);
+    $('#adminToolsContainer').css('display', 'block');
+    var newAdminContainer = $('#adminToolsContainer');
+    newAdminContainer.detach();
+    newAdminContainer.appendTo('body');
+    newAdminContainer.css('display', 'block');
 }
 
 
@@ -1493,6 +1501,7 @@ function populatePage(posts, tags){
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
                 <button class='raise profallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;

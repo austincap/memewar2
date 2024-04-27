@@ -1862,6 +1862,11 @@ io.on('connection', function (socket) {
     });
 
 
+    //////////////
+    //DELETE POST
+    socket.on('deletePost', function (dataFromClient) {
+        console.log(dataFromClient);
+    });
 
     ///////////////////
     //REPORT
