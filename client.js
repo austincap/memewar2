@@ -464,10 +464,15 @@ function openGameView(){
 })();
 
 
+const mapDisplay = L.map('mapDisplay').setView([51.505, -0.09], 10);
+const tiles2 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(mapDisplay);
 
 function openHistoryView(){
   $('#entryContainer').hide();
-  $('#historyview').show();
+    $('#historyview').show();
 
   var globe = planetaryjs.planet();
   // Load our custom `autorotate` plugin; see below.
@@ -796,32 +801,30 @@ function selectThisRole(roleName) {
 function contextButtonFunction(currentContext){
   console.log(currentContext);
   switch(currentContext){
-    case 'About':
-      break;
-    case 'Home':
-    console.log('ewogfuiherwgok;luihraeghui;kgrehi;kjlgrhijol');
-      $('#gridview').css('display', 'none');
-      d3.select('svg').selectAll('*').remove();
-          $('#d3frame').css('display', 'block');
-          document.getElementById('d3frame').display = 'block !imporant';
-      document.getElementById('contextButton').innerHTML = 'Alt';
-      sessionStorage.setItem('currentPage', 'home');
-      socket.emit('requestTop20Posts', 0);
+      case 'Home':
+          $('#gridview').css('display', 'none');
+          d3.select('svg').selectAll('*').remove();
+          $('#d3frame').css('display', 'none');
+          document.getElementById('contextButton').innerHTML = 'Alt';
+          sessionStorage.setItem('currentPage', 'home');
+          socket.emit('requestTop20Posts', 0);
+          break;
     case 'Alt':
-      $('#entryContainer').empty();
-      sessionStorage.setItem('currentPage', 'alt');
-      $('#d3frame').css('display', 'none');
-      document.getElementById('contextButton').innerHTML = 'Grid';
-      socket.emit('retrieveDatabase');
-      break;
+        $('#entryContainer').empty();
+        sessionStorage.setItem('currentPage', 'alt');
+        $('#d3frame').css('display', 'block');
+        document.getElementById('contextButton').innerHTML = 'Grid';
+        socket.emit('retrieveDatabase');
+        break;
     case 'Grid':
-      $('#entryContainer').empty();
-      d3.select('svg').selectAll('*').remove();
-      $('#d3frame').css('display', 'none');
-      sessionStorage.setItem('currentPage', 'grid');
-      document.getElementById('contextButton').innerHTML = 'Home';
-      socket.emit('retrieveDatabaseGrid');
-      break;
+        $('#entryContainer').empty();
+        d3.select('svg').selectAll('*').remove();
+          $('#d3frame').css('display', 'none');
+          $('#gridview').css('display', 'grid');
+        sessionStorage.setItem('currentPage', 'grid');
+        document.getElementById('contextButton').innerHTML = 'Home';
+        socket.emit('retrieveDatabaseGrid');
+        break;
   }
 }
 function returnChooseRoleBox() {
@@ -866,7 +869,6 @@ function createElementFromHTML(htmlString) {
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
-
 function addPollOption() {
     var pollOptionCounter = String($("#pollOptionContainer > textarea").length + 1);
     if (parseInt(pollOptionCounter) > 6) { console.log("NO MORE"); }
@@ -1231,7 +1233,13 @@ function returnReportBox() {
     reportContainer.css('display', 'none');
 }
 
-
+function showMap() {
+    $('#entryContainer').empty();
+    var mapContainer = $('#mapDisplay');
+    mapContainer.detach();
+    mapContainer.appendTo('#entryContainer');
+    mapContainer.css('display', 'block');
+}
 
 function showRecommendBox(postID) {
     console.log(postID);
@@ -1255,8 +1263,6 @@ function returnTastemakerBox() {
     tastemakerBox.appendTo('#divStorage');
     tastemakerBox.css('display', 'none');
 }
-
-
 
 
 
@@ -1469,6 +1475,19 @@ function populatePage(posts, tags){
                 title: String(post.title),
                 content: String(post.content)
             };
+            if (post.location !== undefined) {
+                console.log("POST HAS LOCATION");
+                mustacheData.location = post.location.split("+").map(element => parseFloat(element));
+                console.log(mustacheData.location);
+                console.log(mustacheData.postID);
+                let circle = L.circle(mustacheData.location, {
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                    radius: 500
+                }).addTo(mapDisplay);
+                circle.bindPopup("<a href='/?post=" + mustacheData.postID + "' onclick='viewPost(" + mustacheData.postID +");'>" + mustacheData.title + "</a>");
+            }
             postsOnThisPage.push(mustacheData);
             //console.log(date);
             var processedPostTemplate = `
@@ -1500,13 +1519,14 @@ function populatePage(posts, tags){
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
-                <button class='raise profallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
         } else
             if (post.type == "poll_post") {
+                console.log(post);
                 var date = new Date(post.postID * 1000).toDateString();
                 console.log(post.optionvotes);
                 var percentagearray = [];
@@ -1572,12 +1592,16 @@ function populatePage(posts, tags){
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
-            } else {
+            } else if (post.type == "directmessage") {
+                var processedPostTemplate = `<span></span>`;
+                console.log("DIRECT MESSAGE");
+            }
+              else {
                 var processedPostTemplate = `<span></span>`;
                 console.log("UNKNOWN POST TYPE");
             }
 
-        console.log(processedPostTemplate);
+        //console.log(processedPostTemplate);
         var html = Mustache.render(processedPostTemplate, mustacheData);
         $('#entryContainer').append(html);
     
@@ -1596,6 +1620,7 @@ function populatePage(posts, tags){
 
 
 function populateMultifeed(posts1, posts2, posts3) {
+    $('#multiContainer').css('display', 'grid');
     console.log(posts1);
     // $("#entryContainer").empty();
     // postsOnThisPage = posts;
@@ -1725,9 +1750,6 @@ function populateMultifeed(posts1, posts2, posts3) {
         $('#multi-left').append(html);
 
     });
-
-
-
 
     console.log(posts2);
     posts2.forEach(function (post) {
@@ -2887,8 +2909,7 @@ function autocomplete(inp, arr){
     /*add class "autocomplete-active":*/
     x[currentFocus].classList.add("autocomplete-active");
   }
-  function removeActive(x) {
-    /*a function to remove the "active" class from all autocomplete items:*/
+  function removeActive(x) { /*a function to remove the "active" class from all autocomplete items:*/
     for (var i = 0; i < x.length; i++) {
       x[i].classList.remove("autocomplete-active");
     }
@@ -2903,8 +2924,7 @@ function autocomplete(inp, arr){
       }
     }
   }
-  /*execute a function when someone clicks in the document:*/
-  document.addEventListener("click", function(e){ closeAllLists(e.target); });
+  document.addEventListener("click", function (e) { closeAllLists(e.target); }); /*execute a function when someone clicks in the document:*/
 }
 
 autocomplete(document.getElementById("newTagInput"), existingTagArray);

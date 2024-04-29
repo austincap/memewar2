@@ -51,15 +51,18 @@
 
         <div id="right-buttons">
             <div><button id="make-new-post" class="raise" onclick="showNewPostBox();">Create new post</button></div>
-            <div><button id="make-new-poll" class="raise pollsters-only" onclick="showNewPollBox();">Create new poll</button></div>
-            <div><button id="gamebutton" class="raise" onclick="openGameView();">Open game view</button></div>
-            <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
-            <div><button id="cast-algomancy" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
-            <div><button id="show-paint" class="raise" onclick="showPaintedPosts();">Show painted posts</button></div>
-            <div><button id="arbitrator" class="raise" onclick="arbitratorSort();">View reports</button></div>
-            <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
-            <div><button id="view-groups" class="raise" onclick="requestGroups();">Request groups</button></div>
-            <div><button id="new-grid" class="raise" onclick="requestNewGrid();">New grid view</button></div>
+            <div id="test-buttons">
+                <div><button id="make-new-poll" class="raise pollsters-only" onclick="showNewPollBox();">Create new poll</button></div>
+                <div><button id="gamebutton" class="raise" onclick="openGameView();">Open game view</button></div>
+                <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
+                <div><button id="cast-algomancy" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
+                <div><button id="show-paint" class="raise" onclick="showPaintedPosts();">Show painted posts</button></div>
+                <div><button id="arbitrator" class="raise" onclick="arbitratorSort();">View reports</button></div>
+                <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
+                <div><button id="view-groups" class="raise" onclick="requestGroups();">Request groups</button></div>
+                <div><button id="new-grid" class="raise" onclick="requestNewGrid();">New grid view</button></div>
+                <div><button id="show-map" class="raise" onclick="showMap();">Show map</button></div>
+            </div>
         </div>
     </div>
 
@@ -171,25 +174,20 @@
 
                 <div id="map" style="width: 600px; height: 400px;"></div>
                 <script>
-
                     const map = L.map('map').setView([51.505, -0.09], 13);
-
                     const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         maxZoom: 19,
                         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     }).addTo(map);
-
                     var popup = L.popup();
-
                     function onMapClick(e) {
                         popup
                             .setLatLng(e.latlng)
                             .setContent("You clicked the map at " + e.latlng.toString())
                             .openOn(map);
+                        document.getElementById('location-newpost').value = e.latlng.lat.toString() +'+'+ e.latlng.lng.toString();
                     }
-
                     map.on('click', onMapClick);
-
                 </script>
                 <form ref='uploadForm'
                       id='uploadForm'
@@ -199,6 +197,7 @@
                       encType='multipart/form-data'>
                     <input class="permahidden" id="userID-newpost" name="userID" />
                     <input class="permahidden" id="posttype-newpost" name="type" />
+                    <input class="permahidden" id="location-newpost" name="location" />
                     <input required id="tagForNewPost" name="tag" placeholder="you MUST provide a tag for your post. how do you want your post to be categorized?" type="text" maxlength="64" />
                     <br />
                     <input type="text" style='height:50px;' placeholder="you can treat this field like a title, or like a tweet if you're not putting anything in the box below" id="uploadTitle" name="title" maxlength="320" />
@@ -435,6 +434,9 @@
                 </div>
             </div>
 
+            <div id="mapDisplay" style="width: 600px; height: 400px;">    
+            </div>
+
             <div id="warningFloater">
             </div>
         </div>
@@ -491,7 +493,19 @@
         </div>
     </div>
 
-    <div id="historyview">
+
+
+
+    <div id="gridview">
+    </div>
+    <div id="bubbiview">
+    </div>
+    <div id="gameview">
+        <div id="contentdisplayed"></div>
+        <img id="picdisplayed">
+    </div>
+
+        <div id="historyview">
         <form ref='uploadForm'
               id='uploadForm'
               action='/upload'
@@ -507,22 +521,13 @@
 
         <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
         <script>
-            // var map = new Datamap({ element: document.getElementById('container') });
+            //var map = new Datamap({ element: document.getElementById('container') });
         </script>
         <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
         <canvas id="basicGlobe" width='400' height='400'>
         </canvas>
     </div>
 
-
-    <div id="gridview">
-    </div>
-    <div id="bubbiview">
-    </div>
-    <div id="gameview">
-        <div id="contentdisplayed"></div>
-        <img id="picdisplayed">
-    </div>
 
     <div id="rolenumbers"></div>
     <script type="text/javascript" src="client.js"></script>

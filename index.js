@@ -143,7 +143,9 @@ app.post('/clicked', function (req, res) {
 
 
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
-  console.log("UPLOAD POST");
+    console.log("UPLOAD POST");
+    console.log(req.body.location);
+    console.log(req.body.userID);
   var blockId = new ObjectId();
   var query;
   var fileName = "officialunofficialplaceholderlogo.jpg";
@@ -162,11 +164,12 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
             clicks: 1,
             censorattempts: 0,
             shields: 0,
-            memecoinsspent: 0
+            memecoinsspent: 0,
+            location: req.body.location
   };
   if(req.body.userID=="ANON"){
     query = `
-    CREATE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    CREATE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent, location:$location})
     MERGE (whichtag:Tag {name:$tag})
     MERGE (whichtag)<-[ta:TAGGEDAS]-(newpost)
     RETURN newpost, whichtag
@@ -175,7 +178,7 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
     query = `
     MATCH (whomadeit:User {userID:$userID})
     MERGE (whichtag:Tag {name:$tag})
-    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent})
+    MERGE (newpost:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, shields:$shields, censorattempts:$censorattempts, memecoinsspent:$memecoinsspent, location:$location})
     MERGE (whichtag)<-[ta:TAGGEDAS]-(newpost)-[cb:CREATEDBY]->(whomadeit)
     RETURN newpost, whichtag
     `;

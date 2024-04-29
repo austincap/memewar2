@@ -4,7 +4,6 @@
 body {
   background-color: #001011;
 }
-
 h1 {
   margin: auto;
   color:#76a85f;
@@ -86,12 +85,14 @@ h3 {
     display:none;
     position:fixed;
     z-index: 2;
-    top:15vh;
+    top:8vh;
     left:12vw;
     background-color:#101011;
     padding:2vw;
     min-height: 70vh;
+    max-height: 75vh;
     min-width:70vw;
+    overflow-y:scroll;
   }
   #title-of-new-post {
     margin:10px;
@@ -118,7 +119,7 @@ h3 {
         min-width: 70vw;
     }
     #multiContainer {
-        display: grid;
+        display: none;
         grid-template-columns: 1fr 1fr 1fr;
         border: double;
         padding: 1%;
@@ -139,34 +140,42 @@ h3 {
         height: 100vh;
         overflow-y: scroll;
     }
-#map {
-    height: 180px;
+#test-buttons {
+    grid-template-columns: auto auto auto auto auto;
+    display: inline-grid;
+    width: 400px;
 }
 
 
+#map {
+    height: 180px;
+}
+#mapDisplay{
+    display:none;
+}
 
 /* links */
-      a {
-        text-decoration: none;
-      }
-      a:link {
-        color: #78dce8;
-      }
-      a:visited {
-        color: #8ea874;
-      }
-      a:hover {
-        color: #badadd;
-        /*box-shadow: 2px 2px 4px #0ff;*/
-        position:relative;
-      }
-      .paginator {
-        color:#badadd;
-      }
+    a {
+    text-decoration: none;
+    }
+    a:link {
+    color: #78dce8;
+    }
+    a:visited {
+    color: #8ea874;
+    }
+    a:hover {
+    color: #badadd;
+    /*box-shadow: 2px 2px 4px #0ff;*/
+    position:relative;
+    }
+    .paginator {
+    color:#badadd;
+    }
 
 
 /* drop down buttons*/
-  .w3-hide{display:none!important}.w3-show-block,.w3-show{display:block!important}.w3-show-inline-block{display:inline-block!important}
+  .w3-hide{display:none}.w3-show-block,.w3-show{display:block}.w3-show-inline-block{display:inline-block}
   .w3-btn,.w3-button{border:none;display:inline-grid;padding:8px 16px;vertical-align:middle;overflow:hidden;text-decoration:none;color:inherit;background-color:inherit;text-align:center;cursor:pointer;white-space:nowrap}
   .w3-btn:hover{box-shadow:0 8px 16px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19)}
   .w3-btn,.w3-button{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}   
@@ -196,8 +205,6 @@ h3 {
   .w3-bar-block .w3-dropdown-hover,.w3-bar-block .w3-dropdown-click{width:100%}
   .w3-bar-block .w3-dropdown-hover .w3-dropdown-content,.w3-bar-block .w3-dropdown-click .w3-dropdown-content{min-width:100%}
   .w3-bar-block .w3-dropdown-hover .w3-button,.w3-bar-block .w3-dropdown-click .w3-button{width:100%;text-align:left;padding:8px 16px}
-
-
 
 
 /* Style The Dropdown Button */
@@ -255,55 +262,48 @@ select {
     visibility: hidden;
     display: none;
 }
-
 .explorers-only {
     display:none;
     visibility: hidden;
 }
-
 .taggers-only {
     display: none !important;
 }
-
 .summoners-only {
     visibility: hidden;
     display: none;
 }
-
 .tastemakers-only {
     visibility: hidden;
     display: none;
 }
-
 .lurkers-only {
     display: none;
 }
-
 .protectors-only{
     display: none !important;
 }
-
 .pollsters-only {
     display: none;
 }
 /* signin registration profile stuff */
-
-    #signup-overlay-box {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        background: #666666;
-        opacity: .95;
-        z-index: 1000;
-    }
-
+#signup-overlay-box {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background: #666666;
+    opacity: .95;
+    z-index: 1000;
+    height: 100%;
+    place-items: center;
+    background: #456173;
+}
     :root {
         --gutter: 20px;
     }
-
     .app {
         padding: var(--gutter) 0;
         display: grid;
@@ -311,15 +311,12 @@ select {
         grid-template-columns: var(--gutter) 1fr var(--gutter);
         align-content: start;
     }
-
         .app > * {
             grid-column: 2 / -2;
         }
-
         .app > .full {
             grid-column: 1 / -1;
         }
-
     .hs {
         display: grid;
         grid-gap: calc(var(--gutter) / 2);
@@ -330,49 +327,30 @@ select {
         padding-bottom: calc(.75 * var(--gutter));
         margin-bottom: calc(-.25 * var(--gutter));
     }
-
-        .hs:before,
-        .hs:after {
+        .hs:before, .hs:after {
             content: '';
         }
-
-
 
 
     #algomancy-overlay-box {
         display: none;
     }
-
-    /* Demo styles */
-
-
-    #signup-overlay-box {
-        height: 100%;
-     
-        place-items: center;
-        background: #456173;
-    }
+  
 
     ul {
         list-style: none;
         padding: 0;
     }
-
-    h1,
-    h2,
-    h3 {
+    h1, h2,  h3 {
         margin: 0;
     }
-
     .app {
         width: 575px;
         height: 667px;
         background: #DBD0BC;
         overflow-y: scroll;
     }
-
-    .hs > li,
-    .item {
+    .hs > li, .item {
         scroll-snap-align: center;
         padding: calc(var(--gutter) / 2 * 1.5);
         display: flex;
@@ -417,11 +395,9 @@ select {
   #paintContainer {
       display:none;
   }
-
   #groupCreatorContainer{
       display:none;
   }
-
     #reportBoxContainer {
         display:none;
     }
@@ -475,9 +451,10 @@ select {
   #popular-tag-span {
     
   }
-  #centerstage {
-    min-width: 50vw;
-  }
+#centerstage {
+    margin: 0 auto;
+    padding-right: 5vw;
+}
 
 #editBoxContainer{
     display:none;
@@ -771,21 +748,18 @@ select {
     border-top: 1px solid #EEE;
     width: 15em;
 }
-
     .chartlist li {
         position: relative;
         display: block;
         border-bottom: 1px solid #EEE;
         _zoom: 1;
     }
-
         .chartlist li a {
             display: block;
             padding: 0.4em 4.5em 0.4em 0.5em;
             position: relative;
             z-index: 2;
         }
-
     .chartlist .count {
         display: block;
         position: absolute;
@@ -798,7 +772,6 @@ select {
         font-size: 0.875em;
         line-height: 2em;
     }
-
     .chartlist .index {
         display: block;
         position: absolute;
@@ -810,7 +783,6 @@ select {
         overflow: hidden;
         line-height: 2em;
     }
-
     .chartlist li:hover {
         background: #EFEFEF;
     }
@@ -986,7 +958,7 @@ select {
     color: #2d862d;
     display:inline-block;
   }
-#d3frame {
+  #d3frame {
     margin: auto auto;
     max-width: 95vw;
     max-height: 90vh;
@@ -994,7 +966,7 @@ select {
     min-width: 90vw;
     overflow: scroll;
     background-color: rgba(90, 90, 90, 0.3);
-    display: block;
+    display: none;
 }
   #previewframe{
     margin-top:65px;
@@ -1121,6 +1093,8 @@ select {
   #paginator{
     display: inline ;
   }
+
+
   #gridview{
     width:92%;
     padding-left:40px;
