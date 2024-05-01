@@ -464,7 +464,7 @@ function openGameView(){
 })();
 
 
-const mapDisplay = L.map('mapDisplay').setView([51.505, -0.09], 10);
+var mapDisplay = L.map('mapDisplay').setView([51.505, -0.09], 10);
 const tiles2 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -662,16 +662,14 @@ function addRoles(rollString) {
         $(".pollsters-only").css("display", "block");
     }
     if (rollString[4] == '1') {
-        console.log("tastemakers");
-        $(".tastemakers-only").css("display", "block !important");
+        $(".tastemakers-only").css("display", "block");
         document.querySelectorAll('.tastemakers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
     }
     if (rollString[5] == '1') {
         document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
     }
     if (rollString[6] == '1') {
-        console.log("setgsegesge");
-        $(".summoners-only").css("display", "block !important");
+        $(".summoners-only").css("display", "block");
         document.querySelectorAll('.summoners-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
         
     }
@@ -1064,7 +1062,11 @@ function showNewPostBox(){
   var newPostContainer = $('#newPostContainer');
   newPostContainer.detach();
   newPostContainer.appendTo('body');
-  newPostContainer.css('display', 'block');
+    newPostContainer.css('display', 'block');
+    $('#userroles-newpost:text').val(sessionStorage.getItem('userroles'));
+    if (sessionStorage.getItem('userroles')[11] == "1") {
+        $('#leader-newpost:text').val("leader");
+    }
 }
 function returnNewPostBox(){
   // var fileuploader = $('#fileuploader');
@@ -1266,7 +1268,13 @@ function returnTastemakerBox() {
 
 
 
-
+function followuser(userID) {
+    let datapacket = {
+        leaderID: userID,
+        followerID: parseInt(sessionStorage.getItem("userID"))
+    }
+    socket.emit("followuser", datapacket);
+}
 function viewUserMessages(userID) {
     socket.emit('viewmessages', userID);
 }
@@ -1397,13 +1405,6 @@ function getQueryParam(param){
   var returnVal = window.location.search.match(rx);
   return returnVal === null ? "" : decodeURIComponent(returnVal[1].replace(/\+/g, " "));
 }
-// function getQueryParam(name){
-//     name = name.replace(/[\[\]]/g, '\\$&');
-//     var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'), results = regex.exec(window.location.href);
-//     if (!results) return null;
-//     if (!results[2]) return '';
-//     return decodeURIComponent(results[2].replace(/\+/g, ' '));
-// }
 function enlargePic(theImage){
   $(theImage).css("height", document.querySelector(theImage[0]).naturalHeight);
   console.log(theImage);
@@ -1456,12 +1457,14 @@ function dropDownFunction(){
   }
 }
 
-function populatePage(posts, tags){
+function populatePage(posts, tags) {
+    console.log('populatepage');
   console.log(posts);
   // $("#entryContainer").empty();
   // postsOnThisPage = posts;
     posts.forEach(function (post) {
         if (post.type == "text_post") {
+            
             var date = new Date(post.postID * 1000).toDateString();
             var mustacheData = {
                 postID: String(post.postID),
@@ -1473,13 +1476,14 @@ function populatePage(posts, tags){
                 replycount: String(post.replycount),
                 clicks: String(post.clicks),
                 title: String(post.title),
-                content: String(post.content)
+                content: String(post.content),
+                poster: "",
+                posterID: ""
             };
-            if (post.location !== undefined) {
+            //CHECK IF POST HAS A LOCATION AND IS NOT DEFAULT LOCATION
+            if (post.location !== undefined && post.location !== "") {
                 console.log("POST HAS LOCATION");
                 mustacheData.location = post.location.split("+").map(element => parseFloat(element));
-                console.log(mustacheData.location);
-                console.log(mustacheData.postID);
                 let circle = L.circle(mustacheData.location, {
                     color: 'red',
                     fillColor: '#f03',
@@ -1488,6 +1492,22 @@ function populatePage(posts, tags){
                 }).addTo(mapDisplay);
                 circle.bindPopup("<a href='/?post=" + mustacheData.postID + "' onclick='viewPost(" + mustacheData.postID +");'>" + mustacheData.title + "</a>");
             }
+            
+    
+
+            //CHECK if poster is a Leader
+            if (post.poster !== undefined){
+                let temppost = post.poster[0];
+                if (!temppost.some(function (i) { return i === null; })) {
+                    console.log(temppost);
+                    if (temppost[1][11] == "1") {
+                        console.log("LEADER FOUND");
+                        mustacheData["poster"] = temppost[0] + " ⭐";
+                        mustacheData["posterID"] = temppost[2];
+                    }
+                }
+            }
+
             postsOnThisPage.push(mustacheData);
             //console.log(date);
             var processedPostTemplate = `
@@ -1503,6 +1523,7 @@ function populatePage(posts, tags){
                   &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
                   &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
                   &nbsp;&nbsp;<span><span class='post-numreplies'>{{replycount}}</span>&nbsp;replies</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='poster-tooltip'><a href='/?user={{posterID}}'><span class='tooltiptext'>view OP</span>{{poster}}</a>&nbsp;</span>&nbsp;&nbsp;
                   &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>--></span>
                 </div>
               </div>
@@ -1524,8 +1545,7 @@ function populatePage(posts, tags){
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
-        } else
-            if (post.type == "poll_post") {
+        } else if (post.type == "poll_post") {
                 console.log(post);
                 var date = new Date(post.postID * 1000).toDateString();
                 console.log(post.optionvotes);
@@ -1588,7 +1608,9 @@ function populatePage(posts, tags){
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -1936,7 +1958,7 @@ function populateGrid(postsAndAllTagData){
       tags:post.tagArray
     };
     postsOnThisPage.push(mustacheData);
-    console.log("EKLGJE:KLIGJHLIKE:GHJKLGEL:HKJEGGEHJKL");
+    console.log("GRID VIEW");
     console.log(mustacheData.tags);
     var processedPostTemplate= `<div style='border-width:{{clicks}}px;' class='gridcell' postID='{{postID}}'>
                                 <div class='gridtitle'>{{title}}</div>
@@ -2211,7 +2233,8 @@ socket.on('userDataFound', function(userData){
   var user = userData[0];
   var tags = userData[1];
   var posts = userData[2];
-  var faves = userData[3];
+    var faves = userData[3];
+    console.log(user);
   console.log(posts);
   //$("#entryContainer").empty();
   var user_date = "1/9/89";//new Date(user.userID * 1000).toDateString();
@@ -2260,7 +2283,7 @@ socket.on('userDataFound', function(userData){
         if (user.userroles[11] == '1') {
             console.log("VIEWING LEADER'S PAGE");
             processedUserTemplate = `
-          <div><button id="follow-user">Follow user</button></div>
+          <div><button id="follow-user" onclick="followuser({{userid}});">Follow user</button></div>
           <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
         } else if (user.userroles[6] == '1') {

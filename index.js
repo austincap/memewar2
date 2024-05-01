@@ -146,11 +146,17 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
     console.log("UPLOAD POST");
     console.log(req.body.location);
     console.log(req.body.userID);
+    console.log(req.body.leader);
   var blockId = new ObjectId();
   var query;
-  var fileName = "officialunofficialplaceholderlogo.jpg";
+    var fileName = "officialunofficialplaceholderlogo.jpg";
+    var postlocation = "100.0000+200.0000";
+    console.log(req.body.userroles);
   var postId = parseInt(blockId.getTimestamp());
-  if (typeof req.file === 'object'){ fileName = req.file.filename; }
+    if (typeof req.file === 'object') { fileName = req.file.filename; }
+    if (typeof req.body.location === 'string') { postlocation = req.body.location; }
+    //if (typeof req.body.leader === 'string') { if (req.body.leader) }
+
   var params = {
             postID: postId,
             upvotes: 1,
@@ -165,7 +171,7 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
             censorattempts: 0,
             shields: 0,
             memecoinsspent: 0,
-            location: req.body.location
+            location: postlocation
   };
   if(req.body.userID=="ANON"){
     query = `
@@ -174,7 +180,7 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
     MERGE (whichtag)<-[ta:TAGGEDAS]-(newpost)
     RETURN newpost, whichtag
     `;
-  }else{
+  }else {
     query = `
     MATCH (whomadeit:User {userID:$userID})
     MERGE (whichtag:Tag {name:$tag})
@@ -671,7 +677,8 @@ function requestTop20Posts(socket, pagenum){
     WITH p ORDER BY p.upvotes-p.downvotes DESC
     OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
     OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
-    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
+    OPTIONAL MATCH (u:User)<-[cb:CREATEDBY]-(p)
+    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies, COLLECT(DISTINCT [u.name, u.userroles, u.userID]) AS poster
     SKIP `+String(PAGESIZE*pagenum)+` LIMIT `+String(PAGESIZE);
     //`;
     var topTagQuery = `
@@ -690,7 +697,8 @@ function requestTop20Posts(socket, pagenum){
             processedPostObject.tagvotes = tagAndVote[1];
           });
           processedPostObject.replycount = record["_fields"][2];
-          dataForClient.push(processedPostObject);
+            processedPostObject.poster = record["_fields"][3];
+            dataForClient.push(processedPostObject);
         });
         topPostsAndTags.push(dataForClient);
           session
@@ -766,7 +774,6 @@ function requestRandPosts(socket, randPages, pagenum) {
         console.error(error);
       });
 }
-
 function requestRecommendedPosts(socket, pagenum) {
     console.log("RETRIEVING RECOMMENDED POSTS");
     var topRecommendedPostsAndTags = [];
@@ -816,9 +823,57 @@ function requestRecommendedPosts(socket, pagenum) {
             console.log(error);
         });
 }
-
 function requestAlgomancerPosts(socket, pagenum) {
 
+}
+function requestSortedPosts(socket, sortType, pagenum) {
+    //console.log(String(randPages));
+    console.log("pagenum " + pagenum);
+    var topPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (:Post) with COUNT(*) as docCount
+    MATCH (doc:Post)
+    WHERE rand() < `+ String(randPages) + `.0/docCount
+    RETURN doc
+    `;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    session
+        .run(topPostQuery)
+        .then(function (result) {
+            var dataForClient = [];
+            result.record.forEach(function (record) {
+                var processedPostObject = record["_fields"][0]["properties"];
+                record["_fields"][1].forEach(function (tagAndVote) {
+                    processedPostObject.tagnames = tagAndVote[0];
+                    processedPostObject.tagvotes = tagAndVote[1];
+                });
+                processedPostObject.replycount = record["_fields"][2];
+                dataForClient.push(processedPostObject);
+            });
+            topPostsAndTags.push(dataForClient);
+            session
+                .run(topTagQuery)
+                .then(function (result) {
+                    var tagdataForClient = [];
+                    result.records.forEach(function (record) {
+                        tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+                    });
+                    topPostsAndTags.push(tagdataForClient);
+                    console.log(topPostsAndTags);
+                    console.log("RANDOM " + String(randPages) + " POSTS");
+                    socket.emit('receiveTop20Data', topPostsAndTags);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+        .catch(function (error) {
+            console.error(error);
+        });
 }
 
 function requestGroups(socket, pagenum) {
@@ -843,6 +898,10 @@ function requestGroups(socket, pagenum) {
         .catch(function (error) {
             console.log(error);
         });
+}
+
+function followLeader(socket, idarray) {
+
 }
 
 
@@ -898,56 +957,6 @@ function requestMultifeedPosts(socket) {
         .catch(function (error) {
             console.log(error);
         });
-}
-
-function requestSortedPosts(socket, sortType, pagenum){
-  //console.log(String(randPages));
-  console.log("pagenum "+pagenum);
-  var topPostsAndTags = [];
-    var topPostQuery = `
-    MATCH (:Post) with COUNT(*) as docCount
-    MATCH (doc:Post)
-    WHERE rand() < `+String(randPages)+`.0/docCount
-    RETURN doc
-    `;
-    var topTagQuery = `
-    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
-    WITH t.name AS tag, COUNT(ta) AS tagcount 
-    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
-    `;
-    session
-      .run(topPostQuery)
-      .then(function(result){
-        var dataForClient = [];
-        result.record.forEach(function(record){
-          var processedPostObject = record["_fields"][0]["properties"];
-          record["_fields"][1].forEach(function(tagAndVote){
-            processedPostObject.tagnames = tagAndVote[0];
-            processedPostObject.tagvotes = tagAndVote[1];
-          });
-          processedPostObject.replycount = record["_fields"][2];
-          dataForClient.push(processedPostObject);
-        });
-        topPostsAndTags.push(dataForClient);
-          session
-            .run(topTagQuery)
-            .then(function(result){
-              var tagdataForClient = [];
-              result.records.forEach(function(record){
-                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
-              });
-              topPostsAndTags.push(tagdataForClient);
-              console.log(topPostsAndTags);
-              console.log("RANDOM "+String(randPages)+" POSTS");
-              socket.emit('receiveTop20Data', topPostsAndTags);
-            })
-            .catch(function(error){
-              console.log(error);
-            });
-      })
-      .catch(function(error){
-        console.error(error);
-      });
 }
 
 function requestTop20PostsGrid(socket){
@@ -1557,7 +1566,7 @@ io.on('connection', function (socket) {
             });
     });
 
-
+    
 
     /////////////
     //VOTING
@@ -1881,6 +1890,14 @@ io.on('connection', function (socket) {
 
     /////////////////
     //LEADER CREATE GROUP
+
+
+    ////////////
+    //FOLLOW LEADER
+    socket.on('followuser', function (dataFromClient) {
+        console.log(dataFromClient);
+        followLeader(dataFromClient);
+    });
 
 
     ////////////////

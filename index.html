@@ -2,11 +2,10 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <meta property="og:title" content="Meme War">
-    <!-- <meta property="og:image" content="http://memewar.io/images/promo/shoot-upvotes.png"> -->
-    <meta property="og:description" content="Meme War: The battlefield of ideas.">
-    <meta property="og:url" content="http://memewar.io">
-    <title>Meme War 2</title>
+    <meta property="og:title" content="tomoni">
+    <meta property="og:description" content="tomoni">
+    <meta property="og:url" content="http://tomoni.io">
+    <title>tomoni</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
@@ -45,8 +44,8 @@
         </div>
 
         <div id="centerstage">
-            <button onclick="gohome();"><h1 id="pageID">Meme War 2<span id="pageID-tagname"></span></h1></button>
-            <div><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to Meme War!</marquee></div>
+            <button onclick="gohome();"><h1 id="pageID">tomoni<span id="pageID-tagname"></span></h1></button>
+            <div><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to tomoni!</marquee></div>
         </div>
 
         <div id="right-buttons">
@@ -198,6 +197,8 @@
                     <input class="permahidden" id="userID-newpost" name="userID" />
                     <input class="permahidden" id="posttype-newpost" name="type" />
                     <input class="permahidden" id="location-newpost" name="location" />
+                    <input class="permahidden" id="userroles-newpost" name="userroles" />
+                    <input class="permahidden" id="leader-newpost" name="leader" />
                     <input required id="tagForNewPost" name="tag" placeholder="you MUST provide a tag for your post. how do you want your post to be categorized?" type="text" maxlength="64" />
                     <br />
                     <input type="text" style='height:50px;' placeholder="you can treat this field like a title, or like a tweet if you're not putting anything in the box below" id="uploadTitle" name="title" maxlength="320" />
@@ -245,6 +246,7 @@
                     <!--<input class="permahidden" id="replytoPostID-poll" name="replyto" />-->
                     <input class="permahidden" id="userID-poll" name="userID" />
                     <input class="permahidden" id="posttype-poll" name="type" />
+                    <input class="permahidden" id="userroles-poll" name="userroles" />
                     <br />
                     <div id="pollOptionContainer">
                         <textarea type="text" style='height:30px;' placeholder="write a poll option here" id="uploadPollOption-1" name="pollOption1" maxlength="800"></textarea><br />
@@ -505,7 +507,7 @@
         <img id="picdisplayed">
     </div>
 
-        <div id="historyview">
+    <div id="historyview">
         <form ref='uploadForm'
               id='uploadForm'
               action='/upload'
@@ -520,12 +522,8 @@
         <script src="node_modules/datamaps/dist/datamaps.world.js"></script>
 
         <div id="container" style="position: relative; width: 500px; height: 300px;"></div>
-        <script>
-            //var map = new Datamap({ element: document.getElementById('container') });
-        </script>
         <canvas id='rotatingGlobe' width='400' height='400' style='width: 400px; height: 400px; cursor: move;'></canvas>
-        <canvas id="basicGlobe" width='400' height='400'>
-        </canvas>
+        <canvas id="basicGlobe" width='400' height='400'></canvas>
     </div>
 
 
@@ -541,5 +539,4 @@
 <script src="https://cdn.jsdelivr.net/npm/d3-force@3"></script>
 
 <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
-<script type="text/javascript" src="topojson.v1.min.js"></script>
 </html>
