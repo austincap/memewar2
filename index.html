@@ -18,6 +18,19 @@
     <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
     <script type="text/javascript" src="topojson.v1.min.js"></script>
     <script type="text/javascript" src="planetaryjs.js"></script>
+    <script type="text/javascript" src="paper-full.js"></script>
+    <script type="text/paperscript" canvas="myCanvas">
+        // Create a Paper.js Path to draw a line into it:
+        var path = new Path();
+        // Give the stroke a color
+        path.strokeColor = 'black';
+        var start = new Point(100, 100);
+        // Move to start and draw a line from there
+        path.moveTo(start);
+        // Note the plus operator on Point objects.
+        // PaperScript does that for us, and much more!
+        path.lineTo(start + [ 100, -50 ]);
+    </script>
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <script src="leaflet/leaflet.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
@@ -59,7 +72,7 @@
                 <div><button id="arbitrator" class="raise" onclick="arbitratorSort();">View reports</button></div>
                 <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
                 <div><button id="view-groups" class="raise" onclick="requestGroups();">Request groups</button></div>
-                <div><button id="new-grid" class="raise" onclick="requestNewGrid();">New grid view</button></div>
+                <div><button id="new-grid" class="raise" onclick="requestPileStyle();">Pile style</button></div>
                 <div><button id="show-map" class="raise" onclick="showMap();">Show map</button></div>
             </div>
         </div>
@@ -500,7 +513,9 @@
 
     <div id="gridview">
     </div>
-    <div id="bubbiview">
+    <div id="pileStyle">
+        <canvas id="myCanvas" resize></canvas>
+        <canvas resize="true" id="canvas-1" style="user-select: none;" width="1186" height="806" data-paper-scope="1" class=""></canvas>
     </div>
     <div id="gameview">
         <div id="contentdisplayed"></div>

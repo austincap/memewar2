@@ -1445,8 +1445,9 @@ io.on('connection', function (socket) {
     socket.on('viewmessages', function (userID) {
         var query = `
         MATCH (recipient:User {userID:$userID})
-        OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(p:Post)<-[:SENTMSG]-(fromuser)
-        RETURN recipient.name, p.title, p.content, fromuser.name
+        OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(r:MSG)<-[:SENTMSG]-(fromuser)
+        OPTIONAL MATCH (recipient)-[:SENTMSG]->(s:MSG)->[:RECEIVEDMSG]->(otheruser:User)
+        RETURN recipient.name, r.title, r.content, fromuser.name
         `;
         session
             .run(query, { userID: parseInt(userID) })
@@ -1481,7 +1482,9 @@ io.on('connection', function (socket) {
       WITH posts, u, tags, COLLECT(DISTINCT f) AS faves
       OPTIONAL MATCH (u)-[:SUMMONEDTO]->(s:Post)
       WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
-      RETURN u, tags, posts, faves, summons
+      OPTIONAL MATCH (u)-[d:VOTEDON]->(v:Post)
+      WITH summons, posts, u, tags, faves, COLLECT(DISTINCT v.postID) AS voted, SUM(d.upvotes) AS upvotes, SUM(d.downvotes) AS downvotes
+      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes
       `;
         session
             .run(query, { userID: parseInt(userID) })
@@ -1490,8 +1493,9 @@ io.on('connection', function (socket) {
                     socket.emit('noDataFound', 'no user found');
                     console.log('NULL');
                 } else {
-                    console.log("NOT null");
-                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1]];
+                    console.log("USER FOUND");
+                    //[userdata, tags, upvotes dealt, downvotes dealt]
+                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5], result.records[0]["_fields"][6], result.records[0]["_fields"][7]];
                     let tempData = [];
                     result.records[0]["_fields"][2].forEach(function (record) {
                         tempData.push(record["properties"]);
@@ -1499,6 +1503,12 @@ io.on('connection', function (socket) {
                     dataForClient.push(tempData);
                     tempData = [];
                     result.records[0]["_fields"][3].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    result.records[0]["_fields"][4].forEach(function (record) {
                         console.log(record.properties); console.log("record.properties");
                         tempData.push(record["properties"]);
                     });
@@ -1888,8 +1898,6 @@ io.on('connection', function (socket) {
     //SEND MESSAGE TO COUNSELOR
 
 
-    /////////////////
-    //LEADER CREATE GROUP
 
 
     ////////////
