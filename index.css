@@ -987,6 +987,12 @@ select {
   }
 
 
+canvas[resize] {
+    width: 90%;
+    height: 90%;
+    background-color:white;
+}
+
 /*advanced post */
   #ap {
     display:inline;

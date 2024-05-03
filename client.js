@@ -122,7 +122,14 @@ function BubbleChart(data, {
 function onloadFunction(){
     var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
     if(isMobile){ console.log("MOBILE"); }
-    else{ console.log("NOT MOBILE"); }
+    else { console.log("NOT MOBILE"); }
+
+    paper.install(window);
+ 
+    paper.setup('myCanvas');
+
+    
+
     if (getQueryParam("post") !== "") {
         //
         socket.emit("viewpost", getQueryParam("post"));
@@ -1936,7 +1943,15 @@ function populatePageWithReports(reportarray) {
 //CREATE VIRTUAL PILE OF LINKS
 function requestPileStyle() {
     console.log(postsOnThisPage);
-    var voronoi = new Voronoi();
+    $('#entryContainer').empty();
+    //var path = new Path.Rectangle([75, 75], [100, 100]);
+    //path.strokeColor = 'black';
+
+    //view.onFrame = function (event) {
+    //    // On each frame, rotate the path by 3 degrees:
+    //    path.rotate(3);
+    //}
+    var voronoi = new paper.Voronoi();
     var sites = generateBeeHivePoints(view.size / 200, true);
     var bbox, diagram;
     var oldSize = view.size;
@@ -1960,6 +1975,7 @@ function requestPileStyle() {
     }
 
     function renderDiagram() {
+        console.log("render diagram");
         project.activeLayer.children = [];
         var diagram = voronoi.compute(sites, bbox);
         if (diagram) {
