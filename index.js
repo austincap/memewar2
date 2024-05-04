@@ -778,11 +778,12 @@ function requestRecommendedPosts(socket, pagenum) {
     console.log("RETRIEVING RECOMMENDED POSTS");
     var topRecommendedPostsAndTags = [];
     var topPostQuery = `
-    MATCH (p:Post)<-[:RECOMMENDS]-(:User)
-    WITH p ORDER BY p.upvotes-p.downvotes DESC
+    MATCH (p:Post)<-[r:RECOMMENDS]-(a:User)
+    WITH COUNT(r) AS rec, p
+    WITH rec, p ORDER BY rec DESC
     OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
     OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
-    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
+    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies, rec
     SKIP `+ String(PAGESIZE * pagenum) + ` LIMIT ` + String(PAGESIZE);
     var topTagQuery = `
     MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
@@ -901,6 +902,29 @@ function requestGroups(socket, pagenum) {
 }
 
 function followLeader(socket, idarray) {
+    var dataForClient = [];
+    var params = {
+        leaderID: idarray[0],
+        followerID: idarray[1]
+    };
+    var topPostQuery = `
+    MATCH (l:User { userID:$leaderID}), (f:User { userID:$followerID})
+    MERGE (l)<-[:FOLLOWS]-(f)
+    RETURN l, f
+    `;
+    session
+        .run(topPostQuery)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                console.log(record._fields);
+            });
+            console.log("Now following");
+            //socket.emit('sendDatabase', dataForClient);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
 
 }
 
@@ -1917,16 +1941,19 @@ io.on('connection', function (socket) {
     //RECOMMEND POST
     socket.on('recommendPost', function (dataFromClient) {
         console.log(dataFromClient);
+        var params = {
+            postID: parseInt(dataFromClient.postID),
+            userID: parseInt(dataFromClient.userID)
+        };
         var query = `
         MATCH (n:Post {postID:$postID}), (m:User {userID:$userID})
         MERGE (n)<-[r:RECOMMENDS]-(m)
         RETURN n, m
         `;
         session
-            .run(query, { postID: parseInt(dataFromClient.postID), userID: dataFromClient.userID })
+            .run(query, params)
             .then(function (result) {
                 console.log(result);
-                socket.emit('userChecked', { task: 'favoritedPost', userID: dataFromClient.userid, postID: dataFromClient.postidORtagnameORuserid, cost: 0 });
             })
             .catch(function (error) {
                 console.log(error);
