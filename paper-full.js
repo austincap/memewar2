@@ -5852,8 +5852,9 @@ var SymbolDefinition = Base.extend({
 	initialize: function SymbolDefinition(item, dontCenter) {
 		this._id = UID.get();
 		this.project = paper.project;
-		if (item)
-			this.setItem(item, dontCenter);
+		console.log(this);
+		if (item) { this._setItem(item, dontCenter); }
+			
 	},
 
 	_serialize: function(options, dictionary) {
@@ -15790,10 +15791,15 @@ Base.exports.PaperScript = function() {
 
   function raise(pos, message) {
 	var loc = getLineInfo(input, pos);
-	message += " (" + loc.line + ":" + loc.column + ")";
-	var err = new SyntaxError(message);
-	err.pos = pos; err.loc = loc; err.raisedAt = tokPos;
-	throw err;
+	  message += " (" + loc.line + ":" + loc.column + ")";
+	  try {
+		  console.log(message);
+	  } catch {
+		  console.log('wah');
+	  }
+	//var err = new SyntaxError(message);
+	//err.pos = pos; err.loc = loc; err.raisedAt = tokPos;
+	//throw err;
   }
 
   var empty = [];

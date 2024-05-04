@@ -125,10 +125,8 @@ function onloadFunction(){
     else { console.log("NOT MOBILE"); }
 
     paper.install(window);
- 
     paper.setup('myCanvas');
-
-    
+    //console.log(PaperScope.get(0));
 
     if (getQueryParam("post") !== "") {
         //
@@ -211,23 +209,14 @@ function onloadFunction(){
   function randomInt(max) {
     return Math.floor(Math.random() * max);
   }
-    // map dimensions
-    var ROWS = 50;
-    var COLS = 50;
-    // font size
-    var FONT = 36;
-    
-    // the structure of the map
-var randommap;
-    // the ascii display, as a 2d array of characters
-    var asciidisplay;
-    // a list of all actors, 0 is the player
-    var player;
-    var actorList;
-    var livingEnemies;
-    // points to each actor in its position, for quick searching
-    var actorMap;
-    var ACTORS = 11; // number of actors per level, including player
+// map dimensions
+var ROWS = 50; var COLS = 50; var FONT = 36;
+// the structure of the map
+var randommap; var asciidisplay;
+// a list of all actors, 0 is the player
+var player; var actorList; var livingEnemies;
+// points to each actor in its position, for quick searching
+var actorMap; var ACTORS = 11; // number of actors per level, including player
 function openGameView(){
 
     function create() {
@@ -1941,136 +1930,451 @@ function populatePageWithReports(reportarray) {
     $('#entryContainer').append('</table>');
 }
 //CREATE VIRTUAL PILE OF LINKS
+
+function Ball(r, p, v) {
+    this.radius = r;
+    this.point = p;
+    this.vector = v;
+    this.maxVec = 15;
+    this.numSegment = Math.floor(r / 3 + 2);
+    this.boundOffset = [];
+    this.boundOffsetBuff = [];
+    this.sidePoints = [];
+    this.path = new Path({
+        fillColor: {
+            hue: Math.random() * 360,
+            saturation: 1,
+            brightness: 1
+        },
+        blendMode: 'lighter'
+    });
+
+    for (var i = 0; i < this.numSegment; i++) {
+        this.boundOffset.push(this.radius);
+        this.boundOffsetBuff.push(this.radius);
+        this.path.add(new Point());
+        this.sidePoints.push(new Point({
+            angle: 360 / this.numSegment * i,
+            length: 1
+        }));
+    }
+    //console.log(this.sidePoints);
+}
+
+Ball.prototype = {
+    iterate: function () {
+        console.log("ITERATE)");
+        this.checkBorders();
+        if (this.vector.length > this.maxVec) { this.vector.length = this.maxVec; }
+        this.point += this.vector;
+        this.updateShape();
+    },
+
+    checkBorders: function () {
+        var size = view.size;
+        //console.log(size);
+        if (this.point.x < -this.radius)
+            this.point.x = size.width + this.radius;
+        if (this.point.x > size.width + this.radius)
+            this.point.x = -this.radius;
+        if (this.point.y < -this.radius)
+            this.point.y = size.height + this.radius;
+        if (this.point.y > size.height + this.radius)
+            this.point.y = -this.radius;
+    },
+
+    updateShape: function () {
+        var segments = this.path.segments;
+        for (var i = 0; i < this.numSegment; i++)
+            segments[i].point = this.getSidePoint(i);
+
+        this.path.smooth();
+        for (var i = 0; i < this.numSegment; i++) {
+            if (this.boundOffset[i] < this.radius / 4) { this.boundOffset[i] = this.radius / 4; }
+
+            var next = (i + 1) % this.numSegment;
+            var prev = (i > 0) ? i - 1 : this.numSegment - 1;
+            var offset = this.boundOffset[i];
+            offset += (this.radius - offset) / 15;
+            offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
+            this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
+        }
+    },
+
+    react: function (b) {
+        var dist = this.point.getDistance(b.point);
+        if (dist < this.radius + b.radius && dist != 0) {
+            var overlap = this.radius + b.radius - dist;
+            var direc = (this.point - b.point).normalize(overlap * 0.015);
+            this.vector += direc;
+            b.vector -= direc;
+
+            this.calcBounds(b);
+            b.calcBounds(this);
+            this.updateBounds();
+            b.updateBounds();
+        }
+    },
+
+    getBoundOffset: function (b) {
+        var diff = this.point - b;
+        var angle = (diff.angle + 180) % 360;
+        return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
+    },
+
+    calcBounds: function (b) {
+        for (var i = 0; i < this.numSegment; i++) {
+            var tp = this.getSidePoint(i);
+            var bLen = b.getBoundOffset(tp);
+            var td = tp.getDistance(b.point);
+            if (td < bLen) {
+                this.boundOffsetBuff[i] -= (bLen - td) / 2;
+            }
+        }
+    },
+
+    getSidePoint: function (index) {
+        return this.point + this.sidePoints[index] * this.boundOffset[index];
+    },
+
+    updateBounds: function () {
+        for (var i = 0; i < this.numSegment; i++)
+            this.boundOffset[i] = this.boundOffsetBuff[i];
+    }
+};
+
 function requestPileStyle() {
     console.log(postsOnThisPage);
     $('#entryContainer').empty();
-    //var path = new Path.Rectangle([75, 75], [100, 100]);
-    //path.strokeColor = 'black';
 
-    //view.onFrame = function (event) {
-    //    // On each frame, rotate the path by 3 degrees:
-    //    path.rotate(3);
+
+
+    //var VoronoiDemo = {
+    //    voronoi: new Voronoi(),
+    //    sites: [],
+    //    diagram: null,
+    //    margin: 100,
+    //    canvas: null,
+    //    bbox: { xl: 0, xr: 800, yt: 0, yb: 600 },
+
+    //    normalizeEventCoords: function (target, e) {
+    //        // http://www.quirksmode.org/js/events_properties.html#position
+    //        // =====
+    //        if (!e) { e = self.event; }
+    //        var x = 0;
+    //        var y = 0;
+    //        if (e.pageX || e.pageY) {
+    //            x = e.pageX;
+    //            y = e.pageY;
+    //        }
+    //        else if (e.clientX || e.clientY) {
+    //            x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+    //            y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    //        }
+    //        // =====
+    //        return { x: x - target.offsetLeft, y: y - target.offsetTop };
+    //    },
+
+    //    init: function () {
+    //        var me = this;
+    //        this.canvas = document.getElementById('myCanvas');
+    //        this.canvas.onmousemove = function (e) {
+    //            if (!me.sites.length) { return; }
+    //            var site = me.sites[0];
+    //            var mouse = me.normalizeEventCoords(me.canvas, e);
+    //            site.x = mouse.x;
+    //            site.y = mouse.y;
+    //            me.diagram = me.voronoi.compute(me.sites, me.bbox);
+    //            me.render();
+    //        };
+    //        this.canvas.onclick = function (e) {
+    //            var mouse = me.normalizeEventCoords(me.canvas, e);
+    //            me.addSite(mouse.x, mouse.y);
+    //            me.render();
+    //        };
+    //        this.randomSites(10, true);
+    //        this.render();
+    //    },
+
+    //    clearSites: function () {
+    //        // we want at least one site, the one tracking the mouse
+    //        this.sites = [{ x: 0, y: 0 }];
+    //        this.diagram = this.voronoi.compute(this.sites, this.bbox);
+    //    },
+
+    //    randomSites: function (n, clear) {
+    //        if (clear) { this.sites = []; }
+    //        var xo = this.margin;
+    //        var dx = this.canvas.width - this.margin * 2;
+    //        var yo = this.margin;
+    //        var dy = this.canvas.height - this.margin * 2;
+    //        for (var i = 0; i < n; i++) {
+    //            this.sites.push({ x: self.Math.round(xo + self.Math.random() * dx), y: self.Math.round(yo + self.Math.random() * dy) });
+    //        }
+    //        this.diagram = this.voronoi.compute(this.sites, this.bbox);
+    //    },
+
+    //    addSite: function (x, y) {
+    //        this.sites.push({ x: x, y: y });
+    //        this.diagram = this.voronoi.compute(this.sites, this.bbox);
+    //    },
+
+    //    render: function () {
+    //        var ctx = this.canvas.getContext('2d');
+    //        // background
+    //        ctx.globalAlpha = 1;
+    //        ctx.beginPath();
+    //        ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+    //        ctx.fillStyle = '#fff';
+    //        ctx.fill();
+    //        ctx.strokeStyle = '#888';
+    //        ctx.stroke();
+    //        // voronoi
+    //        if (!this.diagram) { return; }
+    //        ctx.strokeStyle = '#000';
+    //        // edges
+    //        var edges = this.diagram.edges,
+    //            nEdges = edges.length,
+    //            v;
+    //        if (nEdges) {
+    //            var edge;
+    //            ctx.beginPath();
+    //            while (nEdges--) {
+    //                edge = edges[nEdges];
+    //                v = edge.va;
+    //                ctx.moveTo(v.x, v.y);
+    //                v = edge.vb;
+    //                ctx.lineTo(v.x, v.y);
+    //            }
+    //            ctx.stroke();
+    //        }
+    //        // how many sites do we have?
+    //        var sites = this.sites,
+    //            nSites = sites.length;
+    //        if (!nSites) { return; }
+    //        // highlight cell under mouse
+    //        var cell = this.diagram.cells[this.sites[0].voronoiId];
+    //        // there is no guarantee a Voronoi cell will exist for any
+    //        // particular site
+    //        if (cell) {
+    //            var halfedges = cell.halfedges,
+    //                nHalfedges = halfedges.length;
+    //            if (nHalfedges > 2) {
+    //                v = halfedges[0].getStartpoint();
+    //                ctx.beginPath();
+    //                ctx.moveTo(v.x, v.y);
+    //                for (var iHalfedge = 0; iHalfedge < nHalfedges; iHalfedge++) {
+    //                    v = halfedges[iHalfedge].getEndpoint();
+    //                    ctx.lineTo(v.x, v.y);
+    //                }
+    //                ctx.fillStyle = '#faa';
+    //                ctx.fill();
+    //            }
+    //        }
+    //        // draw sites
+    //        var site;
+    //        ctx.beginPath();
+    //        ctx.fillStyle = '#44f';
+    //        while (nSites--) {
+    //            site = sites[nSites];
+    //            ctx.rect(site.x - 2 / 3, site.y - 2 / 3, 2, 2);
+    //        }
+    //        ctx.fill();
+    //    },
+    //};
+
+    //--------------------- main ---------------------
+
+
+
+
+    var balls = [];
+    var numBalls = 18;
+    console.log(view);
+    for (var i = 0; i < numBalls; i++) {
+        //console.log("BALL");
+        //console.log(view._viewSize._width);
+        var position = Point.random();
+        position.x = position.x * view._viewSize._width;
+        position.y = position.y * view._viewSize._height;
+        //console.log(position);
+        var vector = new Point({
+            angle: 360 * Math.random(),
+            length: Math.random() * 10
+        });
+        var radius = Math.random() * 60 + 60;
+        balls.push(new Ball(radius, position, vector));
+    }
+    view.play();
+    view.autoUpdate = true;
+    //console.log(balls);
+
+    function onFrame(event) {
+        for (var i = 0; i < balls.length - 1; i++) {
+            for (var j = i + 1; j < balls.length; j++) {
+                balls[i].react(balls[j]);
+            }
+        }
+        for (var i = 0, l = balls.length; i < l; i++) {
+            balls[i].iterate();
+        }
+    }
+
+
+
+    //var voronoi = new Voronoi();
+
+    //var simplesize = {};
+    //simplesize["_width"] = view.size._width / 200;
+    //simplesize["_height"] = view.size._height / 200;
+    //var bbox, diagram;
+    //var oldSize = view.size;
+    //var spotColor = new Color('red');
+    //var mousePos = view.center;
+    //var selected = false;
+
+
+    ////var sites = generateBeeHivePoints(simplesize, true);
+    //var sites = [];
+    //((async () => {
+    //    sites = await generateBeeHivePoints(simplesize, true);
+    //    console.log("VALUE");
+    //    console.log(sites);
+        
+    //    ((async () => {
+    //        await renderDiagram();
+    //    })()).catch(console.error);
+    //})()).catch(console.error);
+
+
+
+    //onResize();
+
+    //function onMouseDown(event) {
+    //    sites.push(event.point);
+    //    ((async () => {
+    //        await renderDiagram();
+    //    })()).catch(console.error);
     //}
-    var voronoi = new paper.Voronoi();
-    var sites = generateBeeHivePoints(view.size / 200, true);
-    var bbox, diagram;
-    var oldSize = view.size;
-    var spotColor = new Color('red');
-    var mousePos = view.center;
-    var selected = false;
 
-    onResize();
+    //function onMouseMove(event) {
+    //    mousePos = event.point;
+    //    if (event.count == 0) { sites.push(event.point); }
+    //    sites[sites.length - 1] = event.point;
+    //    ((async () => {
+    //        await renderDiagram();
+    //    })()).catch(console.error);
+    //}
 
-    function onMouseDown(event) {
-        sites.push(event.point);
-        renderDiagram();
-    }
+    //function renderDiagram() {
+    //    project.activeLayer.children = [];
+    //    diagram = voronoi.compute(sites, bbox);
+    //    console.log("di");
+    //    console.log(sites);
+    //    console.log(bbox);
+    //    console.log(diagram);
+    //    if (diagram) {
+    //        for (var i = 0, l = sites.length; i < l; i++) {
+    //            var cell = diagram.cells[sites[i].voronoiId];
+    //            if (cell) {
+    //                console.log("CELL");
+    //                var halfedges = cell.halfedges,
+    //                    length = halfedges.length;
+    //                if (length > 2) {
+    //                    var points = [];
+    //                    for (var j = 0; j < length; j++) {
+    //                        v = halfedges[j].getEndpoint();
+    //                        points.push(new Point(v));
+    //                    }
+    //                    createPath(points, sites[i]);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 
-    function onMouseMove(event) {
-        mousePos = event.point;
-        if (event.count == 0)
-            sites.push(event.point);
-        sites[sites.length - 1] = event.point;
-        renderDiagram();
-    }
+    //function removeSmallBits(path) {
+    //    var averageLength = path.length / path.segments.length;
+    //    var min = path.length / 50;
+    //    for (var i = path.segments.length - 1; i >= 0; i--) {
+    //        var segment = path.segments[i];
+    //        var cur = segment.point;
+    //        var nextSegment = segment.next;
+    //        var next = nextSegment.point + nextSegment.handleIn;
+    //        if (cur.getDistance(next) < min) {
+    //            segment.remove();
+    //        }
+    //    }
+    //}
 
-    function renderDiagram() {
-        console.log("render diagram");
-        project.activeLayer.children = [];
-        var diagram = voronoi.compute(sites, bbox);
-        if (diagram) {
-            for (var i = 0, l = sites.length; i < l; i++) {
-                var cell = diagram.cells[sites[i].voronoiId];
-                if (cell) {
-                    var halfedges = cell.halfedges,
-                        length = halfedges.length;
-                    if (length > 2) {
-                        var points = [];
-                        for (var j = 0; j < length; j++) {
-                            v = halfedges[j].getEndpoint();
-                            points.push(new Point(v));
-                        }
-                        createPath(points, sites[i]);
-                    }
-                }
-            }
-        }
-    }
+    //async function generateBeeHivePoints(size, loose) {
+    //    var points = [];
+    //    var col = {};
+    //    col["_width"] = view.size._width / size._width;
+    //    col["_height"] = view.size._width / size._height;
+    //    for (var i = -1; i < size._width + 1; i++) {
+    //        for (var j = -1; j < size._height + 1; j++) {
+    //            var point = new Point((i / (size._width * view.size._width)) + col._width / 2, (j / (size._height * view.size._height)) + col._height / 2);
+    //            var randompoint = Point.random();
+    //            if (j % 2) { point = new Point(point.x+col._width / 2, point.y); }       
+    //            if (loose) { point = new Point(point.x+(((col._width / 4) * randompoint.x) - col._width / 4), (point.y+((col._height / 4) * randompoint.y) - col._height / 4)); }
+    //            console.log(point);
+    //            points.push(point);
+    //        }
+    //    }
+    //    console.log(points);
+    //    var newpoints = await points;
+    //    return newpoints;
+    //}
+    //function createPath(points, center) {
+    //    var path = new Path();
+    //    if (!selected) { path.fillColor = spotColor; }
+    //    else { path.fullySelected = selected; }
+    //    path.closed = true;
 
-    function removeSmallBits(path) {
-        var averageLength = path.length / path.segments.length;
-        var min = path.length / 50;
-        for (var i = path.segments.length - 1; i >= 0; i--) {
-            var segment = path.segments[i];
-            var cur = segment.point;
-            var nextSegment = segment.next;
-            var next = nextSegment.point + nextSegment.handleIn;
-            if (cur.getDistance(next) < min) {
-                segment.remove();
-            }
-        }
-    }
+    //    for (var i = 0, l = points.length; i < l; i++) {
+    //        var point = points[i];
+    //        var next = points[(i + 1) == points.length ? 0 : i + 1];
+    //        var vector = (next - point) / 2;
+    //        path.add({
+    //            point: point + vector,
+    //            handleIn: -vector,
+    //            handleOut: vector
+    //        });
+    //    }
+    //    path.scale(0.95);
+    //    removeSmallBits(path);
+    //    return path;
+    //}
 
-    function generateBeeHivePoints(size, loose) {
-        var points = [];
-        var col = view.size / size;
-        for (var i = -1; i < size.width + 1; i++) {
-            for (var j = -1; j < size.height + 1; j++) {
-                var point = new Point(i, j) / new Point(size) * view.size + col / 2;
-                if (j % 2)
-                    point += new Point(col.width / 2, 0);
-                if (loose)
-                    point += (col / 4) * Point.random() - col / 4;
-                points.push(point);
-            }
-        }
-        return points;
-    }
-    function createPath(points, center) {
-        var path = new Path();
-        if (!selected) {
-            path.fillColor = spotColor;
-        } else {
-            path.fullySelected = selected;
-        }
-        path.closed = true;
+    //function onResize() {
+    //    console.log("resize");
+    //    var margin = 20;
+    //    console.log(view.bounds);
+    //    bbox = {
+    //        xl: margin,
+    //        xr: view.bounds.width - margin,
+    //        yt: margin,
+    //        yb: view.bounds.height - margin
+    //    };
+    //    console.log(bbox);
+    //    for (var i = 0, l = sites.length; i < l; i++) {
+    //        sites[i] = sites[i] * view.size._width / oldSize._width;
+    //    }
+    //    oldSize = view.size;
+    //    ((async () => {
+    //        await renderDiagram();
+    //    })()).catch(console.error);
+    //}
 
-        for (var i = 0, l = points.length; i < l; i++) {
-            var point = points[i];
-            var next = points[(i + 1) == points.length ? 0 : i + 1];
-            var vector = (next - point) / 2;
-            path.add({
-                point: point + vector,
-                handleIn: -vector,
-                handleOut: vector
-            });
-        }
-        path.scale(0.95);
-        removeSmallBits(path);
-        return path;
-    }
-
-    function onResize() {
-        var margin = 20;
-        bbox = {
-            xl: margin,
-            xr: view.bounds.width - margin,
-            yt: margin,
-            yb: view.bounds.height - margin
-        };
-        for (var i = 0, l = sites.length; i < l; i++) {
-            sites[i] = sites[i] * view.size / oldSize;
-        }
-        oldSize = view.size;
-        renderDiagram();
-    }
-
-    function onKeyDown(event) {
-        if (event.key == 'space') {
-            selected = !selected;
-            renderDiagram();
-        }
-    }
+    //function onKeyDown(event) {
+    //    if (event.key == 'space') {
+    //        selected = !selected;
+    //        ((async () => {
+    //            await renderDiagram();
+    //        })()).catch(console.error);
+    //    }
+    //}
 }
 
 function populateGrid(postsAndAllTagData){
