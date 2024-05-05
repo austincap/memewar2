@@ -992,6 +992,9 @@ canvas[resize] {
     height: 90%;
     background-color:white;
 }
+#pileStyle {
+    display: none;
+}
 
 /*advanced post */
   #ap {

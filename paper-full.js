@@ -5853,7 +5853,7 @@ var SymbolDefinition = Base.extend({
 		this._id = UID.get();
 		this.project = paper.project;
 		console.log(this);
-		if (item) { this._setItem(item, dontCenter); }
+		if (item) { this.setItem(item, dontCenter); }
 			
 	},
 

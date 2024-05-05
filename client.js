@@ -172,11 +172,13 @@ function onloadFunction(){
             console.log(d.id);
         });
 
-    window.setTimeout(function(){
+
+    window.setTimeout(function () {
+        console.log("TESTSETSTES");
         if (sessionStorage.getItem('userID') !== null) {
             var rollString = sessionStorage.getItem('userroles');
             $('.profallow').css('display', 'inline');
-            addRoles(sessionStorage.getItem('userroles'));
+            addRoles(sessionStorage.getItem('userroles'), false);
             console.log(sessionStorage.getItem('userID'));
             $('#signinstuff').css('display', 'none');
             $('#userprofilestuff').css('display', 'inline-block');
@@ -640,59 +642,73 @@ function clickAccountButton(thisButton){
       viewProfilePage(sessionStorage.getItem('userID'));
   }
 }
-function addRoles(rollString) {
+function addRoles(rollString, falseisnormaltrueisdisplayall) {
     console.log("ADD ROLES");
     console.log(sessionStorage.getItem('userroles'));
-
+    var stringofroles = "";
     if (rollString[0] == '1') {
         $(".lurkers-only").css("display", "none");
     }
     if (rollString[1] == '1') {
         $(".taggers-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "tagger "; }
     }
     if (rollString[2] == '1') {
         $(".painters-only").css("display", "block");
         document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+        if (falseisnormaltrueisdisplayall) { stringofroles += "painter "; }
     }
     if (rollString[3] == '1') {
         $(".pollsters-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "pollster "; }
     }
     if (rollString[4] == '1') {
         $(".tastemakers-only").css("display", "block");
         document.querySelectorAll('.tastemakers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+        if (falseisnormaltrueisdisplayall) { stringofroles += "tastemaker "; }
     }
     if (rollString[5] == '1') {
         document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+        if (falseisnormaltrueisdisplayall) { stringofroles += "explorer "; }
     }
     if (rollString[6] == '1') {
         $(".summoners-only").css("display", "block");
         document.querySelectorAll('.summoners-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
-        
+        if (falseisnormaltrueisdisplayall) { stringofroles += "summoner "; }
     }
     if (rollString[7] == '1') {
         $(".protectors-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "protector "; }
     }
     if (rollString[8] == '1') {
         $(".arbitrators-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "arbitrator "; }
     }
     if (rollString[9] == '1') {
         $(".stalkers-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "stalker "; }
     }
     if (rollString[10] == '1') {
         $(".editors-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "editor "; }
     }
     if (rollString[11] == '1') {
         $(".leaders-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "leader "; }
     }
     if (rollString[12] == '1') {
         $(".counselors-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "counselor "; }
     }
     if (rollString[13] == '1') {
         $(".founders-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "founder "; }
     }
     if (rollString[14] == '1') {
         $(".algomancers-only").css("display", "block");
+        if (falseisnormaltrueisdisplayall) { stringofroles += "algomancer "; }
     }
+    if (falseisnormaltrueisdisplayall) { return stringofroles; }
 }
 function getFirstRole(rollString) {
     for (let i = 0; i < rollString.length; i++) {
@@ -1263,9 +1279,14 @@ function returnTastemakerBox() {
 }
 
 
+function stalkPoster(postID) {
+    $("#entryContainer").empty();
+    socket.emit("stalkuser", parseInt(postID));
+}
+
 
 function followuser(userID) {
-    let datapacket = {
+    var datapacket = {
         leaderID: userID,
         followerID: parseInt(sessionStorage.getItem("userID"))
     }
@@ -1462,6 +1483,7 @@ function populatePage(posts, tags) {
         if (post.type == "text_post") {
             
             var date = new Date(post.postID * 1000).toDateString();
+            var replycount = post.replycount !== undefined ? String(post.replycount) : "?";
             var mustacheData = {
                 postID: String(post.postID),
                 profit: String(post.upvotes - post.downvotes),
@@ -1469,7 +1491,7 @@ function populatePage(posts, tags) {
                 down: String(post.downvotes),
                 file: String(post.file),
                 date: date,
-                replycount: String(post.replycount),
+                replycount: replycount,
                 clicks: String(post.clicks),
                 title: String(post.title),
                 content: String(post.content),
@@ -1488,9 +1510,6 @@ function populatePage(posts, tags) {
                 }).addTo(mapDisplay);
                 circle.bindPopup("<a href='/?post=" + mustacheData.postID + "' onclick='viewPost(" + mustacheData.postID +");'>" + mustacheData.title + "</a>");
             }
-            
-    
-
             //CHECK if poster is a Leader
             if (post.poster !== undefined){
                 let temppost = post.poster[0];
@@ -1536,6 +1555,7 @@ function populatePage(posts, tags) {
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
                 <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
@@ -1605,6 +1625,7 @@ function populatePage(posts, tags) {
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
                 <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
@@ -1687,7 +1708,10 @@ function populateMultifeed(posts1, posts2, posts3) {
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -1754,7 +1778,10 @@ function populateMultifeed(posts1, posts2, posts3) {
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                 <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -1815,7 +1842,10 @@ function populateMultifeed(posts1, posts2, posts3) {
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='recommendPost({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -1882,7 +1912,10 @@ function populateMultifeed(posts1, posts2, posts3) {
                 <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
-                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button> 
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                 <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
               </div>
             </div>`;
@@ -2281,6 +2314,7 @@ function populateGrid(postsAndAllTagData){
   });
 }
 
+//userChecked
 socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
   switch(resultOfCheck.task){
@@ -2371,47 +2405,8 @@ socket.on('userChecked', function(resultOfCheck){
   }
 });
 
-socket.on('tagsForPostData', function(tagsForPostData){
-  console.log('tagsForPostData');
-  $('#existingTagsForThisPost').empty();
-  $('#popular-tag-span').empty();
-  tagsForPostData.forEach(function(tag){
-      var mustacheData = {
-        otherposts: tag[0],
-        tagname: tag[1],
-        tagupvotes: tag[2]
-      };
-      var tagtemplate = `<button class="postTag" tagname="{{tagname}}">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag({{tagname}});">{{otherposts}}</a>)&nbsp;-&nbsp;<span class="tagName">{{tagname}}</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost({{tagname}}, $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">{{tagupvotes}}</a>)</button>&nbsp;&nbsp;`;
-        var html = Mustache.render(tagtemplate, mustacheData);
-      $('#existingTagsForThisPost').append(html);
-      var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[1]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[0]+'</span>)</button>&nbsp;';
-      $('#popular-tag-span').append(processedTag);
-  });
-  $(".popular-tag-button").on("click", function(){
-    console.log($(this).children(".tag-name").html());
-    $("#entryContainer").empty();
-    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
-  });
-});
 
-socket.on('receiveTagData', function(topPostsForTag){
-  postsOnThisPage = [];
-  console.log(topPostsForTag);
-  populatePage(topPostsForTag[0], []);
-  $('#pageID-tagname').html("&nbsp;:&nbsp;"+topPostsForTag[1]);
-  window.history.replaceState(null, null, "/?tag="+topPostsForTag[1]);
-});
-
-socket.on('receiveTop20Data', function(topPostsAndTags){
-  postsOnThisPage = [];
-  populatePage(topPostsAndTags[0], topPostsAndTags[1]);
-});
-
-socket.on('receiveRecommendedData', function (recommendedData) {
-    postsOnThisPage = [];
-    populatePage(recommendedData[0], recommendedData[1]);
-});
-
+//receiveSinglePostData
 socket.on('receiveSinglePostData', function(dataFromServer){
   postsOnThisPage = [];
   console.log("receiveSinglePostData");
@@ -2496,7 +2491,7 @@ socket.on('receiveSinglePostData', function(dataFromServer){
     socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
   });
 });
-
+//paintPosts
 socket.on('paintPosts', function (paintDataArray) {
     paintDataArray.forEach(function (paintPostData) {
         paintPostData = JSON.parse(paintPostData);
@@ -2511,13 +2506,13 @@ socket.on('paintPosts', function (paintDataArray) {
         }
     });
 });
-
+//loggedIn
 socket.on('loggedIn', function(loginData){
     sessionStorage.setItem('userID', loginData.userID);
     sessionStorage.setItem('username', loginData.name);
     sessionStorage.setItem('memecoin', loginData.memecoin);
     sessionStorage.setItem("userroles", loginData.userroles);
-    addRoles(loginData.userroles);
+    addRoles(loginData.userroles, false);
     console.log(loginData);
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
@@ -2527,30 +2522,32 @@ socket.on('loggedIn', function(loginData){
     $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
     $('#currentrole').html(getFirstRole(loginData.userroles));
 });
-
+//userDataFound
 socket.on('userDataFound', function (userData) {
     console.log(userData);
-  postsOnThisPage = [];
-  var user = userData[0];
-  var tags = userData[5];
-  var posts = userData[1];
-    var faves = userData[6];
+    postsOnThisPage = [];
+    var user = userData[0];
+    var tags = userData[1];
     var voted = userData[2];
+    var posts = userData[3];
+    var faves = userData[4];
+    var summons = userData[5];
   //$("#entryContainer").empty();
   var user_date = "1/9/89";//new Date(user.userID * 1000).toDateString();
   var user_mustacheData = {
-    userid:String(user.userID),
-    username:String(user.name),
-    memecoin:String(user.memecoin),
-    file:String(user.file),
-    date:user_date,
-    upvotesdealt:String(userData[3]),
-    downvotesdealt:String(userData[4]),
-    postcount:String(posts.length),
-      bio: String(user.content),
-      roles: String(user.userroles),
-      voted: Array(user.voted)
-
+        userid:String(user.userID),
+        username:String(user.name),
+        memecoin:String(user.memecoin),
+        file:String(user.file),
+        date: user_date,
+        upvotesdealt:String(user.upvotes),
+        downvotesdealt:String(user.downvotes),
+        postcount:String(posts.length),
+        bio: String(user.content),
+        roles: String(user.userroles),
+        voted: Array(user.voted),
+      follows: String(user.follows),
+        userroles: user.userroles
     };
     //check if user is viewing own profile
     var processedUserTemplate = `
@@ -2572,10 +2569,10 @@ socket.on('userDataFound', function (userData) {
             <div id="advanced-post-tags">
             </div>
           </div>
-          <div id="advanced-post-content">{{bio}}</div>
     `;
     if (sessionStorage.getItem('userID') == user.userID) {
         console.log("PROFILE VIEWED MATCHES CURRENTLY LOGGED IN USER, LIST EACH VOTED POST");
+        processedUserTemplate += `<div id="advanced-post-content">{{bio}}</div>`;
         voted.forEach((element) => processedUserTemplate += "<div><a href='/?post=" + String(element) + "'>" + String(element) + "</a></div>");
         processedUserTemplate += `
           <div><button id="change-user-settings">Change user settings</button></div>
@@ -2583,21 +2580,25 @@ socket.on('userDataFound', function (userData) {
           <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
     } else {
+        if (sessionStorage.getItem('userroles')[9] == '1') {
+            console.log("VIEWING PAGE AS STALKER");
+            processedUserTemplate += `<div id="advanced-post-content">{{bio}}</div>`;
+            console.log(addRoles(user.userroles, true));
+            processedUserTemplate += addRoles(user.userroles, true);
+            voted.forEach((element) => processedUserTemplate += "<div><a href='/?post=" + String(element) + "'>" + String(element) + "</a></div>");
+        }
         if (user.userroles[11] == '1') {
             console.log("VIEWING LEADER'S PAGE");
             processedUserTemplate = `
-          <div><button id="follow-user" onclick="followuser({{userid}});">Follow user</button></div>
-          <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
+          <div><button id="follow-user" onclick="followuser({{userid}});">Follow user</button>&nbsp;{{follows}}&nbsp;followers can't be wrong!</div>
         </div>`;
         } else if (user.userroles[6] == '1') {
             console.log("VIEWING SUMMONER'S PAGE");
             processedUserTemplate = `
         <div><button id="message-user">Message user</button></div>
-            <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
         } else {
             processedUserTemplate = `
-          <div><button id="signout" class="raise profallow" onclick="signout(this);">Sign out</button></div>
         </div>`;
         }
 
@@ -2632,15 +2633,7 @@ socket.on('userDataFound', function (userData) {
     socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
   });
 });
-
-socket.on('sendDatabase', function(results){
-  postsOnThisPage = [];
-  $('#entryContainer').empty();
-  $('#adjacentBlocks').empty();
-  console.log(results);
-  handleRetrievedDatabase(results);
-});
-
+//msgDataFound
 socket.on('msgDataFound', function (results) {
     console.log(results);
     for (const [key, value] of Object.entries(results)) {
@@ -2649,10 +2642,63 @@ socket.on('msgDataFound', function (results) {
 });
 
 
+
+//tagsForPostData
+socket.on('tagsForPostData', function (tagsForPostData) {
+    console.log('tagsForPostData');
+    $('#existingTagsForThisPost').empty();
+    $('#popular-tag-span').empty();
+    tagsForPostData.forEach(function (tag) {
+        var mustacheData = {
+            otherposts: tag[0],
+            tagname: tag[1],
+            tagupvotes: tag[2]
+        };
+        var tagtemplate = `<button class="postTag" tagname="{{tagname}}">(<a title="# of posts with this tag. click to view all posts with this tag" class="other-posts-with-this-tag" onclick="getAllPostsWithThisTag({{tagname}});">{{otherposts}}</a>)&nbsp;-&nbsp;<span class="tagName">{{tagname}}</span>&nbsp;-&nbsp;(<a title="# of upvotes this tag received for this post. click to spend a memecoin to upvote" class="upvotes-for-tag-for-this-post" onclick="upvoteThisTagForThisPost({{tagname}}, $(this).parent().parent().parent().parent().parent().parent().attr('postID'));">{{tagupvotes}}</a>)</button>&nbsp;&nbsp;`;
+        var html = Mustache.render(tagtemplate, mustacheData);
+        $('#existingTagsForThisPost').append(html);
+        var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">' + tag[1] + '</span>&nbsp;(<span class="number-of-posts-with-tag">' + tag[0] + '</span>)</button>&nbsp;';
+        $('#popular-tag-span').append(processedTag);
+    });
+    $(".popular-tag-button").on("click", function () {
+        console.log($(this).children(".tag-name").html());
+        $("#entryContainer").empty();
+        socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+    });
+});
+//receiveTagData
+socket.on('receiveTagData', function (topPostsForTag) {
+    postsOnThisPage = [];
+    console.log(topPostsForTag);
+    populatePage(topPostsForTag[0], []);
+    $('#pageID-tagname').html("&nbsp;:&nbsp;" + topPostsForTag[1]);
+    window.history.replaceState(null, null, "/?tag=" + topPostsForTag[1]);
+});
+//receiveTop20Data
+socket.on('receiveTop20Data', function (topPostsAndTags) {
+    postsOnThisPage = [];
+    populatePage(topPostsAndTags[0], topPostsAndTags[1]);
+});
+//receiveRecommendedData
+socket.on('receiveRecommendedData', function (recommendedData) {
+    postsOnThisPage = [];
+    populatePage(recommendedData[0], recommendedData[1]);
+});
+
+//sendDatabase
+socket.on('sendDatabase', function (results) {
+    postsOnThisPage = [];
+    $('#entryContainer').empty();
+    $('#adjacentBlocks').empty();
+    console.log(results);
+    handleRetrievedDatabase(results);
+});
+//receiveArbitrationPostsArray
 socket.on('receiveArbitrationPostsArray', function (results) {
     populatePageWithReports(results);
     console.log(results);
 });
+//receiveTop20DataGrid
 socket.on('receiveTop20DataGrid', function(results){
   postsOnThisPage = [];
   $('#entryContainer').empty();
@@ -2661,7 +2707,7 @@ socket.on('receiveTop20DataGrid', function(results){
   populateGrid(results[0]);
   console.log(results);
 });
-
+//receiveMultifeedData
 socket.on('receiveMultifeedData', function (results) {
     console.log(results);
     postsOnThisPage = [];

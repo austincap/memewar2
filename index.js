@@ -43,56 +43,52 @@ var https = require('https');
 var httpsServer = https.createServer(options, app);
 var io = require('socket.io')(httpsServer);
 
-//var sessionStore = new session.MemoryStore();
-const {Blockchain, Transaction} = require('savjeecoin');
+/////////BLOCKCHAIN
+    ////var sessionStore = new session.MemoryStore();
+    //const {Blockchain, Transaction} = require('savjeecoin');
 
 
-//const { Blockchain, Transaction } = require('./blockchain');
-const EC = require('elliptic').ec;
-const ec = new EC('secp256k1');
+    ////const { Blockchain, Transaction } = require('./blockchain');
+    //const EC = require('elliptic').ec;
+    //const ec = new EC('secp256k1');
 
-// Your private key goes here
-const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
+    //// Your private key goes here
+    //const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
 
-// From that we can calculate your public key (which doubles as your wallet address)
-const myWalletAddress = myKey.getPublic('hex');
+    //// From that we can calculate your public key (which doubles as your wallet address)
+    //const myWalletAddress = myKey.getPublic('hex');
 
-// Create new instance of Blockchain class
-const savjeeCoin = new Blockchain();
+    //// Create new instance of Blockchain class
+    //const savjeeCoin = new Blockchain();
 
-// Mine first block
-savjeeCoin.minePendingTransactions(myWalletAddress);
+    //// Mine first block
+    //savjeeCoin.minePendingTransactions(myWalletAddress);
 
-// Create a transaction & sign it with your key
-const tx1 = new Transaction(myWalletAddress, 'address2', 100);
-tx1.signTransaction(myKey);
-savjeeCoin.addTransaction(tx1);
+    //// Create a transaction & sign it with your key
+    //const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+    //tx1.signTransaction(myKey);
+    //savjeeCoin.addTransaction(tx1);
 
-// Mine block
-//savjeeCoin.minePendingTransactions(myWalletAddress);
+    //// Mine block
+    ////savjeeCoin.minePendingTransactions(myWalletAddress);
 
-// Create second transaction
-const tx2 = new Transaction(myWalletAddress, 'address1', 50);
-tx2.signTransaction(myKey);
-savjeeCoin.addTransaction(tx2);
+    //// Create second transaction
+    //const tx2 = new Transaction(myWalletAddress, 'address1', 50);
+    //tx2.signTransaction(myKey);
+    //savjeeCoin.addTransaction(tx2);
 
-// Mine block
-savjeeCoin.minePendingTransactions(myWalletAddress);
+    //// Mine block
+    //savjeeCoin.minePendingTransactions(myWalletAddress);
 
-console.log();
-console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
+    //console.log();
+    //console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
 
-// Uncomment this line if you want to test tampering with the chain
-// savjeeCoin.chain[1].transactions[0].amount = 10;
+    //// Uncomment this line if you want to test tampering with the chain
+    //// savjeeCoin.chain[1].transactions[0].amount = 10;
 
-// Check if the chain is valid
-console.log();
-console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
-
-
-
-
-
+    //// Check if the chain is valid
+    //console.log();
+    //console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
 
 
 
@@ -118,23 +114,25 @@ const PAGESIZE = 10;
 ///////
 //CODE FOLDING LEVEL 3
 ///////
-function writeToBlockchain(content){
-  fs.writeFile('blockchain.txt', content, { flag: 'a+' }, err => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-  });
-}
+    //function writeToBlockchain(content){
+    //  fs.writeFile('blockchain.txt', content, { flag: 'a+' }, err => {
+    //    if (err) {
+    //      console.error(err);
+    //      return;
+    //    }
+    //  });
+    //}
 
-function blockchainTx(amount, walletfrom, walletto){
-  // Create a transaction & sign it with your key
-  const tx1 = new Transaction(walletfrom, walletto, amount);
-  tx1.signTransaction(myKey);
-  savjeeCoin.addTransaction(tx1);
-  savjeeCoin.getLatestBlock();
-}
+    //function blockchainTx(amount, walletfrom, walletto){
+    //  // Create a transaction & sign it with your key
+    //  const tx1 = new Transaction(walletfrom, walletto, amount);
+    //  tx1.signTransaction(myKey);
+    //  savjeeCoin.addTransaction(tx1);
+    //  savjeeCoin.getLatestBlock();
+    //}
 
+
+//HTMLX
 app.post('/clicked', function (req, res) {
 
     console.log('clicked');
@@ -904,8 +902,8 @@ function requestGroups(socket, pagenum) {
 function followLeader(socket, idarray) {
     var dataForClient = [];
     var params = {
-        leaderID: idarray[0],
-        followerID: idarray[1]
+        leaderID: idarray["leaderID"],
+        followerID: idarray["followerID"]
     };
     var topPostQuery = `
     MATCH (l:User { userID:$leaderID}), (f:User { userID:$followerID})
@@ -924,8 +922,6 @@ function followLeader(socket, idarray) {
         .catch(function (error) {
             console.log(error);
         });
-
-
 }
 
 
@@ -1508,7 +1504,9 @@ io.on('connection', function (socket) {
       WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
       OPTIONAL MATCH (u)-[d:VOTEDON]->(v:Post)
       WITH summons, posts, u, tags, faves, COLLECT(DISTINCT v.postID) AS voted, SUM(d.upvotes) AS upvotes, SUM(d.downvotes) AS downvotes
-      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes
+      OPTIONAL MATCH (u)<-[:FOLLOWS]-(x)
+      WITH u, tags, posts, faves, summons, voted, upvotes, downvotes, COUNT(x) AS follows
+      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes, follows
       `;
         session
             .run(query, { userID: parseInt(userID) })
@@ -1518,20 +1516,85 @@ io.on('connection', function (socket) {
                     console.log('NULL');
                 } else {
                     console.log("USER FOUND");
-                    //[userdata, tags, upvotes dealt, downvotes dealt]
-                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5], result.records[0]["_fields"][6], result.records[0]["_fields"][7]];
+                    //[userdata, tags, upvotes dealt, downvotes dealt, follows]
+                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5]];
+                    dataForClient[0]["upvotes"] = result.records[0]["_fields"][6];
+                    dataForClient[0]["downvotes"] = result.records[0]["_fields"][7];
+                    dataForClient[0]["follows"] = result.records[0]["_fields"][8];
                     let tempData = [];
+                    //posts
                     result.records[0]["_fields"][2].forEach(function (record) {
                         tempData.push(record["properties"]);
                     });
                     dataForClient.push(tempData);
                     tempData = [];
+                    //faves
                     result.records[0]["_fields"][3].forEach(function (record) {
                         console.log(record.properties); console.log("record.properties");
                         tempData.push(record["properties"]);
                     });
                     dataForClient.push(tempData);
                     tempData = [];
+                    //summons
+                    result.records[0]["_fields"][4].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    console.log(dataForClient);
+                    socket.emit('userDataFound', dataForClient);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
+
+    socket.on('stalkuser', function (postID) {
+        var query = `
+      MATCH (u:User)<-[:CREATEDBY]-(stalked:Post {postID:$postID})
+      OPTIONAL MATCH (u)-[:TAGGEDAS]->(t:Tag)
+      WITH u, COLLECT(DISTINCT t.name) AS tags
+      OPTIONAL MATCH (u)<-[:CREATEDBY]-(p:Post)
+      WITH u, tags, COLLECT(DISTINCT p) AS posts
+      OPTIONAL MATCH (u)-[:FAVORITED]->(f:Post)
+      WITH posts, u, tags, COLLECT(DISTINCT f) AS faves
+      OPTIONAL MATCH (u)-[:SUMMONEDTO]->(s:Post)
+      WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
+      OPTIONAL MATCH (u)-[d:VOTEDON]->(v:Post)
+      WITH summons, posts, u, tags, faves, COLLECT(DISTINCT v.postID) AS voted, SUM(d.upvotes) AS upvotes, SUM(d.downvotes) AS downvotes
+      OPTIONAL MATCH (u)<-[:FOLLOWS]-(x)
+      WITH u, tags, posts, faves, summons, voted, upvotes, downvotes, COUNT(x) AS follows
+      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes, follows
+      `;
+        session
+            .run(query, { postID: postID })
+            .then(function (result) {
+                if (result.records[0] == null) {
+                    socket.emit('noDataFound', 'no user found');
+                    console.log('NULL');
+                } else {
+                    console.log("USER FOUND");
+                    //[userdata, tags, upvotes dealt, downvotes dealt, follows]
+                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5]];
+                    dataForClient[0]["upvotes"] = result.records[0]["_fields"][6];
+                    dataForClient[0]["downvotes"] = result.records[0]["_fields"][7];
+                    dataForClient[0]["follows"] = result.records[0]["_fields"][8];
+                    let tempData = [];
+                    //posts
+                    result.records[0]["_fields"][2].forEach(function (record) {
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    //faves
+                    result.records[0]["_fields"][3].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    //summons
                     result.records[0]["_fields"][4].forEach(function (record) {
                         console.log(record.properties); console.log("record.properties");
                         tempData.push(record["properties"]);
