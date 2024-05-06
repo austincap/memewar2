@@ -177,7 +177,7 @@ function onloadFunction(){
         console.log("TESTSETSTES");
         if (sessionStorage.getItem('userID') !== null) {
             var rollString = sessionStorage.getItem('userroles');
-            $('.profallow').css('display', 'inline');
+            
             addRoles(sessionStorage.getItem('userroles'), false);
             console.log(sessionStorage.getItem('userID'));
             $('#signinstuff').css('display', 'none');
@@ -194,7 +194,9 @@ function onloadFunction(){
         $('#userID-newpost').val("ANON");
         $('#userID-reply').val("ANON");
         $('#posttype-newpost').val("text_post");
-        $('#posttype-reply').val("text_post");
+            $('#posttype-reply').val("text_post");
+            $('.profallow').css('display', 'none');
+            $('#signout').css('display', 'none');
       }
         
         //else {
@@ -648,66 +650,53 @@ function addRoles(rollString, falseisnormaltrueisdisplayall) {
     var stringofroles = "";
     if (rollString[0] == '1') {
         $(".lurkers-only").css("display", "none");
-    }
-    if (rollString[1] == '1') {
-        $(".taggers-only").css("display", "block");
+    } 
+    if (rollString[1] == '1') { $(".taggers-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "tagger "; }
-    }
-    if (rollString[2] == '1') {
-        $(".painters-only").css("display", "block");
-        document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+    } else { $(".taggers-only").css("display", "none"); }
+    if (rollString[2] == '1') { $(".painters-only").css("display", "inline");
+        //document.querySelectorAll('.painters-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
         if (falseisnormaltrueisdisplayall) { stringofroles += "painter "; }
-    }
-    if (rollString[3] == '1') {
-        $(".pollsters-only").css("display", "block");
+    } else { $(".painters-only").css("display", "none"); }
+    if (rollString[3] == '1') { $(".pollsters-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "pollster "; }
-    }
-    if (rollString[4] == '1') {
-        $(".tastemakers-only").css("display", "block");
-        document.querySelectorAll('.tastemakers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+    } else { $(".pollsters-only").css("display", "none"); }
+    if (rollString[4] == '1') { $(".tastemakers-only").css("display", "inline");
+        //document.querySelectorAll('.tastemakers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
         if (falseisnormaltrueisdisplayall) { stringofroles += "tastemaker "; }
-    }
-    if (rollString[5] == '1') {
+    } else { $(".tastemakers-only").css("display", "none"); }
+    if (rollString[5] == '1') { $(".explorers-only").css("display", "inline");
         document.querySelectorAll('.explorers-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
         if (falseisnormaltrueisdisplayall) { stringofroles += "explorer "; }
-    }
-    if (rollString[6] == '1') {
-        $(".summoners-only").css("display", "block");
-        document.querySelectorAll('.summoners-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
+    } else { $(".explorers-only").css("display", "none"); }
+    if (rollString[6] == '1') { $(".summoners-only").css("display", "inline");
+        //document.querySelectorAll('.summoners-only').forEach(function (elem) { elem.style.visibility = 'visible'; });
         if (falseisnormaltrueisdisplayall) { stringofroles += "summoner "; }
-    }
-    if (rollString[7] == '1') {
-        $(".protectors-only").css("display", "block");
+    } else { $(".summoners-only").css("display", "none"); }
+    if (rollString[7] == '1') {  $(".protectors-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "protector "; }
-    }
-    if (rollString[8] == '1') {
-        $(".arbitrators-only").css("display", "block");
+    } else { $(".protectors-only").css("display", "none"); }
+    if (rollString[8] == '1') { $(".arbitrators-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "arbitrator "; }
-    }
-    if (rollString[9] == '1') {
-        $(".stalkers-only").css("display", "block");
+    } else { $(".arbitrators-only").css("display", "none"); }
+    if (rollString[9] == '1') {  $(".stalkers-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "stalker "; }
-    }
-    if (rollString[10] == '1') {
-        $(".editors-only").css("display", "block");
+    } else { $(".stalkers-only").css("display", "none"); }
+    if (rollString[10] == '1') { $(".editors-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "editor "; }
-    }
-    if (rollString[11] == '1') {
-        $(".leaders-only").css("display", "block");
+    } else { $(".editors-only").css("display", "none"); }
+    if (rollString[11] == '1') { $(".leaders-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "leader "; }
-    }
-    if (rollString[12] == '1') {
-        $(".counselors-only").css("display", "block");
+    } else { $(".leaders-only").css("display", "none"); }
+    if (rollString[12] == '1') { $(".counselors-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "counselor "; }
-    }
-    if (rollString[13] == '1') {
-        $(".founders-only").css("display", "block");
+    } else { $(".counselors-only").css("display", "none"); }
+    if (rollString[13] == '1') { $(".founders-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "founder "; }
-    }
-    if (rollString[14] == '1') {
-        $(".algomancers-only").css("display", "block");
+    } else { $(".founders-only").css("display", "none"); }
+    if (rollString[14] == '1') { $(".algomancers-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "algomancer "; }
-    }
+    } else { $(".algomancers-only").css("display", "none"); }
     if (falseisnormaltrueisdisplayall) { return stringofroles; }
 }
 function getFirstRole(rollString) {
@@ -1962,8 +1951,9 @@ function populatePageWithReports(reportarray) {
     });
     $('#entryContainer').append('</table>');
 }
-//CREATE VIRTUAL PILE OF LINKS
 
+
+//CREATE VIRTUAL PILE OF LINKS
 function Ball(r, p, v) {
     this.radius = r;
     this.point = p;
@@ -2480,16 +2470,19 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   console.log(postsOnThisPage);
   populatePage(repliesToPost, []);
   console.log(postsOnThisPage);
-  $('#popular-tag-span').empty();
-  tags.forEach(function(tag){
-    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
-    $('#popular-tag-span').append(processedTag); 
-  });
-  $(".popular-tag-button").on("click", function(){
-    console.log($(this).children(".tag-name").html());
-    $("#entryContainer").empty();
-    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
-  });
+    $('#popular-tag-span').empty();
+    if (tags.length == (undefined || 0)) {
+        tags.forEach(function (tag) {
+            var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">' + tag[0] + '</span>&nbsp;(<span class="number-of-posts-with-tag">' + tag[1] + '</span>)</button>&nbsp;';
+            $('#popular-tag-span').append(processedTag);
+        });
+        $(".popular-tag-button").on("click", function () {
+            console.log($(this).children(".tag-name").html());
+            $("#entryContainer").empty();
+            socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+        });
+  }
+
 });
 //paintPosts
 socket.on('paintPosts', function (paintDataArray) {
@@ -2517,8 +2510,7 @@ socket.on('loggedIn', function(loginData){
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
     $('#signup-overlay-box').css('display', 'none');
-    $('.profallow').css('display','inline');
-    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"</span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"></span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
     $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
     $('#currentrole').html(getFirstRole(loginData.userroles));
 });
@@ -2950,30 +2942,23 @@ function handleRetrievedDatabase(results) {
     
     promise1.then(function (data) {
 
-
         var margin = { top: 10, right: 40, bottom: 30, left: 30 },
             width = 450 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
-
-        var svg = d3.select("#svg")
+        var svg = d3.select("svg")
             .attr("width", 1900)
             .attr("height", 1900)
             .on("mousemove", mousemove);
-    
         console.log(d3);
         console.log("PROMISE1THEN START");
         console.log(data);
-
-
 
         var nodeIndexToIdDict = {}
         for (indexid in data.nodes) {
             nodeIndexToIdDict[data.nodes[indexid]["id"]] = parseInt(indexid);
         }
         console.log(nodeIndexToIdDict);
-
         var neoLinks = [];
-
         //console.log(data.links);
         for (linky in data.links) {
             var templink = {};
@@ -2995,39 +2980,33 @@ function handleRetrievedDatabase(results) {
         const links = neoLinks;//.map(d => ({ ...d }));
         const nodes = data.nodes.map(d => ({ ...d }));
 
-        // Add a line for each link, and a circle for each node.
-
-
-
-        const node = svg.append("g")
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 1.5)
-            .selectAll("circle")
-            .data(nodes)
-            .join("circle")
-            .attr("r", 5)
-            .attr("fill", d3.color("#cccccc"));
-
-        const link = svg.append("g")
+ 
+        const link = svg.selectAll("line")            
+            .data(links)
+            .enter().append("line")
             .attr("stroke", "#fff")
             .attr("stroke-opacity", 0.9)
-            .selectAll("line")
-            .data(links)
-            .join("line")
             .attr("stroke-width", 1);
 
-        var path = svg.append("g")
-            .selectAll("path")
+        const node = svg.selectAll("circle")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1.5)
+            .attr("r", function (d) { console.log("TEST"); return (d.upvotes != null || d.upvotes != 0) ? 5 * d.upvotes : 5; })
+            .attr("fill", d3.color("#cccccc"))
+            .on("mousedown", clickOnNode);
+
+        var path = svg.selectAll("path")
             .data(links)
-            .enter().insert("path")
+            .enter().append("path")
             .attr("class", "linkpath")
             .attr("id", function (d, i) { return "pathId_" + i; })
             .attr("marker-end", function (d) { return "url(#" + d.tag + ")"; });
 
-        var linktext = svg.append("g").selectAll(".gLink").data(links);
-
-        linktext.join("g").attr("class", "gLink")
-            .append("text")
+        var linktext = svg.selectAll("text")
+            .data(links)
+            .enter().append("text")
             .attr("class", "gLink")
             .style("font-size", "11px")
             .style("font-family", "sans-serif")
@@ -3054,13 +3033,6 @@ function handleRetrievedDatabase(results) {
                 .attr("y1", d => d.source.y)
                 .attr("x2", d => d.target.x)
                 .attr("y2", d => d.target.y);
-          
-            //linktext
-            //    .attr("x1", d => d.source.x)
-            //    .attr("y1", d => d.source.y)
-            //    .attr("x2", d => d.target.x)
-            //    .attr("y2", d => d.target.y);
-
           path.attr("d", function(d) {
               var dx = d.target.x - d.source.x,
                   dy = d.target.y - d.source.y;
@@ -3070,42 +3042,16 @@ function handleRetrievedDatabase(results) {
 
         simulation.nodes(nodes).on("tick", ticked);
         console.log(links);
-        //simulation.force("link").links(links);
-        //simulation.restart();
-        //console.log(existingTagArray);
-
- 
-
-
-
-     
-
-
-        //var node = svg.append("g").attr("class", "nodes").selectAll("circle").data(nodes).enter()
-        //    .append("circle")
-        //    .attr("r", function (d) { console.log("TEST");  return (d.upvotes != null || d.upvotes != 0) ? 5*d.upvotes : 5;})
-        //      .attr("id", function(d){return "linkId_"+d.id})
-        //      .attr("color", "#cccccc")
-        //      .on("mousedown", clickOnNode)
-        //      .on("mouseover", mouseoverNode)
-        //    .append("image")
-        //      .attr("xlink:href", function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
-        //      ;
-            // .append("svg:image")
-            //   .attr('xlink:href', function(d){if((/\.(gif|jpg|jpeg|tiff|png)$/i).test(d.img)){return "uploaded/"+d.img;}})
-            //   .call(d3.drag()
-            //       .on("start", dragstarted)
-            //       .on("drag", dragged)
-            //       .on("end", dragended));
-
-        var postTitle = svg.selectAll(".mytext").data(nodes).enter()
-            .append("text")
-            .on("mousedown", clickOnNode);
-        postTitle.style("fill", "#cccccc")
-          .attr("width", "10")
-          .attr("height", "10")
-          .style("fill","#ffd24d")
-          .text(function(d) { return text_truncate(d.content, 16); });
+      
+        var postTitle = svg.selectAll(".mytext")
+            .data(nodes)
+            .enter().append("text")
+            .on("mousedown", clickOnNode)
+            .style("fill", "#cccccc")
+            .attr("width", "10")
+            .attr("height", "10")
+            .style("fill","#ffd24d")
+            .text(function(d) { return text_truncate(d.content, 20); });
 
               // svg.selectAll(".nodes").data(data.nodes).enter()
               // .append('svg:image')
@@ -3136,7 +3082,6 @@ function handleRetrievedDatabase(results) {
           .attr("r", thisObject["attributes"][0]["nodeValue"]/2 )
           .duration(500);
         }
-        
         function clickOnTag(d, i){
           //console.log(d);
           closeAllFrames();
@@ -3153,8 +3098,7 @@ function handleRetrievedDatabase(results) {
         function clickOnNode(d, i){
           //previewFrame.innerHTML = linkifyHtml(d.content, linkifyOptions);
           //linkifyStr(previewFrame, linkifyOptions);
-          console.log(i.id);
-          window.location.href='/?post='+String(i.id);
+          window.location.href='/?post='+String(d.id);
           closeAllFrames();
           clickOnAddNewPost=true;
           document.getElementById('uploadNewPostButton').innerHTML="-";
@@ -3165,45 +3109,68 @@ function handleRetrievedDatabase(results) {
         }
         function restart(){
           node = node.data(data.nodes);
-
           node.enter().insert("circle", ".cursor")
               .attr("class", "node")
               .attr("r", 5)
               .on("mousedown", mousedownNode);
-
           node.exit()
               .remove();
 
           link = link.data(data.links);
-
           link.enter().insert("line", ".node")
               .attr("class", "link");
           link.exit()
               .remove();
+
           simulation
               .nodes(data.nodes)
               .on("tick", ticked);
-
           simulation.force("link")
               .links(data.links);
         }
-        function dragstarted(d){
-          simulation.stop();
-          if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
-          d.fx = d.x;
-          d.fy = d.y;
-        }
-        function dragged(d){
-          d.fx = d3.event.x;
-          d.fy = d3.event.y;
-        }
-        function dragended(d){
-          if (!d3.event.active){simulation.alphaTarget(0);}
-          d.fx = null;
-          d.fy = null;
-        }
-      });
 
+
+        svg
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+        function dragstarted() {
+            d3.select(this).raise();
+            g.attr("cursor", "grabbing");
+        }
+
+        function dragged(event, d) {
+            d3.select(this).attr("cx", d.x = event.x).attr("cy", d.y = event.y);
+        }
+
+        function dragended() {
+            g.attr("cursor", "grab");
+        }
+
+        // Define drag beavior
+            //function dragstarted(d) {
+            //    simulation.stop();
+            //    if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
+            //    d.fx = d.x;
+            //    d.fy = d.y;
+            //}
+            //function dragged(d){
+            //    d.fx = d3.event.x;
+            //    d.fy = d3.event.y;
+            //}
+            //function dragended(d){
+            //    if (!d3.event.active){simulation.alphaTarget(0);}
+            //    d.fx = null;
+            //    d.fy = null;
+            //}
+            //function dragmove(d) {
+            //    var x = d3.event.x;
+            //    var y = d3.event.y;
+            //    d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
+            //}
+            //var drag = d3.behavior.drag().on("drag", dragmove).origin(function () {  return { x: 0, y: 0 }; });
+    });
 }
 
 function autocomplete(inp, arr){

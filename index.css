@@ -17,7 +17,6 @@ h3 {
   font-size: 20px;
 }
   .profallow {
-    display:none;
   }
   .permahidden {
     display:none;
@@ -259,29 +258,32 @@ select {
 }
 /* roles */
 .painters-only {
-    visibility: hidden;
+/*    visibility: hidden;*/
     display: none;
 }
 .explorers-only {
     display:none;
-    visibility: hidden;
+   visibility: hidden;
 }
 .taggers-only {
-    display: none !important;
+    display: none;
+}
+.stalkers-only{
+    display:none;
 }
 .summoners-only {
-    visibility: hidden;
+/*    visibility: hidden;*/
     display: none;
 }
 .tastemakers-only {
-    visibility: hidden;
+/*    visibility: hidden;*/
     display: none;
 }
 .lurkers-only {
     display: none;
 }
 .protectors-only{
-    display: none !important;
+    display: none;
 }
 .pollsters-only {
     display: none;
