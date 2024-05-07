@@ -262,7 +262,7 @@ select {
     display: none;
 }
 .explorers-only {
-    display:none;
+/*    display:none;*/
    visibility: hidden;
 }
 .taggers-only {
@@ -996,6 +996,12 @@ canvas[resize] {
 }
 #pileStyle {
     display: none;
+}
+
+.pollButtons{
+    padding:0px !important;
+    min-width:30px !important;
+    max-width:30px !important;
 }
 
 /*advanced post */

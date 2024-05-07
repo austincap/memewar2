@@ -126,7 +126,7 @@ function onloadFunction(){
 
     paper.install(window);
     paper.setup('myCanvas');
-    //console.log(PaperScope.get(0));
+    console.log(paper.view);
 
     if (getQueryParam("post") !== "") {
         //
@@ -1463,14 +1463,22 @@ function dropDownFunction(){
   }
 }
 
-function populatePage(posts, tags) {
-    console.log('populatepage');
+function populateStandardFeed(posts, tags) {
+    populatePageWithPosts(posts, "#entryContainer");
+    populatePageWithTags(tags);
+}
+
+function submitVote(postID, option) {
+    console.log(postID);
+    console.log(option);
+}
+function populatePageWithPosts(posts, postListContainer) {
+  console.log('populatepage');
   console.log(posts);
   // $("#entryContainer").empty();
   // postsOnThisPage = posts;
     posts.forEach(function (post) {
         if (post.type == "text_post") {
-            
             var date = new Date(post.postID * 1000).toDateString();
             var replycount = post.replycount !== undefined ? String(post.replycount) : "?";
             var mustacheData = {
@@ -1555,9 +1563,11 @@ function populatePage(posts, tags) {
                 var date = new Date(post.postID * 1000).toDateString();
                 console.log(post.optionvotes);
                 var percentagearray = [];
-                var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
+            var percentagetotal = post.optionvotes.reduce((a, b) => a + b, 0);
+            var enumeratedOptions = [];
                 for (var i = 0; i < post.content.length; ++i) {
                     percentagearray[i] = (100 * post.optionvotes[i] / percentagetotal).toFixed(1);
+                    enumeratedOptions[i] = i;
                 }
                 console.log(percentagearray);
 
@@ -1580,14 +1590,15 @@ function populatePage(posts, tags) {
             <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
               <div class='post'>
                 
-                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-visual permahidden'><img class='activeimage' src='uploaded/{{file}}'/></div>
                   <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content">
                     <div class="post-content-span">
 
 
-                          <div display='table'>
-                            <div style='float:left; width:8%;'>{{#percentagearray}} <div style='font-size:2.25vw; line-height:1.2;'><span class='tooltiptext'>vote for poll option</span>{{.}}</div>{{/percentagearray}}</div>
-                            <div>{{#content}}<div style='font-size:2.25vw; line-height:1.2;'>{{.}} </div> {{/content}}</div>
+                          <div display='block'>
+                            <div display='inline' style='float:left; width:8%;'>{{#percentagearray}} <div style='font-size:2.25vw; line-height:1.2;'>{{.}}</div>{{/percentagearray}}</div>
+                            <div display='inline'>{{#content}}<div style='font-size:2.25vw; line-height:1.2;'><span class='views-tooltip'><span class='tooltiptext'>vote for poll option</span><button class='pollButtons' onclick='submitVote({{postID}}, "{{.}}")';>{{.}} </button></span></div> {{/content}}</div>
+                            <div display='inline'>{{#content}}=={{.}}=={{/content}}</div>
                           </div>
 
                     </div>
@@ -1631,21 +1642,24 @@ function populatePage(posts, tags) {
 
         //console.log(processedPostTemplate);
         var html = Mustache.render(processedPostTemplate, mustacheData);
-        $('#entryContainer').append(html);
+        $(postListContainer).append(html);
     
     });
-  console.log(tags);
-  tags.forEach(function(tag){
-    var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
-    $('#popular-tag-span').append(processedTag); 
-  });
-  $(".popular-tag-button").on("click", function(){
-    console.log($(this).children(".tag-name").html());
-    $("#entryContainer").empty();
-    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
-  });
+  
 }
 
+function populatePageWithTags(tags) {
+    console.log(tags);
+    tags.forEach(function (tag) {
+        var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">' + tag[0] + '</span>&nbsp;(<span class="number-of-posts-with-tag">' + tag[1] + '</span>)</button>&nbsp;';
+        $('#popular-tag-span').append(processedTag);
+    });
+    $(".popular-tag-button").on("click", function () {
+        console.log($(this).children(".tag-name").html());
+        $("#entryContainer").empty();
+        socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+    });
+}
 
 function populateMultifeed(posts1, posts2, posts3) {
     $('#multiContainer').css('display', 'grid');
@@ -2457,7 +2471,6 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   //$('#result').html( html );
   $('#entryContainer').append(html);
   if(is_url(viewedPost.content)){
-    console.log("EISISISI");
     $('#advanced-post-content').empty();
     var urlIframe = "<iframe src='https://web.archive.org/web/"+viewedPost.content+"' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
     $('#advanced-post-content').append(urlIframe);
@@ -2468,7 +2481,7 @@ socket.on('receiveSinglePostData', function(dataFromServer){
   console.log("TESTS");
   postsOnThisPage.push(viewedPostMustacheData);
   console.log(postsOnThisPage);
-  populatePage(repliesToPost, []);
+  populatePageWithPosts(repliesToPost, "#entryContainer");
   console.log(postsOnThisPage);
     $('#popular-tag-span').empty();
     if (tags.length == (undefined || 0)) {
@@ -2593,7 +2606,6 @@ socket.on('userDataFound', function (userData) {
             processedUserTemplate = `
         </div>`;
         }
-
     }
 
   var html = Mustache.render(processedUserTemplate, user_mustacheData);
@@ -2601,7 +2613,7 @@ socket.on('userDataFound', function (userData) {
   $('#pageID-tagname').html("&nbsp;:&nbsp;"+user.name);
   window.history.replaceState(null, null, "/?user="+user.name);
   postsOnThisPage = [];
-  populatePage(posts, tags);
+  populatePageWithPosts(posts, '#entryContainer');
   faves.forEach(function(fave){
     console.log(fave);
     var date = new Date(fave.postID * 1000).toDateString();
@@ -2662,19 +2674,19 @@ socket.on('tagsForPostData', function (tagsForPostData) {
 socket.on('receiveTagData', function (topPostsForTag) {
     postsOnThisPage = [];
     console.log(topPostsForTag);
-    populatePage(topPostsForTag[0], []);
+    populatePageWithPosts(topPostsForTag[0], "#entryContainer");
     $('#pageID-tagname').html("&nbsp;:&nbsp;" + topPostsForTag[1]);
     window.history.replaceState(null, null, "/?tag=" + topPostsForTag[1]);
 });
 //receiveTop20Data
 socket.on('receiveTop20Data', function (topPostsAndTags) {
     postsOnThisPage = [];
-    populatePage(topPostsAndTags[0], topPostsAndTags[1]);
+    populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
 });
 //receiveRecommendedData
 socket.on('receiveRecommendedData', function (recommendedData) {
     postsOnThisPage = [];
-    populatePage(recommendedData[0], recommendedData[1]);
+    populateStandardFeed(recommendedData[0], recommendedData[1]);
 });
 
 //sendDatabase
