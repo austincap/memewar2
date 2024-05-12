@@ -124,9 +124,10 @@ function onloadFunction(){
     if(isMobile){ console.log("MOBILE"); }
     else { console.log("NOT MOBILE"); }
 
-    paper.install(window);
-    paper.setup('myCanvas');
-    console.log(paper.view);
+
+    //paper.install(window);
+    //paper.setup('myCanvas');
+    //console.log(paper.view);
 
     if (getQueryParam("post") !== "") {
         //
@@ -806,13 +807,15 @@ function contextButtonFunction(currentContext){
           $('#d3frame').css('display', 'none');
           document.getElementById('contextButton').innerHTML = 'Alt';
           sessionStorage.setItem('currentPage', 'home');
+          window.history.replaceState(null, null, "/?view=" + 'norm');
           socket.emit('requestTop20Posts', 0);
           break;
     case 'Alt':
         $('#entryContainer').empty();
         sessionStorage.setItem('currentPage', 'alt');
         $('#d3frame').css('display', 'block');
-        document.getElementById('contextButton').innerHTML = 'Grid';
+          document.getElementById('contextButton').innerHTML = 'Grid';
+          window.history.replaceState(null, null, "/?view=" + 'web');
         socket.emit('retrieveDatabase');
         break;
     case 'Grid':
@@ -820,7 +823,8 @@ function contextButtonFunction(currentContext){
         d3.select('svg').selectAll('*').remove();
           $('#d3frame').css('display', 'none');
           $('#gridview').css('display', 'grid');
-        sessionStorage.setItem('currentPage', 'grid');
+          sessionStorage.setItem('currentPage', 'grid');
+          window.history.replaceState(null, null, "/?view=" + 'grid');
         document.getElementById('contextButton').innerHTML = 'Home';
         socket.emit('retrieveDatabaseGrid');
         break;
@@ -1236,6 +1240,19 @@ function returnReportBox() {
     reportContainer.css('display', 'none');
 }
 
+
+function showSeaOfDivs() {
+
+    for (var i = 0; post = postsOnThisPage[i]; i++) {
+        let el = document.querySelector('[postid="'+ String(post.postID) + '"]');
+        el.style.setProperty('--rand', Math.random());
+        var ne = $('div[postid=' + String(post.postID) + ']');
+        ne.addClass("animate");
+        ne.addClass("x");
+        ne.addClass("y");
+    }
+    $('#entryContainer').css({ "maxHeight": "700px" });
+}
 function showMap() {
     $('#entryContainer').empty();
     var mapContainer = $('#mapDisplay');
@@ -2992,6 +3009,7 @@ function handleRetrievedDatabase(results) {
         const links = neoLinks;//.map(d => ({ ...d }));
         const nodes = data.nodes.map(d => ({ ...d }));
 
+        var node;
  
         const link = svg.selectAll("line")            
             .data(links)
@@ -3000,14 +3018,40 @@ function handleRetrievedDatabase(results) {
             .attr("stroke-opacity", 0.9)
             .attr("stroke-width", 1);
 
-        const node = svg.selectAll("circle")
+
+        var pic = svg.selectAll("g.node")
+            .data(nodes)
+            .enter().append("svg:g")
+            .attr("class", "node")
+        //var pics = pic.append("defs");
+        pic.append('pattern')
+            .attr("id", function (d) { return "image" + d.img; })
+            .attr("width", 1)
+            .attr("height", 1)
+            .append("svg:image")
+            .attr("xlink:href", function (d) { return '/uploaded/' + d.img; })
+            .attr("width", 100)
+            .attr("height", 150)
+            .attr("cx", d => d.x)
+            .attr("cy", d => d.y);
+
+        var node = svg.selectAll("circle")
             .data(nodes)
             .enter().append("circle")
             .attr("stroke", "#fff")
             .attr("stroke-width", 1.5)
+            //.attr("fill", d3.color("#cccccc"))
+            .style("fill", function (d) {
+                console.log(d); return (d.img.slice(-3)==('jpg'||'png'||'gif') || (d.img =='officialunofficialplaceholderlogo.jpg')) ? "url(#image" + d.img + ")" : "#ACBCAD";
+            })
+            //.attr("fill", function (d) { return "url(#image" + d.img + ")" })
             .attr("r", function (d) { console.log("TEST"); return (d.upvotes != null || d.upvotes != 0) ? 5 * d.upvotes : 5; })
-            .attr("fill", d3.color("#cccccc"))
-            .on("mousedown", clickOnNode);
+            .attr('transform', function (d) { return 'translate(' + d.x + ',' + d.y + ')'; })
+            .on("mousedown", clickOnNode)
+            .on("mouseover", function (d) {
+                d3.select(this).style("cursor", "pointer");
+            });
+
 
         var path = svg.selectAll("path")
             .data(links)
@@ -3034,7 +3078,7 @@ function handleRetrievedDatabase(results) {
         var simulation = d3.forceSimulation(nodes)
             .force("collision", d3.forceCollide().radius(1))
             .force("link", d3.forceLink(links).id(function (d, i) { console.log(d); console.log(i); return i; }))
-            .force("charge", d3.forceManyBody().strength(-400).distanceMin(20))
+            .force("charge", d3.forceManyBody().strength(-400).distanceMin(13))
             .force("center", d3.forceCenter(600, 600));
 
         function ticked(){
@@ -3072,6 +3116,31 @@ function handleRetrievedDatabase(results) {
               //   .attr("y", function(d){return d.y;})
               //   .attr("width", "50")
               //   .attr("height", "50");
+
+
+        // Define drag beavior
+        function dragstarted(d) {
+            //simulation.stop();
+            if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+        function dragged(d){
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
+        }
+        function dragended(d){
+            if (!d3.event.active){simulation.alphaTarget(0);}
+            d.fx = null;
+            d.fy = null;
+        }
+        function dragmove(d) {
+            var x = d3.event.x;
+            var y = d3.event.y;
+            d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
+        }
+        var drag = d3.behavior.drag().on("drag", dragmove).origin(function () {  return { x: 0, y: 0 }; });
+
 
         function mousemove(){
           mouseCoordinates = d3.pointer(this);
@@ -3143,10 +3212,7 @@ function handleRetrievedDatabase(results) {
 
 
         svg
-            .call(d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
+            .call(drag);
         function dragstarted() {
             d3.select(this).raise();
             g.attr("cursor", "grabbing");
@@ -3160,28 +3226,7 @@ function handleRetrievedDatabase(results) {
             g.attr("cursor", "grab");
         }
 
-        // Define drag beavior
-            //function dragstarted(d) {
-            //    simulation.stop();
-            //    if (!d3.event.active){ simulation.alphaTarget(0.3).restart();}
-            //    d.fx = d.x;
-            //    d.fy = d.y;
-            //}
-            //function dragged(d){
-            //    d.fx = d3.event.x;
-            //    d.fy = d3.event.y;
-            //}
-            //function dragended(d){
-            //    if (!d3.event.active){simulation.alphaTarget(0);}
-            //    d.fx = null;
-            //    d.fy = null;
-            //}
-            //function dragmove(d) {
-            //    var x = d3.event.x;
-            //    var y = d3.event.y;
-            //    d3.select(this).attr("transform", "translate(" + x + "," + y + ")");
-            //}
-            //var drag = d3.behavior.drag().on("drag", dragmove).origin(function () {  return { x: 0, y: 0 }; });
+
     });
 }
 

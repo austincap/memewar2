@@ -989,84 +989,136 @@ select {
   }
 
 
-canvas[resize] {
-    width: 90%;
-    height: 90%;
-    background-color:white;
-}
-#pileStyle {
-    display: none;
+.animate {
+    animation: fadeIn 500ms ease-out backwards;
 }
 
-.pollButtons{
-    padding:0px !important;
-    min-width:30px !important;
-    max-width:30px !important;
+@keyframes fadeIn {
+    from {
+        transform: translateX(250px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0px);
+        opacity: 1;
+    }
 }
 
-/*advanced post */
-  #ap {
-    display:inline;
-  }
-  .advanced-post-container {
-    display:flex;
-    margin-left:-8% !important;
-    margin-right:-3%!important;
-    width:116%;
-  }
-  .advanced-post-container > div {
-    flex:1;
-  }
-  .advimg {
-    min-height: 280px !important;
-    display: block !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  #advanced-post-title{
-    font-size: 28px;
-    width:90%;
-    padding-left: 3px;
-  }
-  #advanced-post-stats{
-    float: both !important;
-    max-width: 15%;
-    min-width: 15%;
-    border: solid;
-    order: 1;
-  }
-  #advanced-post {
-    /*display:inline-flex;*/
-    order: 2;
-  }
-  #advanced-post-tags{
-    max-width: 25%;
-    min-width: 25%;
-    float: both !important;
-    border: solid;
-    order: 3;
-  }
-  #advanced-post-content {
-    padding: 5px;
-    border:solid;
-  }
-  #advanced-post-favoriters {
-    max-width:100%;
-    max-height:20vw;
-    border-bottom: solid;
-    overflow-y:scroll !important;
-    text-overflow: ellipsis !important;
-  }
-  .fave-container{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display:block;
-    width:100%;
-    min-width:1px;
-  }
-  @media all and (max-width: 1200px) {
-    body{
+
+.x {
+
+    max-width:200px ;
+    animation: x calc(13s * (1+var(--rand)/8)) infinite alternate;
+}
+
+.y {
+    max-width: 200px;
+    animation: y calc(10s * var(--rand)) infinite alternate;
+}
+
+@keyframes x {
+    100% {
+        transform: translateX( calc(100vw - 100px * var(--rand) ));
+    }
+}
+
+@keyframes y {
+    100% {
+        transform: translate( calc(800px* var(--rand) - 100px* var(--rand)), calc(1000px* var(--rand) - 100px * var(--rand) ) );
+    }
+}
+
+
+    canvas[resize] {
+        width: 90%;
+        height: 90%;
+        background-color: white;
+    }
+
+    #pileStyle {
+        display: none;
+    }
+
+    .pollButtons {
+        padding: 0px !important;
+        min-width: 30px !important;
+        max-width: 30px !important;
+    }
+    /*advanced post */
+    #ap {
+        display: inline;
+    }
+
+    .advanced-post-container {
+        display: flex;
+        margin-left: -8% !important;
+        margin-right: -3% !important;
+        width: 116%;
+    }
+
+    .advanced-post-container > div {
+        flex: 1;
+    }
+
+    .advimg {
+        min-height: 280px !important;
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    #advanced-post-title {
+        font-size: 28px;
+        width: 90%;
+        padding-left: 3px;
+    }
+
+    #advanced-post-stats {
+        float: both !important;
+        max-width: 15%;
+        min-width: 15%;
+        border: solid;
+        order: 1;
+    }
+
+    #advanced-post {
+        /*display:inline-flex;*/
+        order: 2;
+    }
+
+    #advanced-post-tags {
+        max-width: 25%;
+        min-width: 25%;
+        float: both !important;
+        border: solid;
+        order: 3;
+    }
+
+    #advanced-post-content {
+        padding: 5px;
+        border: solid;
+    }
+
+    #advanced-post-favoriters {
+        max-width: 100%;
+        max-height: 20vw;
+        border-bottom: solid;
+        overflow-y: scroll !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .fave-container {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+        width: 100%;
+        min-width: 1px;
+    }
+
+    @media all and (max-width: 1200px) {
+        body{
       font-size: 200%;
     }
     .advanced-post-container {
