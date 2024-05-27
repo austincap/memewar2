@@ -1017,17 +1017,41 @@ select {
     animation: y calc(10s * var(--rand)) infinite alternate;
 }
 
-@keyframes x {
+@keyframes x{
+    50% {
+        transform: translateX( calc(100vw/2 - 100px));
+    }
+
+    100% {
+        transform: translateX( calc(100vw - 100px ));
+    }
+}
+@keyframes y {
+    50% {
+        transform: translate( calc(800px/2), calc(900px/2) );
+    }
+
+    100% {
+        transform: translate( calc(700px), calc(900px ) );
+    }
+}
+    /*@keyframes x {
+    50% {
+        transform: translateX( calc((100vw - 100px * var(--rand) )/2));
+    }
     100% {
         transform: translateX( calc(100vw - 100px * var(--rand) ));
     }
 }
 
 @keyframes y {
+    50% {
+        transform: translate( calc(800px* var(--rand) - 100px* var(--rand)), calc((1000px* var(--rand) - 100px * var(--rand))/2 ) );
+    }
     100% {
         transform: translate( calc(800px* var(--rand) - 100px* var(--rand)), calc(1000px* var(--rand) - 100px * var(--rand) ) );
     }
-}
+}*/
 
 
     canvas[resize] {

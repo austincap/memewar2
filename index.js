@@ -1995,6 +1995,28 @@ io.on('connection', function (socket) {
     });
 
 
+    //////
+    //GET 3 RANDOM USERS
+    socket.on('get3users', function () {
+        var dataForClient = [];
+        var query = `
+        MATCH (n:User) RETURN n, rand() AS r ORDER BY r LIMIT 3
+        `;
+        session
+            .run(query)
+            .then(function (result) {
+                console.log(result.records);
+                result.records.forEach(function (record) {
+                    console.log(record["_fields"][0]["properties"]);
+                    dataForClient.push(record["_fields"][0]["properties"]);
+                });
+                socket.emit('servergive3users', dataForClient);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
+
     ////////////////
     //VIEW USER INFO
 

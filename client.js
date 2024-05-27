@@ -125,9 +125,9 @@ function onloadFunction(){
     else { console.log("NOT MOBILE"); }
 
 
-    //paper.install(window);
-    //paper.setup('myCanvas');
-    //console.log(paper.view);
+    paper.install(window);
+    paper.setup('myCanvas');
+    console.log(paper.view);
 
     if (getQueryParam("post") !== "") {
         //
@@ -680,7 +680,9 @@ function addRoles(rollString, falseisnormaltrueisdisplayall) {
     if (rollString[8] == '1') { $(".arbitrators-only").css("display", "inline");
         if (falseisnormaltrueisdisplayall) { stringofroles += "arbitrator "; }
     } else { $(".arbitrators-only").css("display", "none"); }
-    if (rollString[9] == '1') {  $(".stalkers-only").css("display", "inline");
+    if (rollString[9] == '1') {
+        $(".stalkers-only").css("display", "inline");
+        socket.emit("get3users");
         if (falseisnormaltrueisdisplayall) { stringofroles += "stalker "; }
     } else { $(".stalkers-only").css("display", "none"); }
     if (rollString[10] == '1') { $(".editors-only").css("display", "inline");
@@ -825,9 +827,19 @@ function contextButtonFunction(currentContext){
           $('#gridview').css('display', 'grid');
           sessionStorage.setItem('currentPage', 'grid');
           window.history.replaceState(null, null, "/?view=" + 'grid');
-        document.getElementById('contextButton').innerHTML = 'Home';
+        document.getElementById('contextButton').innerHTML = 'Multi';
         socket.emit('retrieveDatabaseGrid');
-        break;
+          break;
+      case 'Multi':
+          $('#gridview').css('display', 'none');
+          $('#entryContainer').empty();
+          sessionStorage.setItem('currentPage', 'multi');
+          window.history.replaceState(null, null, "/?view=" + 'multi');
+          document.getElementById('contextButton').innerHTML = 'Home';
+          socket.emit('requestMulti');
+      case 'Sea':
+          showSeaOfDivs();
+
   }
 }
 function returnChooseRoleBox() {
@@ -1242,7 +1254,7 @@ function returnReportBox() {
 
 
 function showSeaOfDivs() {
-
+    window.history.replaceState(null, null, "/?view=sea");
     for (var i = 0; post = postsOnThisPage[i]; i++) {
         let el = document.querySelector('[postid="'+ String(post.postID) + '"]');
         el.style.setProperty('--rand', Math.random());
@@ -2518,10 +2530,15 @@ socket.on('receiveSinglePostData', function(dataFromServer){
 socket.on('paintPosts', function (paintDataArray) {
     paintDataArray.forEach(function (paintPostData) {
         paintPostData = JSON.parse(paintPostData);
-        //console.log(paintPostData.paintPostId);
-        var postToPaint = $("[postid="+paintPostData.paintPostId+"]");
+        console.log(paintPostData.paintPostId);
+        var postToPaint = $("[postid=" + paintPostData.paintPostId + "]");
+        var color;
         if (postToPaint !== undefined) {
             console.log(postToPaint);
+            switch (paintPostData.paintbackground) {
+                case 'au':
+                    color = '#cc9900';
+            }
             postToPaint.css("font-family", paintPostData.paintfont);
             postToPaint.css("border-style", paintPostData.paintborder);
             postToPaint.css("font-size", paintPostData.paintsize);
@@ -2663,6 +2680,15 @@ socket.on('msgDataFound', function (results) {
 });
 
 
+//servergive3users
+socket.on('servergive3users', function (threerandomusers) {
+    console.log(threerandomusers);
+    var i = 0;
+    for (let i = 0; i <= threerandomusers.length; i++) {
+        var user = threerandomusers[i];
+        $('#peopletostalk').append("<li><a href=/?user=" + String(user.userID) + ">" + user.name + "</a></li>");
+    }
+});
 
 //tagsForPostData
 socket.on('tagsForPostData', function (tagsForPostData) {
