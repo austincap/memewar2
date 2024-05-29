@@ -823,6 +823,74 @@ function requestRecommendedPosts(socket, pagenum) {
         });
 }
 function requestAlgomancerPosts(socket, pagenum) {
+    console.log("pagenum " + pagenum);
+    var AlgoPostsAndTags = [];
+    var algomancyvalues = {};
+    var topPostQuery = `
+    MATCH (doc:Post)
+    RETURN doc
+    `;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    var algoValuesQuery = `
+    MATCH (a:MISC {type:'algo'})
+    RETURN a
+    `;
+    session
+        .run(algoValuesQuery)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                algomancyvalues = record["_fields"][0]["properties"];
+            });
+            console.log(algomancyvalues);
+            session
+                .run(topPostQuery)
+                .then(function (result) {
+                    var dataForClient = [];
+                    console.log("eoigheoiuhg");
+                    result['records'].forEach(function (record) {
+                        console.log(record);
+                        var processedPostObject = record["_fields"][0]["properties"];
+                        // record["_fields"][1].forEach(function(tagAndVote){
+                        //   processedPostObject.tagnames = tagAndVote[0];
+                        //   processedPostObject.tagvotes = tagAndVote[1];
+                        // });
+                        processedPostObject.replycount = record["_fields"][2];
+                        dataForClient.push(processedPostObject);
+                    });
+                    //var algomancyvalues = { commentweight: 1, likeweight: 6, sizeweight: 4, timeweight: 1, userweight: 7, viewweight: 1 };
+                    console.log(dataForClient);
+                    dataForClient.sort((a, b) => ((parseInt(a.postID) * parseInt(algomancyvalues.timeweight) + parseInt(a.up) * parseInt(algomancyvalues.likeweight) + parseInt(a.content.length) * parseInt(algomancyvalues.sizeweight) + parseInt(a.clicks) * parseInt(algomancyvalues.viewweight) + parseInt(a.replycount) * parseInt(algomancyvalues.commentweight)) < (parseInt(b.postID) * parseInt(algomancyvalues.timeweight) + parseInt(b.up) * parseInt(algomancyvalues.likeweight) + parseInt(b.content.length) * parseInt(algomancyvalues.sizeweight) + parseInt(b.clicks) * parseInt(algomancyvalues.viewweight) + parseInt(b.replycount) * parseInt(algomancyvalues.commentweight))) ? 1 : -1);
+                    console.log(dataForClient);
+                    dataForClient = dataForClient.slice(PAGESIZE * pagenum, PAGESIZE * (pagenum + 1));
+                    console.log(dataForClient);
+                    AlgoPostsAndTags.push(dataForClient);
+                    session
+                        .run(topTagQuery)
+                        .then(function (result) {
+                            var tagdataForClient = [];
+                            result.records.forEach(function (record) {
+                                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+                            });
+                            AlgoPostsAndTags.push(tagdataForClient);
+                            console.log(AlgoPostsAndTags);
+                            console.log("ALGO POSTS");
+                            socket.emit('receiveTop20Data', AlgoPostsAndTags);
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                        });
+                })
+                .catch(function (error) {
+                    console.error(error);
+                })
+        })
+        .catch(function (error) {
+            console.error(error);
+        });
 
 }
 function requestSortedPosts(socket, sortType, pagenum) {
@@ -905,9 +973,15 @@ function followLeader(socket, idarray) {
         leaderID: idarray["leaderID"],
         followerID: idarray["followerID"]
     };
+    if (params.leaderID == params.followerID) {
+        socket.emit('userChecked', { task: 'failedToFollow', userID: params.followerID });
+        console.log("can't follow self!");
+        return;
+    }
     var topPostQuery = `
     MATCH (l:User { userID:$leaderID}), (f:User { userID:$followerID})
     MERGE (l)<-[:FOLLOWS]-(f)
+    SET l.memecoin = l.memecoin + 1
     RETURN l, f
     `;
     session
@@ -966,9 +1040,29 @@ function requestMultifeedPosts(socket) {
                         posts2.push(processedPostObject);
                     });
                     dataForClient.push(posts2);
-                    dataForClient.push(posts3);
-                    socket.emit('receiveMultifeedData', dataForClient);
-                    console.log("MULTIFEED DATA SENT");
+                    var topPost3Query = `
+                    MATCH (p:Post)
+                    WITH p ORDER BY p.upvotes-p.downvotes DESC
+                    OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
+                    OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
+                    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies
+                    SKIP `+ String(PAGESIZE * 1) + ` LIMIT ` + String(PAGESIZE);
+
+                    session
+                        .run(topPost3Query)
+                        .then(function (result) {
+                            result.records.forEach(function (record) {
+                                var processedPostObject = record["_fields"][0]["properties"];
+                                processedPostObject.replycount = record["_fields"][2];
+                                posts3.push(processedPostObject);
+                            });
+                            dataForClient.push(posts3);
+                            socket.emit('receiveMultifeedData', dataForClient);
+                            console.log("MULTIFEED DATA SENT");
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
                 })
                 .catch(function (error) {
                     console.log(error);

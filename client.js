@@ -707,7 +707,7 @@ function getFirstRole(rollString) {
         if (rollString[i] == '1') {
             switch (i) {
                 case 0:
-                    return "Lurker";
+                    return "Hater";
                 case 1:
                     return "Tagger";
                 case 2:
@@ -747,7 +747,7 @@ function selectThisRole(roleName) {
     console.log(roleName);
     var rolenumber = '000000000000000';
     switch (roleName) {
-        case "Lurker":
+        case "Hater":
             rolenumber = '100000000000000';
             break;
         case "Tagger":
@@ -1369,11 +1369,11 @@ function arbitratorSort() {
     socket.emit('requestPostsForArbitration');
 }
 function algomancerSort() {
-    var algomancyvalues = { commentweight: 1, likeweight: 6, sizeweight: 4, timeweight: 1, userweight: 7, viewweight: 1 };
-    console.log(postsOnThisPage);
-    postsOnThisPage.sort((a, b) => ( parseInt(a.postID) * algomancyvalues.timeweight + parseInt(a.up) * algomancyvalues.likeweight + parseInt(a.clicks) * algomancyvalues.viewweight + parseInt(a.replycount) * algomancyvalues.commentweight < parseInt(b.postID) * algomancyvalues.timeweight +parseInt(b.up) * algomancyvalues.likeweight + parseInt(b.clicks) * algomancyvalues.viewweight + parseInt(b.replycount) * algomancyvalues.commentweight) ? 1 : -1);
-    console.log(postsOnThisPage);
-    //socket.emit('requestAlgomancerPosts', 1, [6,1,4,1,1,7]);
+    //var algomancyvalues = { commentweight: 1, likeweight: 6, sizeweight: 4, timeweight: 1, userweight: 7, viewweight: 1 };
+    //console.log(postsOnThisPage);
+    //postsOnThisPage.sort((a, b) => ((parseInt(a.postID) * algomancyvalues.timeweight + parseInt(a.up) * algomancyvalues.likeweight + parseInt(a.content.length) * algomancyvalues.sizeweight + parseInt(a.clicks) * algomancyvalues.viewweight + parseInt(a.replycount) * algomancyvalues.commentweight) < (parseInt(b.postID) * algomancyvalues.timeweight + parseInt(b.up) * algomancyvalues.likeweight + parseInt(b.content.length) * algomancyvalues.sizeweight + parseInt(b.clicks) * algomancyvalues.viewweight + parseInt(b.replycount) * algomancyvalues.commentweight)) ? 1 : -1);
+    //console.log(postsOnThisPage);
+    socket.emit('requestAlgomancerPosts', 1);
 }
 function controversialSort(){
   console.log(postsOnThisPage);
@@ -2535,10 +2535,6 @@ socket.on('paintPosts', function (paintDataArray) {
         var color;
         if (postToPaint !== undefined) {
             console.log(postToPaint);
-            switch (paintPostData.paintbackground) {
-                case 'au':
-                    color = '#cc9900';
-            }
             postToPaint.css("font-family", paintPostData.paintfont);
             postToPaint.css("border-style", paintPostData.paintborder);
             postToPaint.css("font-size", paintPostData.paintsize);
@@ -2724,6 +2720,7 @@ socket.on('receiveTagData', function (topPostsForTag) {
 //receiveTop20Data
 socket.on('receiveTop20Data', function (topPostsAndTags) {
     postsOnThisPage = [];
+    $('#entryContainer').empty();
     populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
 });
 //receiveRecommendedData
