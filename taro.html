@@ -1,0 +1,337 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Example</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+        }
+
+        #c {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
+
+</head>
+<body onload="">
+
+    <script type="text/javascript">
+        var socket = io();
+        var postsOnThisPage = [[],[]];
+
+
+        socket.emit('requestALLPosts');
+        socket.on('receiveALLData', function (topPostsAndTags) {
+            console.log(topPostsAndTags);
+            postsOnThisPage = topPostsAndTags;
+            //$('#entryContainer').empty();
+            //populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
+        });
+
+
+
+    </script>
+
+    <canvas id="c"></canvas>
+
+    <script type="module">
+
+        // Ex 1: Import the entire taro.js core library from a CDN
+        //import * as TARO from 'https://www.echou.xyz/taro/build/taro.module.js';
+        import * as TARO from './js/taro.module.js';
+
+
+        import * as THREE from "https://threejs.org/build/three.module.js";
+
+
+        window.setTimeout(
+
+            function() {
+                console.log('wait');
+
+
+                let entity, geo, mat, mesh, geo2, mat2, mesh2;
+
+                var app = new TARO.App({ canvas: document.getElementById("c") });
+
+                TARO.registerComponent(
+                    "cameraController",
+                    class CameraController {
+                        init() {
+                            this.direction = new TARO.Vector3();
+                            this.input = this.entity.scene.app.input;
+                            this.entity.rotation.order = "YXZ";
+                            this.ball = this.entity.scene.getEntityByName("ball");
+
+                            window.addEventListener("pointerdown", () => {
+                                this.entity.app.renderer.domElement.requestPointerLock();
+                            });
+                            this.ball.getComponent('rigidbody').ref.addEventListener("collide", (c) => {
+                                console.log(c);
+                                this.ball.getComponent('audio').ref.play();
+                            });
+                        }
+                        update() {
+                            const ball = this.ball;
+
+                            if (this.input.getKeyDown("ArrowUp")) {
+                                ball.getComponent("rigidbody").ref.applyForce(
+                                    new TARO.Vector3(0, 0, -200)
+                                );
+                            }
+                            if (this.input.getKeyDown("ArrowDown")) {
+                                ball.getComponent("rigidbody").ref.applyForce(
+                                    new TARO.Vector3(0, 0, 200)
+                                );
+                            }
+                            if (this.input.getKeyDown("ArrowLeft")) {
+                                ball.getComponent("rigidbody").ref.applyForce(
+                                    new TARO.Vector3(-200, 0, 0)
+                                );
+                            }
+                            if (this.input.getKeyDown("ArrowRight")) {
+                                ball.getComponent("rigidbody").ref.applyForce(
+                                    new TARO.Vector3(200, 0, 0)
+                                );
+                            }
+
+                            if (this.input.getKey("KeyG")) {
+                                ball.scale.set(0.1, 0.1, 0.1);
+                            }
+
+                            if (this.input.getKey("KeyW")) {
+                                this.entity.translateZ(-0.1);
+                            }
+                            if (this.input.getKey("KeyS")) {
+                                this.entity.translateZ(0.1);
+                            }
+                            if (this.input.getKey("KeyA")) {
+                                this.entity.translateX(-0.1);
+                            }
+                            if (this.input.getKey("KeyD")) {
+                                this.entity.translateX(0.1);
+                            }
+                            if (this.input.getKey("Space")) {
+                                this.entity.translateY(0.1);
+                            }
+                            if (this.input.getKey("ShiftLeft")) {
+                                this.entity.translateY(-0.1);
+                            }
+                            this.entity.rotation.x -=
+                                this.input.pointerDelta.y * 0.001;
+                            this.entity.rotation.y -=
+                                this.input.pointerDelta.x * 0.001;
+                        }
+                    }
+                );
+
+                const scene = new TARO.Scene("scene");
+                scene.background = new TARO.Color("skyblue");
+                app.setScene(scene);
+                console.log(app);
+
+                // lighting
+                entity = new TARO.Entity("light");
+                const hemiLight = entity.addComponent("light", { type: 'hemisphere', intensity: 0.6 }).ref
+
+                hemiLight.color.setHSL(0.6, 1, 0.6);
+                hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+
+                entity.position.set(0, 100, 0);
+
+                entity = new TARO.Entity("light");
+                const dirLight = entity.addComponent("light", { type: 'directional' }).ref;
+
+                dirLight.color.setHSL(0.1, 1, 0.95);
+
+                dirLight.castShadow = true;
+
+                dirLight.shadow.mapSize.width = 2048;
+                dirLight.shadow.mapSize.height = 2048;
+
+                const d = 50;
+
+                dirLight.shadow.camera.left = -d;
+                dirLight.shadow.camera.right = d;
+                dirLight.shadow.camera.top = d;
+                dirLight.shadow.camera.bottom = -d;
+
+                dirLight.shadow.camera.far = 3500;
+                dirLight.shadow.bias = -0.0001;
+
+                entity.position.set(-100, 175, 100);
+
+                // floor
+                entity = new TARO.Entity("floor");
+
+                entity.addComponent("geometry", { type: 'plane', width: 200, height: 200 });
+                entity.addComponent("material", { type: 'phong', color: 0x718e3e }).mesh.receiveShadow = true;
+
+                entity.addComponent("rigidbody", { type: 'static' })
+                entity.addComponent("shape", { type: "plane" });
+                entity.rotation.set(-Math.PI / 2, 0, 0);
+
+                new TARO.Entity("gridHelper").addComponent("renderable",
+                    new TARO.GridHelper(200, 200, 0x0000ff, 0x808080)
+                );
+
+                // ball
+                geo = new TARO.SphereGeometry(1, 32, 32);
+                mat = new TARO.MeshPhongMaterial({ color: 0xffff00 });
+                mesh = new TARO.Mesh(geo, mat);
+
+                entity = new TARO.Entity("ball");
+                entity.addComponent("renderable", mesh);
+                entity.position.set(0, 5, 2);
+                entity.addComponent("rigidbody", {
+                    mass: 1
+                });
+                entity.addComponent("shape", {
+                    type: 'sphere',
+                    radius: 1,
+                });
+                entity.addComponent("audio", {
+                    asset: 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/sounds/ping_pong.mp3'
+                });
+
+                // blocks
+                const position = new TARO.Vector3(-2, 1, -5);
+                geo = new TARO.BoxBufferGeometry(1, 1, 1);
+                mat = new TARO.MeshPhongMaterial({ color: 0x2194ce });
+                // let last;
+                for (let k = 0; k < 5; k++) {
+                    for (let i = 0; i < 5; i++) {
+                        for (let j = 0; j < 5; j++) {
+                            entity = new TARO.Entity("box");
+                            mesh = new TARO.Mesh(geo, mat);
+                            entity.addComponent("renderable", mesh);
+                            entity.position.copy(position);
+                            entity.addComponent("rigidbody", { mass: 0.01 });
+                            entity.addComponent("shape");
+                            position.x += 1;
+
+                        }
+                        position.y += 1;
+                        position.x = -2;
+                    }
+                    position.y = 1;
+                    position.z += 1;
+                }
+
+
+
+                // blocks
+                const position2 = new TARO.Vector3(-13, 1, -13);
+                geo2 = new TARO.BoxBufferGeometry(2, 2, 2);
+                mat2 = new TARO.MeshPhongMaterial({ color: 0x2f9d22 });
+                //mesh2 = new TARO.Mesh(geo2, mat2);
+                // let last;
+                for (let w = 0; w < postsOnThisPage[0].length; w++) {
+                    console.log(w);
+                    //var text2 = document.createElement('div');
+                    //text2.style.position = 'absolute';
+                    ////text2.style.zIndex = 1;    // if you still don't see the label, try uncommenting this
+                    //text2.style.width = 100;
+                    //text2.style.height = 100;
+                    //text2.style.backgroundColor = "blue";
+                    //text2.innerHTML = postsOnThisPage[0][w]["content"];
+                    //text2.style.top = 200 + 'px';
+                    //text2.style.left = 200 + 'px';
+                    //document.body.appendChild(text2);
+
+                    //    entity = new TARO.Entity("box");
+                    //    mesh = new TARO.Mesh(geo2, mat2);
+                    //    entity.addComponent("renderable", mesh);
+                    //    entity.position.copy(position);
+                    //    entity.addComponent("rigidbody", { mass: 0.1 });
+                    //    entity.addComponent("shape");
+                    //position2.x += 6;
+                    //position2.z += Math.round(Math.random()) * 3 - 1;
+
+                    let cv = document.createElement('canvas');
+                    cv.width = 1536 //  3 * 512
+                    cv.height = 512;
+                    var ctx = cv.getContext('2d');
+                    ctx.fillStyle = '#fefefe';
+                    ctx.fillRect(0, 0, cv.width, cv.height);
+                    ctx.fillStyle = '#129912';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold 6vh Arial';
+                    // https://unicode.org/emoji/charts/full-emoji-list.html#1f642 (mark and copy - column Browser)
+                    ctx.fillText(' THREE  | ' + postsOnThisPage[0][w]["title"], 0, 0.1 * cv.height);
+                    ctx.fillText(' THREE  |                                              ', 0, 0.2 * cv.height);
+                    ctx.fillText(' THREE  | ' + postsOnThisPage[0][w]["content"], 0, 0.3 * cv.height);
+                    ctx.fillText(' THREE  |                       and many other things  ', 0, 0.4 * cv.height);
+                    ctx.fillText(' THREE  |                       * learning by playing * ', 0, 0.5 * cv.height);
+                    ctx.fillText(' THREE  |                                              ', 0, 0.6 * cv.height);
+                    ctx.fillText(' THREE  |                😀   it should bring you joy     😀', 0, 0.7 * cv.height);
+                    ctx.fillText(' THREE  |                                              ', 0, 0.8 * cv.height);
+                    ctx.fillText(' THREE  |                  😂    ♠ ♣ ♥ ♦  🐞  ♪ ♫ ♭ ♮ ♯    😂 ', 0, 0.9 * cv.height);
+                    var txtGeometry = new THREE.BoxGeometry(2.4, 0.8, 0.1); // w 3 : h 1
+                    var cvTexture = new THREE.Texture(cv);
+                    cvTexture.needsUpdate = true; // otherwise all black only
+                    var spineMat = new THREE.MeshPhongMaterial({ color: 0xa5800e });
+                    var cvMaterial = new THREE.MeshBasicMaterial({ map: cvTexture });
+                    var cvMaterials = [spineMat, spineMat, spineMat, spineMat, cvMaterial, cvMaterial];
+                    var cvTxtMesh = new THREE.Mesh(txtGeometry, cvMaterials);
+                    cvTxtMesh.rotation.y = 2.4; // radiant
+                    //cvTxtMesh.position.set(-3, -0.59, 3);
+                    position2.x += 6;
+                    position2.z += Math.round(Math.random()) * 3 - 1;
+                    cvTxtMesh.position.set(position2.x, position2.y, position2.z);
+                    scene.add(cvTxtMesh);
+
+                    try {
+                        console.log(postsOnThisPage[0][w]["file"] != undefined);
+                        const sfSpriteMap = new THREE.TextureLoader().load(postsOnThisPage[0][w]["file"]);
+                        const sfSpriteMaterial = new THREE.SpriteMaterial({ map: sfSpriteMap });
+                        const sfSprite = new THREE.Sprite(sfSpriteMaterial);
+                        sfSprite.scale.set(1.5, 1.5, 1.5);
+                        sfSprite.position.set(position2.x, position2.y, position2.z);
+                        scene.add(sfSprite);
+                        const sfSprites = [];
+
+                    } catch
+                    {
+                        console.log("no pic");
+                    }
+
+
+                }
+
+
+
+                // camera
+                entity = new TARO.Entity("camera");
+                entity.addComponent("camera");
+                entity.addComponent("cameraController");
+                entity.addComponent("audioListener");
+                entity.position.set(0, 5, 10);
+
+                app.start();
+
+                app.toJSON();
+
+
+
+            }
+
+
+        , 2000);
+
+
+
+   
+
+    </script>
+</body>
+</html>
