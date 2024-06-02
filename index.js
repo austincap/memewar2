@@ -36,6 +36,55 @@ var fs = require('fs');
 // var httpsServer = require('https').createServer(credentials, app);
 // const io = require('socket.io')(httpsServer);
 
+
+/////////BLOCKCHAIN
+////var sessionStore = new session.MemoryStore();
+//const {Blockchain, Transaction} = require('savjeecoin');
+
+
+////const { Blockchain, Transaction } = require('./blockchain');
+//const EC = require('elliptic').ec;
+//const ec = new EC('secp256k1');
+
+//// Your private key goes here
+//const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
+
+//// From that we can calculate your public key (which doubles as your wallet address)
+//const myWalletAddress = myKey.getPublic('hex');
+
+//// Create new instance of Blockchain class
+//const savjeeCoin = new Blockchain();
+
+//// Mine first block
+//savjeeCoin.minePendingTransactions(myWalletAddress);
+
+//// Create a transaction & sign it with your key
+//const tx1 = new Transaction(myWalletAddress, 'address2', 100);
+//tx1.signTransaction(myKey);
+//savjeeCoin.addTransaction(tx1);
+
+//// Mine block
+////savjeeCoin.minePendingTransactions(myWalletAddress);
+
+//// Create second transaction
+//const tx2 = new Transaction(myWalletAddress, 'address1', 50);
+//tx2.signTransaction(myKey);
+//savjeeCoin.addTransaction(tx2);
+
+//// Mine block
+//savjeeCoin.minePendingTransactions(myWalletAddress);
+
+//console.log();
+//console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
+
+//// Uncomment this line if you want to test tampering with the chain
+//// savjeeCoin.chain[1].transactions[0].amount = 10;
+
+//// Check if the chain is valid
+//console.log();
+//console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
+
+
 var privateKey = fs.readFileSync('memewar.io.key');
 var certificate = fs.readFileSync('austintest.cer');
 var options = {key: privateKey, cert: certificate, requestCert: true, rejectUnauthorized: false};
@@ -43,67 +92,13 @@ var https = require('https');
 var httpsServer = https.createServer(options, app);
 var io = require('socket.io')(httpsServer);
 
-/////////BLOCKCHAIN
-    ////var sessionStore = new session.MemoryStore();
-    //const {Blockchain, Transaction} = require('savjeecoin');
-
-
-    ////const { Blockchain, Transaction } = require('./blockchain');
-    //const EC = require('elliptic').ec;
-    //const ec = new EC('secp256k1');
-
-    //// Your private key goes here
-    //const myKey = ec.keyFromPrivate('7c4c45907dec40c91bab3480c39032e90049f1a44f3e18c3e07c23e3273995cf');
-
-    //// From that we can calculate your public key (which doubles as your wallet address)
-    //const myWalletAddress = myKey.getPublic('hex');
-
-    //// Create new instance of Blockchain class
-    //const savjeeCoin = new Blockchain();
-
-    //// Mine first block
-    //savjeeCoin.minePendingTransactions(myWalletAddress);
-
-    //// Create a transaction & sign it with your key
-    //const tx1 = new Transaction(myWalletAddress, 'address2', 100);
-    //tx1.signTransaction(myKey);
-    //savjeeCoin.addTransaction(tx1);
-
-    //// Mine block
-    ////savjeeCoin.minePendingTransactions(myWalletAddress);
-
-    //// Create second transaction
-    //const tx2 = new Transaction(myWalletAddress, 'address1', 50);
-    //tx2.signTransaction(myKey);
-    //savjeeCoin.addTransaction(tx2);
-
-    //// Mine block
-    //savjeeCoin.minePendingTransactions(myWalletAddress);
-
-    //console.log();
-    //console.log(`Balance of xavier is ${savjeeCoin.getBalanceOfAddress(myWalletAddress)}`);
-
-    //// Uncomment this line if you want to test tampering with the chain
-    //// savjeeCoin.chain[1].transactions[0].amount = 10;
-
-    //// Check if the chain is valid
-    //console.log();
-    //console.log('Blockchain valid?', savjeeCoin.isChainValid() ? 'Yes' : 'No');
-
-
-
 
 httpsServer.listen(8443, function (){
   //  http://[2606:a000:101a:101:0:5a8b:1cd5:fa71]:3000/index.html
   console.log('Meme War app listening on port 8443 like a prude!');
 });
 
-
-// const httpServer = require('http').createServer(app);
-// const io = require('socket.io')(httpServer);
-
 app.use(express.static(__dirname));
-
 // app.use(fileUpload({
 //   limits: { fileSize: 50 * 1024 * 1024 },
 //   useTempFiles : true,
@@ -133,13 +128,16 @@ const PAGESIZE = 10;
 
 
 //HTMLX
+//clicked
 app.post('/clicked', function (req, res) {
 
     console.log('clicked');
     res.send('<div>fuck</div>');
 });
 
-
+/////////////////////
+// UPLOADING DATA TO DATABASE
+//upload
 app.post('/upload', upload.single('sampleFile'), function (req, res, next){
     console.log("UPLOAD POST");
     console.log(req.body.location);
@@ -201,7 +199,7 @@ app.post('/upload', upload.single('sampleFile'), function (req, res, next){
   });
   res.redirect('/');
 });
-
+//uploadreply
 app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, next){
   console.log("UPLOAD POST REPLY");
   console.log(req.body);
@@ -259,7 +257,7 @@ app.post('/uploadreply', upload.single('sampleFile-reply'), function (req, res, 
   });
   res.redirect('/');
 });
-
+//summonuser
 app.post('/summonuser', upload.single('sampleFile-none'), function (req, res, next) {
     console.log("SUMMON USER");
     console.log(req.body);
@@ -285,7 +283,7 @@ app.post('/summonuser', upload.single('sampleFile-none'), function (req, res, ne
         });
     res.redirect('/');
 });
-
+//uploadpoll
 app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, next) {
     console.log("UPLOAD POLL");
     console.log(req.body);
@@ -357,7 +355,7 @@ app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, ne
         });
     res.redirect('/');
 });
-
+//uploadAlgomod
 app.post('/uploadAlgomod', upload.single('sampleFile-algo'), function (req, res, next) {
     console.log("UPLOAD ALGORITHM TWEAK");
     console.log(req.body);
@@ -429,7 +427,7 @@ app.post('/uploadAlgomod', upload.single('sampleFile-algo'), function (req, res,
         });
     res.redirect('/');
 });
-
+//uploadpaintmod
 app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, res, next) {
     console.log(req.body);
     console.log(parseInt(req.body.paintUserId));
@@ -475,7 +473,7 @@ app.post('/uploadpaintmod', upload.single('sampleFile-paint'), function (req, re
             console.log(error);
         });
 });
-
+//uploadnewgroup
 app.post('/uploadnewgroup', upload.single('sampleFile-group'), function (req, res, next) {
     console.log("UPLOAD NEW GROUP");
     console.log(req.body);
@@ -522,7 +520,7 @@ app.post('/uploadnewgroup', upload.single('sampleFile-group'), function (req, re
         });
     res.redirect('/');
 });
-
+//sendmessage
 app.post('/sendmessage', upload.single('sampleFile-message'), function (req, res, next) {
     console.log(req.body);
     var blockId = new ObjectId();
@@ -555,7 +553,7 @@ app.post('/sendmessage', upload.single('sampleFile-message'), function (req, res
         });
     res.redirect('/');
 });
-
+//uploadreport
 app.post('/uploadreport', upload.single('sampleFile-none'), function (req, res, next) {
     console.log(req.body);
     var blockId = new ObjectId();
@@ -589,37 +587,10 @@ app.post('/uploadreport', upload.single('sampleFile-none'), function (req, res, 
         });
     res.redirect('/');
 });
-function requestTagsForThisPost(socket, postID){
-  var params = {
-    postID: parseInt(postID)
-  };
-  var query = `
-    MATCH (p:Post {postID:$postID})-[ta:TAGGEDAS]->(posttags:Tag)
-    OPTIONAL MATCH (j:Post)-[:TAGGEDAS]->(t:Tag {name:posttags.name})    
-    RETURN COUNT(j) AS otherposts, t.name AS tagname, ta.upvotes AS tagupvotes ORDER BY ta.upvotes DESC
-    LIMIT 20
-    `;
-    session
-      .run(query, params)
-      .then(function(result){
-        if(result.records[0]==null){
-          console.log('NULL');
-          socket.emit('noDataFound');
-        }else{
-          var dataForClient = [];
-          result.records.forEach(function(record){
-            dataForClient.push([record["_fields"][0], record["_fields"][1], record["_fields"][2]]);
-          });
-          console.log(dataForClient);
-          socket.emit('tagsForPostData', dataForClient);
-          
-        }
-      })
-      .catch(function(error){
-        console.log(error);
-      });
-}
 
+///////////////
+// REQUEST FUNCTIONS
+// POST REQUESTS
 function requestPostsForArbitration(socket) {
     console.log("REUQEST POSTS FOR ARBITRATION");
     var arbitrationPostsArray = [];
@@ -768,8 +739,6 @@ function requestALLPosts(socket) {
             console.log(error);
         });
 }
-
-
 function requestRandPosts(socket, randPages, pagenum) {
   console.log(String(randPages));
   console.log("pagenum "+pagenum);
@@ -993,62 +962,7 @@ function requestSortedPosts(socket, sortType, pagenum) {
         });
 }
 
-function requestGroups(socket, pagenum) {
-    console.log("REUQEST GROUPS");
-    var paintDataArray = [];
-    var query;
-    query = `
-    MATCH (g:Tag {type:'group'})-[:CREATEDBY]->(m:User)
-    OPTIONAL MATCH (p:Post)-[POSTEDIN]->(g)
-    RETURN p, g, m
-    `;
-    session
-        .run(query)
-        .then(function (result) {
-            result.records.forEach(function (record) {
-                paintDataArray.push(record["_fields"][1]);
-            });
-            socket.emit('paintPosts', paintDataArray);
-            console.log(paintDataArray);
-
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
-function followLeader(socket, idarray) {
-    var dataForClient = [];
-    var params = {
-        leaderID: idarray["leaderID"],
-        followerID: idarray["followerID"]
-    };
-    if (params.leaderID == params.followerID) {
-        socket.emit('userChecked', { task: 'failedToFollow', userID: params.followerID });
-        console.log("can't follow self!");
-        return;
-    }
-    var topPostQuery = `
-    MATCH (l:User { userID:$leaderID}), (f:User { userID:$followerID})
-    MERGE (l)<-[:FOLLOWS]-(f)
-    SET l.memecoin = l.memecoin + 1
-    RETURN l, f
-    `;
-    session
-        .run(topPostQuery)
-        .then(function (result) {
-            result.records.forEach(function (record) {
-                console.log(record._fields);
-            });
-            console.log("Now following");
-            //socket.emit('sendDatabase', dataForClient);
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
-
+// VIEW REQUESTS
 function requestMultifeedPosts(socket) {
     console.log("MULTIFEED REQUEST");
     var dataForClient = [];
@@ -1122,9 +1036,8 @@ function requestMultifeedPosts(socket) {
             console.log(error);
         });
 }
-
-function requestTop20PostsGrid(socket){
-  var topPostsAndTags = [];
+function requestTop20PostsGrid(socket) {
+    var topPostsAndTags = [];
     var topPostQuery = `
     MATCH (p:Post)
     WITH p ORDER BY p.upvotes-p.downvotes DESC
@@ -1139,46 +1052,45 @@ function requestTop20PostsGrid(socket){
     RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
     `;
     session
-      .run(topPostQuery)
-      .then(function(result){
-        var dataForClient = [];
-        result.records.forEach(function(record){
-          var processedPostObject = record["_fields"][0]["properties"];
-          console.log(record["_fields"][1]);
-          console.log("EOPUITHEIPOUTGHEIUOPGTHPIUEFHVEIPOUYFHIEPOUFHE");
-          processedPostObject.tagArray = [];
-          record["_fields"][1].forEach(function(tagAndVote){
-            processedPostObject.tagArray.push(tagAndVote[0]);
-            //processedPostObject.tagvotes = tagAndVote[1];
-          });
-          //processedPostObject.tagArray = record["_fields"][1];
-          processedPostObject.replycount = record["_fields"][2];
-          dataForClient.push(processedPostObject);
-        });
-        topPostsAndTags.push(dataForClient);
-          session
-            .run(topTagQuery)
-            .then(function(result){
-              var tagdataForClient = [];
-              result.records.forEach(function(record){
-                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
-              });
-              topPostsAndTags.push(tagdataForClient);
-              console.log(topPostsAndTags);
-              console.log("TOP 20 POSTS GRID");
-              socket.emit('receiveTop20DataGrid', topPostsAndTags);
-            })
-            .catch(function(error){
-              console.log(error);
+        .run(topPostQuery)
+        .then(function (result) {
+            var dataForClient = [];
+            result.records.forEach(function (record) {
+                var processedPostObject = record["_fields"][0]["properties"];
+                console.log(record["_fields"][1]);
+                console.log("EOPUITHEIPOUTGHEIUOPGTHPIUEFHVEIPOUYFHIEPOUFHE");
+                processedPostObject.tagArray = [];
+                record["_fields"][1].forEach(function (tagAndVote) {
+                    processedPostObject.tagArray.push(tagAndVote[0]);
+                    //processedPostObject.tagvotes = tagAndVote[1];
+                });
+                //processedPostObject.tagArray = record["_fields"][1];
+                processedPostObject.replycount = record["_fields"][2];
+                dataForClient.push(processedPostObject);
             });
-      })
-      .catch(function(error){
-        console.log(error);
-      });
+            topPostsAndTags.push(dataForClient);
+            session
+                .run(topTagQuery)
+                .then(function (result) {
+                    var tagdataForClient = [];
+                    result.records.forEach(function (record) {
+                        tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+                    });
+                    topPostsAndTags.push(tagdataForClient);
+                    console.log(topPostsAndTags);
+                    console.log("TOP 20 POSTS GRID");
+                    socket.emit('receiveTop20DataGrid', topPostsAndTags);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
 }
-
-function retrievePostsForNetView(socket){
-  var dataForClient = [];
+function retrievePostsForNetView(socket) {
+    var dataForClient = [];
     var topPostQuery = `
     MATCH (p:Post)-[ta:TAGGEDAS]->(t:Tag)
     WITH p.postID AS id, t.name AS tag, ta.upvotes AS tagupvotes, p.upvotes AS upvotes, p.content AS content, p.title AS title, p.file AS file
@@ -1189,40 +1101,122 @@ function retrievePostsForNetView(socket){
     ORDER BY tags[0] DESC
     `;
     session
-      .run(topPostQuery)
-      .then(function(result){
-        result.records.forEach(function(record){
-          console.log(record._fields);
-          let tagarray = [];
-          let postarray = [];
-          
-          postarray.push(record["_fields"][0], record["_fields"][1], record["_fields"][4], record["_fields"][3], record["_fields"][2], record["_fields"][5]);
-          dataForClient.push(postarray);
-          //dataForClient.push(record["_fields"]);
-          // dataForClient[record["_fields"][0]] = {
-          //   upvotes: record["_fields"][1],
-          //   tags: tagarray,
-          //   title: record["_fields"][2],
-          //   file: record["_fields"][5],
-          //   content: record["_fields"][4]
-          // };
+        .run(topPostQuery)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                console.log(record._fields);
+                let tagarray = [];
+                let postarray = [];
+
+                postarray.push(record["_fields"][0], record["_fields"][1], record["_fields"][4], record["_fields"][3], record["_fields"][2], record["_fields"][5]);
+                dataForClient.push(postarray);
+                //dataForClient.push(record["_fields"]);
+                // dataForClient[record["_fields"][0]] = {
+                //   upvotes: record["_fields"][1],
+                //   tags: tagarray,
+                //   title: record["_fields"][2],
+                //   file: record["_fields"][5],
+                //   content: record["_fields"][4]
+                // };
+            });
+            console.log(dataForClient);
+            console.log("SENT NETVIEW FORMAT POSTS TO CLIENT");
+            socket.emit('sendDatabase', dataForClient);
+        })
+        .catch(function (error) {
+            console.log(error);
         });
-        console.log(dataForClient);
-        console.log("SENT NETVIEW FORMAT POSTS TO CLIENT");
-        socket.emit('sendDatabase', dataForClient);
-      })
-      .catch(function(error){
-        console.log(error);
-      });
 }
+
+// OTHER REQUESTS
+function requestTagsForThisPost(socket, postID) {
+    var params = {
+        postID: parseInt(postID)
+    };
+    var query = `
+    MATCH (p:Post {postID:$postID})-[ta:TAGGEDAS]->(posttags:Tag)
+    OPTIONAL MATCH (j:Post)-[:TAGGEDAS]->(t:Tag {name:posttags.name})    
+    RETURN COUNT(j) AS otherposts, t.name AS tagname, ta.upvotes AS tagupvotes ORDER BY ta.upvotes DESC
+    LIMIT 20
+    `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            if (result.records[0] == null) {
+                console.log('NULL');
+                socket.emit('noDataFound');
+            } else {
+                var dataForClient = [];
+                result.records.forEach(function (record) {
+                    dataForClient.push([record["_fields"][0], record["_fields"][1], record["_fields"][2]]);
+                });
+                console.log(dataForClient);
+                socket.emit('tagsForPostData', dataForClient);
+
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+function requestGroups(socket, pagenum) {
+    console.log("REUQEST GROUPS");
+    var paintDataArray = [];
+    var query;
+    query = `
+    MATCH (g:Tag {type:'group'})-[:CREATEDBY]->(m:User)
+    OPTIONAL MATCH (p:Post)-[POSTEDIN]->(g)
+    RETURN p, g, m
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('paintPosts', paintDataArray);
+            console.log(paintDataArray);
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+function followLeader(socket, idarray) {
+    var dataForClient = [];
+    console.log(typeof (idarray));
+    console.log(JSON.stringify(idarray));
+    let params = JSON.parse(JSON.stringify(idarray));
+    console.log(params);
+    //var params = {  leaderID: idarray.leaderID, followerID: idarray.followerID  };
+
+    var topPostQuery = `
+    MATCH (l:User { userID:$leaderID}), (f:User { userID:$followerID})
+    MERGE (l)<-[:FOLLOWS]-(f)
+    SET l.memecoin = l.memecoin + 1
+    RETURN l, f
+    `;
+    session
+        .run(topPostQuery, params)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                console.log(record._fields);
+            });
+            console.log("Now following");
+            //socket.emit('sendDatabase', dataForClient);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+function userChecked(socket, taskname, userIDnum) {
+    socket.emit('userChecked', { task: taskname, userID: userIDnum });
+}
+
 
 io.on('connection', function (socket) {
     console.log("connection");
-    //requestTop20Posts(socket);
-
-    // socket.on('retrievePostsForMarket', function(){
-    //   requestTop20Posts(socket);
-    // });
 
     socket.on('retrieveDatabase', function () {
         retrievePostsForNetView(socket);
@@ -1568,7 +1562,6 @@ io.on('connection', function (socket) {
     });
 
 
-
     //////////////
     //VIEWING DETAILS
     socket.on('requestPostsWithTag', function (tagname) {
@@ -1812,7 +1805,6 @@ io.on('connection', function (socket) {
     });
 
     
-
     /////////////
     //VOTING
     ///////////
@@ -1897,7 +1889,6 @@ io.on('connection', function (socket) {
                 break;
         }
     });
-
 
 
     ////////////////
@@ -2134,12 +2125,17 @@ io.on('connection', function (socket) {
 
 
 
-
     ////////////
     //FOLLOW LEADER
     socket.on('followuser', function (dataFromClient) {
-        console.log(dataFromClient);
-        followLeader(dataFromClient);
+        console.log(typeof (dataFromClient));
+        if (dataFromClient.leaderID == dataFromClient.followerID) {
+            userChecked(socket, 'failedToFollow', params.followerID );
+            console.log("can't follow self!");
+        } else {
+            followLeader(socket, dataFromClient);
+        }
+        
     });
 
 

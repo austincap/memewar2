@@ -1,8 +1,6 @@
 
 const socket = io();
-var postsOnThisPage = [];
-
-
+//////////
 // const EC = require('elliptic').ec;
 // const ec = new EC('secp256k1');
 
@@ -15,6 +13,96 @@ var postsOnThisPage = [];
 // Copyright 2021 Observable, Inc.
 // Released under the ISC license.
 // https://observablehq.com/@d3/bubble-chart
+var postsOnThisPage = [];
+
+//ONLOAD
+function onloadFunction() {
+    var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
+    if (isMobile) { console.log("MOBILE"); }
+    else { console.log("NOT MOBILE"); }
+
+
+    paper.install(window);
+    paper.setup('myCanvas');
+    console.log(paper.view);
+
+    if (getQueryParam("post") !== "") {
+        //
+        socket.emit("viewpost", getQueryParam("post"));
+    } else if (getQueryParam("user") !== "") {
+        console.log('USER');
+        socket.emit('viewuser', getQueryParam("user"));
+    } else if (getQueryParam("tag") !== "") {
+        //
+        socket.emit('requestPostsWithTag', getQueryParam("tag"));
+    } else if (getQueryParam("sort") == "like") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
+        } else {
+            socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
+        }
+    } else if (getQueryParam("sort") == "rand") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
+        } else {
+            socket.emit('requestRandPosts', getQueryParam("rand"), "0");
+        }
+    } else if (getQueryParam("sort") == "recd") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestRecommendedPosts', getQueryParam("page"));
+        } else {
+            socket.emit('requestRecommendedPosts', "0");
+        }
+    } else if (getQueryParam("sort") == "multi") {
+        socket.emit('requestMulti');
+    } else if (getQueryParam("page") !== "") {
+        socket.emit('requestTop20Posts', getQueryParam("page"));
+    } else {
+        socket.emit('requestTop20Posts', '0');
+    }
+
+    console.log(document.URL);
+    //$('#gameview').css('display', 'none');
+
+    d3.selectAll('.datamaps-subunit')
+        .on('mouseover', function (d) {
+            //var $this = d3.select(this);
+            console.log(d.id);
+        });
+
+    window.setTimeout(function () {
+        console.log("TESTSETSTES");
+        if (sessionStorage.getItem('userID') !== null) {
+            var rollString = sessionStorage.getItem('userroles');
+
+            addRoles(sessionStorage.getItem('userroles'), false);
+            console.log(sessionStorage.getItem('userID'));
+            $('#signinstuff').css('display', 'none');
+            $('#userprofilestuff').css('display', 'inline-block');
+            $('#accountButton').html("<span userid=" + sessionStorage.getItem('userID') + ">" + sessionStorage.getItem('username') + "</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>" + sessionStorage.getItem('memecoin') + "₿</span>");
+            $('#userID-newpost').val(sessionStorage.getItem('userID'));
+            $('#userID-reply').val(sessionStorage.getItem('userID'));
+            $('#posttype-newpost').val("text_post");
+            $('#posttype-reply').val("text_post");
+            //$(".explorers-only").css("display", "block!important");
+            $('#currentrole').html(getFirstRole(sessionStorage.getItem('userroles')));
+        } else {
+            console.log(sessionStorage.getItem('userID'));
+            $('#userID-newpost').val("ANON");
+            $('#userID-reply').val("ANON");
+            $('#posttype-newpost').val("text_post");
+            $('#posttype-reply').val("text_post");
+            $('.profallow').css('display', 'none');
+            $('#signout').css('display', 'none');
+        }
+        document.querySelectorAll('img').forEach(function (img) {
+            img.onerror = function () { this.style.display = 'none'; };
+        });
+    }, 800);
+}
+
+//////////////////////////
+// BUBBLE VIEW
 function BubbleChart(data, {
   name = ([x]) => x, // alias for label
   label = name, // given d in data, returns text to display on the bubble
@@ -117,101 +205,9 @@ function BubbleChart(data, {
   return Object.assign(svg.node(), {scales: {color}});
 }
 
-
-
-function onloadFunction(){
-    var isMobile = navigator.userAgent.match(/(iPhone|iPod|iPad|Android|webOS|BlackBerry|IEMobile|Opera Mini)/i);
-    if(isMobile){ console.log("MOBILE"); }
-    else { console.log("NOT MOBILE"); }
-
-
-    paper.install(window);
-    paper.setup('myCanvas');
-    console.log(paper.view);
-
-    if (getQueryParam("post") !== "") {
-        //
-        socket.emit("viewpost", getQueryParam("post"));
-    } else if (getQueryParam("user") !== "") {
-        console.log('USER');
-        socket.emit('viewuser', getQueryParam("user"));
-    } else if (getQueryParam("tag") !== "") {
-        //
-        socket.emit('requestPostsWithTag', getQueryParam("tag"));
-    } else if (getQueryParam("sort") == "like") {
-        if (getQueryParam("page") !== "") {
-            socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
-        } else {
-            socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
-        }
-    } else if (getQueryParam("sort") == "rand") {
-        if (getQueryParam("page") !== "") {
-            socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
-        } else {
-            socket.emit('requestRandPosts', getQueryParam("rand"), "0");
-        }
-    } else if (getQueryParam("sort") == "recd") {
-        if (getQueryParam("page") !== "") {
-            socket.emit('requestRecommendedPosts', getQueryParam("page"));
-        } else {
-            socket.emit('requestRecommendedPosts', "0");
-        }
-    } else if (getQueryParam("sort") == "multi") {
-        socket.emit('requestMulti');
-    } else if(getQueryParam("page")!==""){
-        socket.emit('requestTop20Posts', getQueryParam("page"));
-      }else{
-        socket.emit('requestTop20Posts', '0');
-      }
-    
-    console.log(document.URL);
-    //$('#gameview').css('display', 'none');
-
-    d3.selectAll('.datamaps-subunit')
-        .on('mouseover', function (d) {
-            //var $this = d3.select(this);
-            console.log(d.id);
-        });
-
-
-    window.setTimeout(function () {
-        console.log("TESTSETSTES");
-        if (sessionStorage.getItem('userID') !== null) {
-            var rollString = sessionStorage.getItem('userroles');
-            
-            addRoles(sessionStorage.getItem('userroles'), false);
-            console.log(sessionStorage.getItem('userID'));
-            $('#signinstuff').css('display', 'none');
-            $('#userprofilestuff').css('display', 'inline-block');
-            $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+">"+sessionStorage.getItem('username')+"</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
-            $('#userID-newpost').val(sessionStorage.getItem('userID'));
-            $('#userID-reply').val(sessionStorage.getItem('userID'));
-            $('#posttype-newpost').val("text_post");
-            $('#posttype-reply').val("text_post");
-            //$(".explorers-only").css("display", "block!important");
-            $('#currentrole').html(getFirstRole(sessionStorage.getItem('userroles')));
-      }else{
-        console.log(sessionStorage.getItem('userID'));
-        $('#userID-newpost').val("ANON");
-        $('#userID-reply').val("ANON");
-        $('#posttype-newpost').val("text_post");
-            $('#posttype-reply').val("text_post");
-            $('.profallow').css('display', 'none');
-            $('#signout').css('display', 'none');
-      }
-        
-        //else {
-        //    console.log("FE");
-        //    (Boolean(sessionStorage.getItem("Lurker"))) ? $(".lurkers-only").css("display", "block") : null ;
-        //    (sessionStorage.getItem("Pollster")=="true") ? $(".pollsters-only").css("display", "block") : null;
-        //}
-      document.querySelectorAll('img').forEach(function(img){
-      img.onerror = function(){this.style.display='none';};
-      });
-       
-    }, 800);
-  }
-  function randomInt(max) {
+////////////////////
+//NETHACK ROOM VIEW
+function randomInt(max) {
     return Math.floor(Math.random() * max);
   }
 // map dimensions
@@ -446,8 +442,170 @@ function openGameView(){
 }
 
 
+////////////////////
+//CREATE VIRTUAL PILE OF LINKS
+function Ball(r, p, v) {
+    this.radius = r;
+    this.point = p;
+    this.vector = v;
+    this.maxVec = 15;
+    this.numSegment = Math.floor(r / 3 + 2);
+    this.boundOffset = [];
+    this.boundOffsetBuff = [];
+    this.sidePoints = [];
+    this.path = new Path({
+        fillColor: {
+            hue: Math.random() * 360,
+            saturation: 1,
+            brightness: 1
+        },
+        blendMode: 'lighter'
+    });
+
+    for (var i = 0; i < this.numSegment; i++) {
+        this.boundOffset.push(this.radius);
+        this.boundOffsetBuff.push(this.radius);
+        this.path.add(new Point());
+        this.sidePoints.push(new Point({
+            angle: 360 / this.numSegment * i,
+            length: 1
+        }));
+    }
+    //console.log(this.sidePoints);
+}
+
+Ball.prototype = {
+    iterate: function () {
+        console.log("ITERATE)");
+        this.checkBorders();
+        if (this.vector.length > this.maxVec) { this.vector.length = this.maxVec; }
+        this.point += this.vector;
+        this.updateShape();
+    },
+
+    checkBorders: function () {
+        var size = view.size;
+        //console.log(size);
+        if (this.point.x < -this.radius)
+            this.point.x = size.width + this.radius;
+        if (this.point.x > size.width + this.radius)
+            this.point.x = -this.radius;
+        if (this.point.y < -this.radius)
+            this.point.y = size.height + this.radius;
+        if (this.point.y > size.height + this.radius)
+            this.point.y = -this.radius;
+    },
+
+    updateShape: function () {
+        var segments = this.path.segments;
+        for (var i = 0; i < this.numSegment; i++)
+            segments[i].point = this.getSidePoint(i);
+
+        this.path.smooth();
+        for (var i = 0; i < this.numSegment; i++) {
+            if (this.boundOffset[i] < this.radius / 4) { this.boundOffset[i] = this.radius / 4; }
+
+            var next = (i + 1) % this.numSegment;
+            var prev = (i > 0) ? i - 1 : this.numSegment - 1;
+            var offset = this.boundOffset[i];
+            offset += (this.radius - offset) / 15;
+            offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
+            this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
+        }
+    },
+
+    react: function (b) {
+        var dist = this.point.getDistance(b.point);
+        if (dist < this.radius + b.radius && dist != 0) {
+            var overlap = this.radius + b.radius - dist;
+            var direc = (this.point - b.point).normalize(overlap * 0.015);
+            this.vector += direc;
+            b.vector -= direc;
+
+            this.calcBounds(b);
+            b.calcBounds(this);
+            this.updateBounds();
+            b.updateBounds();
+        }
+    },
+
+    getBoundOffset: function (b) {
+        var diff = this.point - b;
+        var angle = (diff.angle + 180) % 360;
+        return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
+    },
+
+    calcBounds: function (b) {
+        for (var i = 0; i < this.numSegment; i++) {
+            var tp = this.getSidePoint(i);
+            var bLen = b.getBoundOffset(tp);
+            var td = tp.getDistance(b.point);
+            if (td < bLen) {
+                this.boundOffsetBuff[i] -= (bLen - td) / 2;
+            }
+        }
+    },
+
+    getSidePoint: function (index) {
+        return this.point + this.sidePoints[index] * this.boundOffset[index];
+    },
+
+    updateBounds: function () {
+        for (var i = 0; i < this.numSegment; i++)
+            this.boundOffset[i] = this.boundOffsetBuff[i];
+    }
+};
+
+function requestPileStyle() {
+    console.log(postsOnThisPage);
+    $('#entryContainer').empty();
+
+    var balls = [];
+    var numBalls = 18;
+    console.log(view);
+    for (var i = 0; i < numBalls; i++) {
+        //console.log("BALL");
+        //console.log(view._viewSize._width);
+        var position = Point.random();
+        position.x = position.x * view._viewSize._width;
+        position.y = position.y * view._viewSize._height;
+        //console.log(position);
+        var vector = new Point({
+            angle: 360 * Math.random(),
+            length: Math.random() * 10
+        });
+        var radius = Math.random() * 60 + 60;
+        balls.push(new Ball(radius, position, vector));
+    }
+    view.play();
+    view.autoUpdate = true;
+    //console.log(balls);
+
+    function onFrame(event) {
+        for (var i = 0; i < balls.length - 1; i++) {
+            for (var j = i + 1; j < balls.length; j++) {
+                balls[i].react(balls[j]);
+            }
+        }
+        for (var i = 0, l = balls.length; i < l; i++) {
+            balls[i].iterate();
+        }
+    }
+
+}
 
 
+//////////////////////
+// MAP VIEW
+var mapDisplay = L.map('mapDisplay').setView([51.505, -0.09], 10);
+const tiles2 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(mapDisplay);
+
+
+///////////////////////////////////
+// PLANETARYJS STUFF / HISTORICAL VIEW
 (function () {
     if (window.location.href.indexOf("taro") > -1) {
         alert("your url contains the name taro");
@@ -468,14 +626,6 @@ function openGameView(){
     }
 
 })();
-
-
-var mapDisplay = L.map('mapDisplay').setView([51.505, -0.09], 10);
-const tiles2 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(mapDisplay);
-
 function openHistoryView(){
   $('#entryContainer').hide();
     $('#historyview').show();
@@ -598,12 +748,8 @@ function openHistoryView(){
 }
 
 
-
-
-
 var root = document.documentElement;
 const lists = document.querySelectorAll('.hs');
-
 lists.forEach(el => {
     const listItems = el.querySelectorAll('li');
     const n = el.children.length;
@@ -611,6 +757,7 @@ lists.forEach(el => {
 });
 
 
+// ACCOUNT FUNCTIONS
 function signout(thisButton) {
     sessionStorage.clear();
     $('#accountButton').html("Account");
@@ -650,6 +797,8 @@ function clickAccountButton(thisButton){
       viewProfilePage(sessionStorage.getItem('userID'));
   }
 }
+
+
 function addRoles(rollString, falseisnormaltrueisdisplayall) {
     console.log("ADD ROLES");
     console.log(sessionStorage.getItem('userroles'));
@@ -747,7 +896,6 @@ function getFirstRole(rollString) {
         } 
     }
 }
-
 function selectThisRole(roleName) {
     console.log(roleName);
     var rolenumber = '000000000000000';
@@ -805,53 +953,52 @@ function selectThisRole(roleName) {
     $('#rolenumbers').text(rolenumber);
     $('#submitRoleButton').text(roleName);
 }
-function contextButtonFunction(currentContext){
-  console.log(currentContext);
-  switch(currentContext){
-      case 'Home':
-          $('#gridview').css('display', 'none');
-          d3.select('svg').selectAll('*').remove();
-          $('#d3frame').css('display', 'none');
-          document.getElementById('contextButton').innerHTML = 'Alt';
-          sessionStorage.setItem('currentPage', 'home');
-          window.history.replaceState(null, null, "/?view=" + 'norm');
-          socket.emit('requestTop20Posts', 0);
-          break;
-    case 'Alt':
-        $('#entryContainer').empty();
-        sessionStorage.setItem('currentPage', 'alt');
-        $('#d3frame').css('display', 'block');
-          document.getElementById('contextButton').innerHTML = 'Grid';
-          window.history.replaceState(null, null, "/?view=" + 'web');
-        socket.emit('retrieveDatabase');
-        break;
-    case 'Grid':
-        $('#entryContainer').empty();
-        d3.select('svg').selectAll('*').remove();
-          $('#d3frame').css('display', 'none');
-          $('#gridview').css('display', 'grid');
-          sessionStorage.setItem('currentPage', 'grid');
-          window.history.replaceState(null, null, "/?view=" + 'grid');
-        document.getElementById('contextButton').innerHTML = 'Multi';
-        socket.emit('retrieveDatabaseGrid');
-          break;
-      case 'Multi':
-          $('#gridview').css('display', 'none');
-          $('#entryContainer').empty();
-          sessionStorage.setItem('currentPage', 'multi');
-          window.history.replaceState(null, null, "/?view=" + 'multi');
-          document.getElementById('contextButton').innerHTML = 'Home';
-          socket.emit('requestMulti');
-      case 'Sea':
-          showSeaOfDivs();
-
-  }
-}
 function returnChooseRoleBox() {
     $('#signup-overlay-box').css('display', 'none');
 }
 
 
+function upvoteThisTagForThisPost(tagname, postID) {
+    console.log(tagname);
+    console.log(postID);
+    var stuffToCheck = {
+        userID: sessionStorage.getItem("userID"),
+        postID: postID,
+        data: tagname,
+        task: "upvotetag"
+    };
+    socket.emit("check", stuffToCheck);
+}
+function submitTag(tagname, postID) {
+    console.log(tagname);
+    console.log(postID);
+    var tagPostOrUser = {
+        tagname: tagname,
+        postID: postID,
+        userID: sessionStorage.getItem("userID"),
+        postIfTrue: true
+    };
+    socket.emit('tagPostOrUser', tagPostOrUser);
+}
+function showTagBox(postID) {
+    console.log(postID);
+    socket.emit('requestTagsForPost', postID);
+    returnNewPostBox();
+    returnReplyBox();
+    returnNewStatsBox();
+    returnShieldCensorHarvestBox();
+    returnShareBox();
+    var tagContainer = $('#tagContainer');
+    tagContainer.detach();
+    tagContainer.appendTo('#' + String(postID));
+    tagContainer.css('display', 'block');
+}
+function returnTagBox() {
+    var tagContainer = $('#tagContainer');
+    tagContainer.detach();
+    tagContainer.appendTo('#divStorage');
+    tagContainer.css('display', 'none');
+}
 function getAllPostsWithThisTag(tagname){
   sessionStorage.setItem('currentPage', 'tag');
   $("#contextButton").html("Home");
@@ -859,6 +1006,8 @@ function getAllPostsWithThisTag(tagname){
   window.location.href='/?tag='+tagname;
   //socket.emit("requestPostsWithTag", tagname);
 }
+
+
 function viewPost(postID){
   sessionStorage.setItem('currentPage', 'post');
   $("#contextButton").html("Home");
@@ -947,7 +1096,6 @@ function returnAlgomancyBox() {
     $('#algomancy-overlay-box').css('display', 'none');
 }
 
-
 function showPaintBox(postid) {
     console.log("SHOW POSTID");
     console.log(postid);
@@ -962,7 +1110,20 @@ function submitNewPaint() {
     console.log("SUBMIT PAINT CHANGE");
 }
 
-
+function confirmCensor(postID) {
+    if (sessionStorage.getItem('memecoin') > 50) {
+        var dataPacket = {
+            userID: sessionStorage.getItem('userID'),
+            postID: postID
+        };
+        socket.emit('censorAttempt', dataPacket);
+        //$('#censorShieldHarvestContainer').css('display', 'none');
+    }
+}
+function confirmHarvest(postElement) {
+    console.log(postElement);
+    socket.emit('harvestPost', postElement, sessionStorage.getItem("userID"));
+}
 function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement){
   var userID = (sessionStorage.getItem('userID') !== null) ? sessionStorage.getItem('userID') : "ANON";
   console.log(userID);
@@ -1001,23 +1162,6 @@ function returnShieldCensorHarvestBox(){
   censorShieldHarvestContainer.css('display', 'none');
 }
 
-function showShareBox(postElement){
-  returnTagBox();
-  returnNewPostBox();
-  returnNewStatsBox();
-  returnShieldCensorHarvestBox();
-  returnReplyBox();
-  var shareButtonContainer = $('#shareButtonContainer');
-  shareButtonContainer.detach();
-  shareButtonContainer.appendTo('#'+String(postElement.attr('postID')));
-  shareButtonContainer.css('display', 'block');
-}
-function returnShareBox(){
-  var shareButtonContainer = $('#shareButtonContainer');
-  shareButtonContainer.detach();
-  shareButtonContainer.appendTo('#divStorage');
-  shareButtonContainer.css('display', 'none');
-}
 
 function showReplyBox(postElement){
   console.log(postElement.attr('postID'));
@@ -1050,27 +1194,15 @@ function returnReplyBox(){
   replyContainer.appendTo('#divStorage');
   replyContainer.css('display', 'none');
 }
-
-function showTagBox(postID){
-  console.log(postID);
-  socket.emit('requestTagsForPost', postID);
-  returnNewPostBox();
-  returnReplyBox();
-  returnNewStatsBox();
-  returnShieldCensorHarvestBox();
-  returnShareBox();
-  var tagContainer = $('#tagContainer');
-  tagContainer.detach();
-  tagContainer.appendTo('#'+String(postID));
-  tagContainer.css('display', 'block');
+function submitReply(postElement) {
+    console.log("submit reply");
+    $('#uploadContent-reply').empty();
+    //$("#entryContainer").empty();
+    $('#tagForNewReply').empty();
+    $("#sampleFile-reply").empty();
+    document.querySelector('#myimg-reply').src = "";
+    returnReplyBox();
 }
-function returnTagBox(){
-  var tagContainer = $('#tagContainer');
-  tagContainer.detach();
-  tagContainer.appendTo('#divStorage');
-  tagContainer.css('display', 'none');
-}
-
 function showNewPostBox(){
   returnNewStatsBox();
   returnTagBox();
@@ -1100,6 +1232,16 @@ function returnNewPostBox(){
   newPostContainer.appendTo('#divStorage');
   newPostContainer.css('display', 'none');
 }
+function submitNewPost() {
+    console.log("submit");
+    $("#new-text-post-data").empty();
+    $("#tagForNewPost").empty();
+    $("#title-of-new-post").empty();
+    $("#sampleFile").empty();
+    document.querySelector('#myimg').src = "";
+    returnNewPostBox();
+}
+
 
 function showVoteBox(postID, upIfTrue){
   var postID = parseInt(postID);
@@ -1123,28 +1265,33 @@ function showVoteBox(postID, upIfTrue){
   console.log(userID, postID, upIfTrue)
   socket.emit('check', {taskToCheck:'vote', userID:userID, postID:postID, data:upIfTrue, role:userrole});
 }
+function submitVote(postID, option) {
+    console.log(postID);
+    console.log(option);
+}
 function returnNewStatsBox(){
   var newStatsContainer = $('#newStatsContainer');
   newStatsContainer.detach();
   newStatsContainer.appendTo('#divStorage');
   newStatsContainer.css('display', 'none');
 }
-
-function confirmCensor(postID){
-  if(sessionStorage.getItem('memecoin') > 50){
-    var dataPacket = {
-      userID: sessionStorage.getItem('userID'),
-      postID: postID
-    };
-    socket.emit('censorAttempt', dataPacket);
-    //$('#censorShieldHarvestContainer').css('display', 'none');
-  }
+function showShareBox(postElement) {
+    returnTagBox();
+    returnNewPostBox();
+    returnNewStatsBox();
+    returnShieldCensorHarvestBox();
+    returnReplyBox();
+    var shareButtonContainer = $('#shareButtonContainer');
+    shareButtonContainer.detach();
+    shareButtonContainer.appendTo('#' + String(postElement.attr('postID')));
+    shareButtonContainer.css('display', 'block');
 }
-function confirmHarvest(postElement){
-  console.log(postElement);
-  socket.emit('harvestPost', postElement, sessionStorage.getItem("userID"));
+function returnShareBox() {
+    var shareButtonContainer = $('#shareButtonContainer');
+    shareButtonContainer.detach();
+    shareButtonContainer.appendTo('#divStorage');
+    shareButtonContainer.css('display', 'none');
 }
-
 
 function deleteThisPost(postID) {
     socket.emit('deletePost', postID);
@@ -1160,25 +1307,6 @@ function showAdminBox(postID) {
     newAdminContainer.css('display', 'block');
 }
 
-
-function submitNewPost(){
-  console.log("submit");
-  $("#new-text-post-data").empty();
-  $("#tagForNewPost").empty();
-  $("#title-of-new-post").empty();
-  $("#sampleFile").empty();
-  document.querySelector('#myimg').src = "";
-  returnNewPostBox();
-}
-function submitReply(postElement){
-  console.log("submit reply");
-  $('#uploadContent-reply').empty();
-  //$("#entryContainer").empty();
-  $('#tagForNewReply').empty();
-  $("#sampleFile-reply").empty();
-  document.querySelector('#myimg-reply').src = "";
-    returnReplyBox();
-}
 function previewFile(){
   var preview = document.querySelector('#myimg');
   var previewReply = document.querySelector('#myimg-reply');
@@ -1206,7 +1334,6 @@ function showPaintedPosts() {
     socket.emit('requestPaint');
 }
 
-
 function showSummonBox() {
     $('#userIDsummon').val(sessionStorage.getItem('userID'));
     var reportContainer = $('#summonUserContainer');
@@ -1220,7 +1347,6 @@ function returnSummonBox() {
     reportContainer.appendTo('#divStorage');
     reportContainer.css('display', 'block');
 }
-
 function showGroupCreatorBox() {
     $('#userID_newgroup').val(sessionStorage.getItem('userID'));
     var reportContainer = $('#groupCreatorContainer');
@@ -1255,6 +1381,53 @@ function returnReportBox() {
     reportContainer.detach();
     reportContainer.appendTo('#divStorage');
     reportContainer.css('display', 'none');
+}
+
+
+
+function contextButtonFunction(currentContext) {
+    console.log(currentContext);
+    switch (currentContext) {
+        case 'Home':
+            $('#gridview').css('display', 'none');
+            d3.select('svg').selectAll('*').remove();
+            $('#d3frame').css('display', 'none');
+            document.getElementById('contextButton').innerHTML = 'Alt';
+            sessionStorage.setItem('currentPage', 'home');
+            window.history.replaceState(null, null, "/?view=" + 'norm');
+            socket.emit('requestTop20Posts', 0);
+            break;
+        case 'Alt':
+            $('#entryContainer').empty();
+            sessionStorage.setItem('currentPage', 'alt');
+            $('#d3frame').css('display', 'block');
+            document.getElementById('contextButton').innerHTML = 'Grid';
+            window.history.replaceState(null, null, "/?view=" + 'web');
+            socket.emit('retrieveDatabase');
+            break;
+        case 'Grid':
+            $('#entryContainer').empty();
+            d3.select('svg').selectAll('*').remove();
+            $('#d3frame').css('display', 'none');
+            $('#gridview').css('display', 'grid');
+            sessionStorage.setItem('currentPage', 'grid');
+            window.history.replaceState(null, null, "/?view=" + 'grid');
+            document.getElementById('contextButton').innerHTML = 'Multi';
+            socket.emit('retrieveDatabaseGrid');
+            break;
+        case 'Multi':
+            $('#gridview').css('display', 'none');
+            $('#entryContainer').empty();
+            sessionStorage.setItem('currentPage', 'multi');
+            window.history.replaceState(null, null, "/?view=" + 'multi');
+            document.getElementById('contextButton').innerHTML = 'Home';
+            socket.emit('requestMulti');
+        case 'Sea':
+            showSeaOfDivs();
+            document.getElementById('contextButton').innerHTML = 'Home';
+            window.history.replaceState(null, null, "/?view=" + 'sea');
+
+    }
 }
 
 
@@ -1306,43 +1479,23 @@ function stalkPoster(postID) {
     $("#entryContainer").empty();
     socket.emit("stalkuser", parseInt(postID));
 }
-
-
 function followuser(userID) {
     var datapacket = {
-        leaderID: userID,
+        leaderID: parseInt(userID),
         followerID: parseInt(sessionStorage.getItem("userID"))
-    }
+    };
     socket.emit("followuser", datapacket);
 }
 function viewUserMessages(userID) {
     socket.emit('viewmessages', userID);
 }
-
-
-
-function upvoteThisTagForThisPost(tagname, postID){
-  console.log(tagname);
-  console.log(postID);
-  var stuffToCheck = {
-    userID: sessionStorage.getItem("userID"),
-    postID: postID,
-    data: tagname,
-    task: "upvotetag"
-  };
-  socket.emit("check", stuffToCheck);
+function visitpage(pagenum) {
+    $("#contextButton").html("Home");
+    $("#entryContainer").empty();
+    window.location.href = '/?page=' + String(pagenum);
 }
-function submitTag(tagname, postID){
-  console.log(tagname);
-  console.log(postID);
-  var tagPostOrUser = {
-    tagname:tagname,
-    postID:postID,
-    userID:sessionStorage.getItem("userID"),
-    postIfTrue:true
-  };
-  socket.emit('tagPostOrUser', tagPostOrUser);
-}
+
+
 function favoritePost(postID){
   //0 favorites post, 1 favorites tag, 2 favorites user
   console.log({faveType:0, postidORtagnameORuserid:postID, userid:sessionStorage.getItem('userID')});
@@ -1354,22 +1507,7 @@ function showAdvancedButtons(postID){
 }
 
 
-//DATA PROCESSING FUNCTIONS
-function visitpage(pagenum){
-  $("#contextButton").html("Home");
-  $("#entryContainer").empty();
-  window.location.href='/?page='+String(pagenum);
-}
-function multistreamView() {
-    window.location.href = "/?sort=multi";
-}
-
-
-function requestGroups() {
-    console.log('request groups');
-    socket.emit('requestGroups', 0);
-}
-
+//SORTING FUNCTIONS
 function arbitratorSort() {
     socket.emit('requestPostsForArbitration');
 }
@@ -1418,6 +1556,8 @@ function randomSort(){
 function recommendedSort() {
   window.location.href = "/?sort=recd";
 }
+
+// UTILITY FUNCTIONS
 function timeConverter(UNIX_timestamp){
   var a = new Date(UNIX_timestamp * 1000);
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1487,7 +1627,7 @@ $(document).ready(function(){
     socket.emit('requestPostsWithTag', $(this).val());
   });
 });
-//
+//drop down menu for sorts
 function dropDownFunction(){
   var x = document.getElementById("Demo");
   if (x.className.indexOf("w3-show") == -1) {
@@ -1497,14 +1637,10 @@ function dropDownFunction(){
   }
 }
 
+// POPULATING FUNCTIONS
 function populateStandardFeed(posts, tags) {
     populatePageWithPosts(posts, "#entryContainer");
     populatePageWithTags(tags);
-}
-
-function submitVote(postID, option) {
-    console.log(postID);
-    console.log(option);
 }
 function populatePageWithPosts(posts, postListContainer) {
   console.log('populatepage');
@@ -1681,7 +1817,6 @@ function populatePageWithPosts(posts, postListContainer) {
     });
   
 }
-
 function populatePageWithTags(tags) {
     console.log(tags);
     tags.forEach(function (tag) {
@@ -1694,7 +1829,6 @@ function populatePageWithTags(tags) {
         socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
     });
 }
-
 function populateMultifeed(posts1, posts2, posts3) {
     $('#multiContainer').css('display', 'grid');
     console.log(posts1);
@@ -1966,11 +2100,52 @@ function populateMultifeed(posts1, posts2, posts3) {
         $('#multi-center').append(html);
     });
 }
-
 function populateMessages(messages) {
     console.log(messages);
 }
-
+function populateGrid(postsAndAllTagData) {
+    console.log(postsAndAllTagData);
+    //$("#entryContainer").empty();
+    postsOnThisPage = postsAndAllTagData;
+    postsAndAllTagData.forEach(function (post) {
+        console.log(post);
+        var date = new Date(post.postID * 1000).toDateString();
+        var mustacheData = {
+            postID: String(post.postID),
+            profit: String(post.upvotes - post.downvotes),
+            up: String(post.upvotes),
+            down: String(post.downvotes),
+            file: 'uploaded/' + String(post.file),
+            date: date,
+            replycount: String(post.replycount),
+            clicks: String(Math.ceil(post.clicks / 10)),
+            title: String(post.title),
+            content: String(post.content),
+            tags: post.tagArray
+        };
+        postsOnThisPage.push(mustacheData);
+        console.log("GRID VIEW");
+        console.log(mustacheData.tags);
+        var processedPostTemplate = `<div style='border-width:{{clicks}}px;' class='gridcell' postID='{{postID}}'>
+                                <div class='gridtitle'>{{title}}</div>
+                                <a id='{{postID}}' data-toggle='tooltip' title='{{title}}{{#tags}}&nbsp;{{.}}&nbsp;{{/tags}}' href='/?post={{postID}}'>
+                                <img src='{{file}}'/>
+                                </a>
+                                <div class='gridtitle'>{{date}}</div>
+                                </div>`;
+        var html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#gridview').append(html);
+    });
+    // tags.forEach(function(tag){
+    //   var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
+    //   $('#popular-tag-span').append(processedTag); 
+    // });
+    $(".popular-tag-button").on("click", function () {
+        console.log($(this).children(".tag-name").html());
+        $("#entryContainer").empty();
+        socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+    });
+}
 function populatePageWithReports(reportarray) {
     var html = `<table>
               <tr>
@@ -1999,359 +2174,18 @@ function populatePageWithReports(reportarray) {
     });
     $('#entryContainer').append('</table>');
 }
-
-
-//CREATE VIRTUAL PILE OF LINKS
-function Ball(r, p, v) {
-    this.radius = r;
-    this.point = p;
-    this.vector = v;
-    this.maxVec = 15;
-    this.numSegment = Math.floor(r / 3 + 2);
-    this.boundOffset = [];
-    this.boundOffsetBuff = [];
-    this.sidePoints = [];
-    this.path = new Path({
-        fillColor: {
-            hue: Math.random() * 360,
-            saturation: 1,
-            brightness: 1
-        },
-        blendMode: 'lighter'
-    });
-
-    for (var i = 0; i < this.numSegment; i++) {
-        this.boundOffset.push(this.radius);
-        this.boundOffsetBuff.push(this.radius);
-        this.path.add(new Point());
-        this.sidePoints.push(new Point({
-            angle: 360 / this.numSegment * i,
-            length: 1
-        }));
-    }
-    //console.log(this.sidePoints);
+function multistreamView() {
+    window.location.href = "/?sort=multi";
+}
+function requestGroups() {
+    console.log('request groups');
+    socket.emit('requestGroups', 0);
 }
 
-Ball.prototype = {
-    iterate: function () {
-        console.log("ITERATE)");
-        this.checkBorders();
-        if (this.vector.length > this.maxVec) { this.vector.length = this.maxVec; }
-        this.point += this.vector;
-        this.updateShape();
-    },
 
-    checkBorders: function () {
-        var size = view.size;
-        //console.log(size);
-        if (this.point.x < -this.radius)
-            this.point.x = size.width + this.radius;
-        if (this.point.x > size.width + this.radius)
-            this.point.x = -this.radius;
-        if (this.point.y < -this.radius)
-            this.point.y = size.height + this.radius;
-        if (this.point.y > size.height + this.radius)
-            this.point.y = -this.radius;
-    },
-
-    updateShape: function () {
-        var segments = this.path.segments;
-        for (var i = 0; i < this.numSegment; i++)
-            segments[i].point = this.getSidePoint(i);
-
-        this.path.smooth();
-        for (var i = 0; i < this.numSegment; i++) {
-            if (this.boundOffset[i] < this.radius / 4) { this.boundOffset[i] = this.radius / 4; }
-
-            var next = (i + 1) % this.numSegment;
-            var prev = (i > 0) ? i - 1 : this.numSegment - 1;
-            var offset = this.boundOffset[i];
-            offset += (this.radius - offset) / 15;
-            offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
-            this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
-        }
-    },
-
-    react: function (b) {
-        var dist = this.point.getDistance(b.point);
-        if (dist < this.radius + b.radius && dist != 0) {
-            var overlap = this.radius + b.radius - dist;
-            var direc = (this.point - b.point).normalize(overlap * 0.015);
-            this.vector += direc;
-            b.vector -= direc;
-
-            this.calcBounds(b);
-            b.calcBounds(this);
-            this.updateBounds();
-            b.updateBounds();
-        }
-    },
-
-    getBoundOffset: function (b) {
-        var diff = this.point - b;
-        var angle = (diff.angle + 180) % 360;
-        return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
-    },
-
-    calcBounds: function (b) {
-        for (var i = 0; i < this.numSegment; i++) {
-            var tp = this.getSidePoint(i);
-            var bLen = b.getBoundOffset(tp);
-            var td = tp.getDistance(b.point);
-            if (td < bLen) {
-                this.boundOffsetBuff[i] -= (bLen - td) / 2;
-            }
-        }
-    },
-
-    getSidePoint: function (index) {
-        return this.point + this.sidePoints[index] * this.boundOffset[index];
-    },
-
-    updateBounds: function () {
-        for (var i = 0; i < this.numSegment; i++)
-            this.boundOffset[i] = this.boundOffsetBuff[i];
-    }
-};
-
-function requestPileStyle() {
-    console.log(postsOnThisPage);
-    $('#entryContainer').empty();
-
-
-    var balls = [];
-    var numBalls = 18;
-    console.log(view);
-    for (var i = 0; i < numBalls; i++) {
-        //console.log("BALL");
-        //console.log(view._viewSize._width);
-        var position = Point.random();
-        position.x = position.x * view._viewSize._width;
-        position.y = position.y * view._viewSize._height;
-        //console.log(position);
-        var vector = new Point({
-            angle: 360 * Math.random(),
-            length: Math.random() * 10
-        });
-        var radius = Math.random() * 60 + 60;
-        balls.push(new Ball(radius, position, vector));
-    }
-    view.play();
-    view.autoUpdate = true;
-    //console.log(balls);
-
-    function onFrame(event) {
-        for (var i = 0; i < balls.length - 1; i++) {
-            for (var j = i + 1; j < balls.length; j++) {
-                balls[i].react(balls[j]);
-            }
-        }
-        for (var i = 0, l = balls.length; i < l; i++) {
-            balls[i].iterate();
-        }
-    }
-
-
-
-    //var voronoi = new Voronoi();
-
-    //var simplesize = {};
-    //simplesize["_width"] = view.size._width / 200;
-    //simplesize["_height"] = view.size._height / 200;
-    //var bbox, diagram;
-    //var oldSize = view.size;
-    //var spotColor = new Color('red');
-    //var mousePos = view.center;
-    //var selected = false;
-
-
-    ////var sites = generateBeeHivePoints(simplesize, true);
-    //var sites = [];
-    //((async () => {
-    //    sites = await generateBeeHivePoints(simplesize, true);
-    //    console.log("VALUE");
-    //    console.log(sites);
-        
-    //    ((async () => {
-    //        await renderDiagram();
-    //    })()).catch(console.error);
-    //})()).catch(console.error);
-
-
-
-    //onResize();
-
-    //function onMouseDown(event) {
-    //    sites.push(event.point);
-    //    ((async () => {
-    //        await renderDiagram();
-    //    })()).catch(console.error);
-    //}
-
-    //function onMouseMove(event) {
-    //    mousePos = event.point;
-    //    if (event.count == 0) { sites.push(event.point); }
-    //    sites[sites.length - 1] = event.point;
-    //    ((async () => {
-    //        await renderDiagram();
-    //    })()).catch(console.error);
-    //}
-
-    //function renderDiagram() {
-    //    project.activeLayer.children = [];
-    //    diagram = voronoi.compute(sites, bbox);
-    //    console.log("di");
-    //    console.log(sites);
-    //    console.log(bbox);
-    //    console.log(diagram);
-    //    if (diagram) {
-    //        for (var i = 0, l = sites.length; i < l; i++) {
-    //            var cell = diagram.cells[sites[i].voronoiId];
-    //            if (cell) {
-    //                console.log("CELL");
-    //                var halfedges = cell.halfedges,
-    //                    length = halfedges.length;
-    //                if (length > 2) {
-    //                    var points = [];
-    //                    for (var j = 0; j < length; j++) {
-    //                        v = halfedges[j].getEndpoint();
-    //                        points.push(new Point(v));
-    //                    }
-    //                    createPath(points, sites[i]);
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
-
-    //function removeSmallBits(path) {
-    //    var averageLength = path.length / path.segments.length;
-    //    var min = path.length / 50;
-    //    for (var i = path.segments.length - 1; i >= 0; i--) {
-    //        var segment = path.segments[i];
-    //        var cur = segment.point;
-    //        var nextSegment = segment.next;
-    //        var next = nextSegment.point + nextSegment.handleIn;
-    //        if (cur.getDistance(next) < min) {
-    //            segment.remove();
-    //        }
-    //    }
-    //}
-
-    //async function generateBeeHivePoints(size, loose) {
-    //    var points = [];
-    //    var col = {};
-    //    col["_width"] = view.size._width / size._width;
-    //    col["_height"] = view.size._width / size._height;
-    //    for (var i = -1; i < size._width + 1; i++) {
-    //        for (var j = -1; j < size._height + 1; j++) {
-    //            var point = new Point((i / (size._width * view.size._width)) + col._width / 2, (j / (size._height * view.size._height)) + col._height / 2);
-    //            var randompoint = Point.random();
-    //            if (j % 2) { point = new Point(point.x+col._width / 2, point.y); }       
-    //            if (loose) { point = new Point(point.x+(((col._width / 4) * randompoint.x) - col._width / 4), (point.y+((col._height / 4) * randompoint.y) - col._height / 4)); }
-    //            console.log(point);
-    //            points.push(point);
-    //        }
-    //    }
-    //    console.log(points);
-    //    var newpoints = await points;
-    //    return newpoints;
-    //}
-    //function createPath(points, center) {
-    //    var path = new Path();
-    //    if (!selected) { path.fillColor = spotColor; }
-    //    else { path.fullySelected = selected; }
-    //    path.closed = true;
-
-    //    for (var i = 0, l = points.length; i < l; i++) {
-    //        var point = points[i];
-    //        var next = points[(i + 1) == points.length ? 0 : i + 1];
-    //        var vector = (next - point) / 2;
-    //        path.add({
-    //            point: point + vector,
-    //            handleIn: -vector,
-    //            handleOut: vector
-    //        });
-    //    }
-    //    path.scale(0.95);
-    //    removeSmallBits(path);
-    //    return path;
-    //}
-
-    //function onResize() {
-    //    console.log("resize");
-    //    var margin = 20;
-    //    console.log(view.bounds);
-    //    bbox = {
-    //        xl: margin,
-    //        xr: view.bounds.width - margin,
-    //        yt: margin,
-    //        yb: view.bounds.height - margin
-    //    };
-    //    console.log(bbox);
-    //    for (var i = 0, l = sites.length; i < l; i++) {
-    //        sites[i] = sites[i] * view.size._width / oldSize._width;
-    //    }
-    //    oldSize = view.size;
-    //    ((async () => {
-    //        await renderDiagram();
-    //    })()).catch(console.error);
-    //}
-
-    //function onKeyDown(event) {
-    //    if (event.key == 'space') {
-    //        selected = !selected;
-    //        ((async () => {
-    //            await renderDiagram();
-    //        })()).catch(console.error);
-    //    }
-    //}
-}
-
-function populateGrid(postsAndAllTagData){
-  console.log(postsAndAllTagData);
-  //$("#entryContainer").empty();
-  postsOnThisPage = postsAndAllTagData;
-  postsAndAllTagData.forEach(function(post){
-    console.log(post);
-    var date = new Date(post.postID * 1000).toDateString();
-    var mustacheData = {
-      postID:String(post.postID),
-      profit:String(post.upvotes-post.downvotes),
-      up:String(post.upvotes),
-      down:String(post.downvotes),
-      file:'uploaded/'+String(post.file),
-      date:date,
-      replycount:String(post.replycount),
-      clicks:String(Math.ceil(post.clicks/10)),
-      title:String(post.title),
-      content:String(post.content),
-      tags:post.tagArray
-    };
-    postsOnThisPage.push(mustacheData);
-    console.log("GRID VIEW");
-    console.log(mustacheData.tags);
-    var processedPostTemplate= `<div style='border-width:{{clicks}}px;' class='gridcell' postID='{{postID}}'>
-                                <div class='gridtitle'>{{title}}</div>
-                                <a id='{{postID}}' data-toggle='tooltip' title='{{title}}{{#tags}}&nbsp;{{.}}&nbsp;{{/tags}}' href='/?post={{postID}}'>
-                                <img src='{{file}}'/>
-                                </a>
-                                <div class='gridtitle'>{{date}}</div>
-                                </div>`;
-    var html = Mustache.render(processedPostTemplate, mustacheData);
-    $('#gridview').append(html);
-  });
-  // tags.forEach(function(tag){
-  //   var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
-  //   $('#popular-tag-span').append(processedTag); 
-  // });
-  $(".popular-tag-button").on("click", function(){
-    console.log($(this).children(".tag-name").html());
-    $("#entryContainer").empty();
-    socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
-  });
-}
-
+//////////
+//LISTENERS
+///////////
 //userChecked
 socket.on('userChecked', function(resultOfCheck){
   console.log(resultOfCheck);
@@ -2442,8 +2276,6 @@ socket.on('userChecked', function(resultOfCheck){
       break;
   }
 });
-
-
 //receiveSinglePostData
 socket.on('receiveSinglePostData', function(dataFromServer){
   postsOnThisPage = [];
@@ -2680,7 +2512,6 @@ socket.on('msgDataFound', function (results) {
     }
 });
 
-
 //servergive3users
 socket.on('servergive3users', function (threerandomusers) {
     console.log(threerandomusers);
@@ -2763,6 +2594,9 @@ socket.on('receiveMultifeedData', function (results) {
     populateMultifeed(results[0], results[1], results[2]);
 });
 
+
+////////////////////
+//NET VIEW
 var dbresults = {"nodes":[], "links":[]};
 var mouseCoordinates = [0, 0];
 var selectedNode = null;

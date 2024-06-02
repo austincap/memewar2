@@ -5787,76 +5787,6 @@ var Raster = Item.extend({
 	}
 });
 
-
-getMethods = (obj) => Object.getOwnPropertyNames(obj).filter(item => typeof obj[item] === 'function');
-
-var SymbolDefinition = Base.extend({
-	_class: 'SymbolDefinition',
-
-	initialize: function SymbolDefinition(item, dontCenter) {
-		this._id = UID.get();
-		this.project = paper.project;
-		console.log(typeof(this));
-		console.log(typeof(item));
-		console.log(item[0]);
-		console.log(getMethods(this));
-		if (item)
-			this.seetItem(item, dontCenter);
-	},
-
-	_serialize: function(options, dictionary) {
-		return dictionary.add(this, function() {
-			return Base.serialize([this._class, this._item],
-					options, false, dictionary);
-		});
-	},
-
-	_changed: function(flags) {
-		if (flags & 8)
-			Item._clearBoundsCache(this);
-		if (flags & 1)
-			this.project._changed(flags);
-	},
-
-	geetItem: function() {
-		return this._item;
-	},
-
-	seetItem: function(item, _dontCenter) {
-		console.log(item);
-		console.log("seetItem");
-		if (item._symbol)
-			item = item.clone();
-		if (this._item)
-			this._item._symbol = null;
-		this._item = item;
-		item.remove();
-		item.setSelected(false);
-		if (!_dontCenter)
-			item.setPosition(new Point());
-		item._symbol = this;
-		this._changed(9);
-	},
-
-	geetDefinition: '#geetItem',
-	seetDefinition: '#seetItem',
-
-	place: function(position) {
-		return new SymbolItem(this, position);
-	},
-
-	clone: function() {
-		return new SymbolDefinition(this._item.clone(false));
-	},
-
-	equals: function(symbol) {
-		return symbol === this
-				|| symbol && this._item.equals(symbol._item)
-				|| false;
-	}
-});
-
-
 var SymbolItem = Item.extend({
 	_class: 'SymbolItem',
 	_applyMatrix: false,
@@ -5867,10 +5797,10 @@ var SymbolItem = Item.extend({
 	},
 
 	initialize: function SymbolItem(arg0, arg1) {
-		console.log(arg0);	
-		console.log(arg1);
-		if (!this._initialize(arg0, arg1 !== undefined && Point.read(arguments, 1))){
-			this.setDefinition(arg0 instanceof SymbolDefinition ? arg0 : new SymbolDefinition(arg0));}
+		if (!this._initialize(arg0,
+				arg1 !== undefined && Point.read(arguments, 1)))
+			this.setDefinition(arg0 instanceof SymbolDefinition ?
+					arg0 : new SymbolDefinition(arg0));
 	},
 
 	_equals: function(item) {
@@ -5881,17 +5811,17 @@ var SymbolItem = Item.extend({
 		this.setDefinition(source._definition);
 	},
 
-	geetDefinition: function() {
+	getDefinition: function() {
 		return this._definition;
 	},
 
-	seetDefinition: function(definition) {
+	setDefinition: function(definition) {
 		this._definition = definition;
 		this._changed(9);
 	},
 
-	getSymbol: '#geetDefinition',
-	setSymbol: '#seetDefinition',
+	getSymbol: '#getDefinition',
+	setSymbol: '#setDefinition',
 
 	isEmpty: function() {
 		return this._definition._item.isEmpty();
@@ -5916,6 +5846,65 @@ var SymbolItem = Item.extend({
 
 });
 
+var SymbolDefinition = Base.extend({
+	_class: 'SymbolDefinition',
+
+	initialize: function SymbolDefinition(item, dontCenter) {
+		this._id = UID.get();
+		this.project = paper.project;
+		if (item)
+			this.setItem(item, dontCenter);
+	},
+
+	_serialize: function(options, dictionary) {
+		return dictionary.add(this, function() {
+			return Base.serialize([this._class, this._item],
+					options, false, dictionary);
+		});
+	},
+
+	_changed: function(flags) {
+		if (flags & 8)
+			Item._clearBoundsCache(this);
+		if (flags & 1)
+			this.project._changed(flags);
+	},
+
+	getItem: function() {
+		return this._item;
+	},
+
+	setItem: function(item, _dontCenter) {
+		if (item._symbol)
+			item = item.clone();
+		if (this._item)
+			this._item._symbol = null;
+		this._item = item;
+		item.remove();
+		item.setSelected(false);
+		if (!_dontCenter)
+			item.setPosition(new Point());
+		item._symbol = this;
+		this._changed(9);
+	},
+
+	getDefinition: '#getItem',
+	setDefinition: '#setItem',
+
+	place: function(position) {
+		return new SymbolItem(this, position);
+	},
+
+	clone: function() {
+		return new SymbolDefinition(this._item.clone(false));
+	},
+
+	equals: function(symbol) {
+		return symbol === this
+				|| symbol && this._item.equals(symbol._item)
+				|| false;
+	}
+});
 
 var HitResult = Base.extend({
 	_class: 'HitResult',
@@ -13941,7 +13930,7 @@ var ToolEvent = Event.extend({
 			= count;
 	},
 
-	geetItem: function() {
+	getItem: function() {
 		if (!this._item) {
 			var result = this.tool._scope.project.hitTest(this.getPoint());
 			if (result) {
@@ -13957,7 +13946,7 @@ var ToolEvent = Event.extend({
 		return this._item;
 	},
 
-	seetItem: function(item) {
+	setItem: function(item) {
 		this._item = item;
 	},
 
