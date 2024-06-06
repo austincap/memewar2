@@ -2,7 +2,7 @@
   margin: 0;
 }
 body {
-  background-color: #001011;
+  background-color: #222222;
 }
 h1 {
   margin: auto;
@@ -1006,33 +1006,37 @@ select {
 }
 
 
-.x {
 
-    max-width:200px ;
-    animation: x calc(13s * (1+var(--rand)/8)) infinite alternate;
-}
 
 .y {
     max-width: 200px;
-    animation: y calc(10s * var(--rand)) infinite alternate;
+    position: absolute;
+    left: calc( 700px * var(--rand));
+    top: calc( 700px * var(--rand));
+    animation: y calc(10s + 10s * var(--rand)) infinite;
+    animation-direction: alternate;
 }
 
-@keyframes x{
-    50% {
-        transform: translateX( calc(100vw/2 - 100px));
-    }
 
-    100% {
-        transform: translateX( calc(100vw - 100px ));
-    }
-}
 @keyframes y {
-    50% {
-        transform: translate( calc(800px/2), calc(900px/2) );
+    10% {
+        transform: translate( calc( 0vw), calc(5vh) );
     }
 
-    100% {
-        transform: translate( calc(700px), calc(900px ) );
+    30% {
+        transform: translate( calc( 45vw - 200px * var(--rand)), calc(40vh ));
+    }
+
+    50% {
+        transform: translate( calc( 80vw), calc(5vh));
+    }
+
+    70% {
+        transform: translate(calc( 45vw - 200px * var(--rand)), calc(40vh ));
+    }
+
+    90% {
+        transform: translate( calc(0vw), calc(5vh));
     }
 }
     /*@keyframes x {
@@ -1188,9 +1192,13 @@ select {
   }
 
 
+  #historyview{
+      display:none;
+  }
+
   #gridview{
-    width:92%;
-    padding-left:40px;
+    width:96%;
+    padding-left:-40px;
     color:#badadd;
     grid-template-columns: auto auto auto auto auto;
     display:inline-grid;

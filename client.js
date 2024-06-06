@@ -1392,17 +1392,17 @@ function contextButtonFunction(currentContext) {
             $('#gridview').css('display', 'none');
             d3.select('svg').selectAll('*').remove();
             $('#d3frame').css('display', 'none');
-            document.getElementById('contextButton').innerHTML = 'Alt';
+            document.getElementById('contextButton').innerHTML = 'Net';
             sessionStorage.setItem('currentPage', 'home');
             window.history.replaceState(null, null, "/?view=" + 'norm');
             socket.emit('requestTop20Posts', 0);
             break;
-        case 'Alt':
+        case 'Net':
             $('#entryContainer').empty();
-            sessionStorage.setItem('currentPage', 'alt');
+            sessionStorage.setItem('currentPage', 'net');
             $('#d3frame').css('display', 'block');
             document.getElementById('contextButton').innerHTML = 'Grid';
-            window.history.replaceState(null, null, "/?view=" + 'web');
+            window.history.replaceState(null, null, "/?view=" + 'net');
             socket.emit('retrieveDatabase');
             break;
         case 'Grid':
@@ -1412,20 +1412,25 @@ function contextButtonFunction(currentContext) {
             $('#gridview').css('display', 'grid');
             sessionStorage.setItem('currentPage', 'grid');
             window.history.replaceState(null, null, "/?view=" + 'grid');
-            document.getElementById('contextButton').innerHTML = 'Multi';
+            document.getElementById('contextButton').innerHTML = 'Sea';
             socket.emit('retrieveDatabaseGrid');
             break;
+        case 'Sea':
+            $('#multiview').css('display', 'none');
+            $('#entryContainer').empty();
+            showSeaOfDivs();
+            sessionStorage.setItem('currentPage', 'multi');
+            document.getElementById('contextButton').innerHTML = 'Multi';
+            window.history.replaceState(null, null, "/?view=" + 'sea');
         case 'Multi':
             $('#gridview').css('display', 'none');
             $('#entryContainer').empty();
+            $('#multiContainer').empty();
             sessionStorage.setItem('currentPage', 'multi');
             window.history.replaceState(null, null, "/?view=" + 'multi');
             document.getElementById('contextButton').innerHTML = 'Home';
             socket.emit('requestMulti');
-        case 'Sea':
-            showSeaOfDivs();
-            document.getElementById('contextButton').innerHTML = 'Home';
-            window.history.replaceState(null, null, "/?view=" + 'sea');
+  
 
     }
 }
@@ -1434,12 +1439,16 @@ function contextButtonFunction(currentContext) {
 function showSeaOfDivs() {
     window.history.replaceState(null, null, "/?view=sea");
     for (var i = 0; post = postsOnThisPage[i]; i++) {
-        let el = document.querySelector('[postid="'+ String(post.postID) + '"]');
-        el.style.setProperty('--rand', Math.random());
-        var ne = $('div[postid=' + String(post.postID) + ']');
-        ne.addClass("animate");
-        ne.addClass("x");
-        ne.addClass("y");
+        console.log(post.postID);
+        let el = document.querySelector('[postid="' + String(post.postID) + '"]');
+        if (el !== undefined && el !== null) {
+            el.style.setProperty('--rand', Math.random());
+            var ne = $('div[postid=' + String(post.postID) + ']');
+            ne.addClass("animate");
+            ne.addClass("x");
+            ne.addClass("y");
+        }
+
     }
     $('#entryContainer').css({ "maxHeight": "700px" });
 }
@@ -2136,6 +2145,7 @@ function populateGrid(postsAndAllTagData) {
         var html = Mustache.render(processedPostTemplate, mustacheData);
         $('#gridview').append(html);
     });
+    $('#entryContainer').append($('#gridview'));
     // tags.forEach(function(tag){
     //   var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
     //   $('#popular-tag-span').append(processedTag); 

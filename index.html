@@ -31,7 +31,7 @@
     <div class="header-container">
         <div id="leftist-buttons">
             <div>
-                <button id="contextButton" onclick="contextButtonFunction($(this).html());">Alt</button><button id="multistreamButton" onclick="multistreamView();">Multi</button><br />
+                <button id="contextButton" onclick="contextButtonFunction($(this).html());">Net</button><button id="multistreamButton" onclick="multistreamView();">Multi</button><br />
                 <button id="accountButton" onclick="clickAccountButton(this);">Account</button><span id="currentrole">test</span>
                 <div><button id="signout" class="raise" onclick="signout(this);">Sign out</button></div>
 
@@ -212,6 +212,13 @@
                     <input type="text" style='height:50px;' placeholder="you can treat this field like a title, or like a tweet if you're not putting anything in the box below" id="uploadTitle" name="title" maxlength="320" />
                     <br />
                     <textarea type="text" style='height:300px;' placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"></textarea>
+                    <br />
+                    <select id="postclassification" name="postclassification">
+                        <option value="discuss"><span class="tooltiptext">classify as discussion</span>😄</option>
+                        <option value="news"><span class="tooltiptext">classify as news</span>📰</option> 
+                        <option value="biz"><span class="tooltiptext">classify as business</span>💵</option>
+                        <option value="porn"><span class="tooltiptext">classify as porn</span>🔞</option>
+                    </select>
                     <br />
                     <img id="myimg" src="" height="150" alt="Image preview...">
                     <input type="file" id="sampleFile" name="sampleFile" onchange="previewFile();" />

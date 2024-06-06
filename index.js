@@ -2190,6 +2190,77 @@ io.on('connection', function (socket) {
     });
 });
 
+
+function intervalFunc() {
+    var dataForClient = [];
+    var totalAmountOfRoleHavers = 0;
+    query = `
+        MATCH (n:User)-[h:HASROLE]->(m:Role)
+        WITH m, COLLECT(m.name) AS rolecount
+        RETURN m.name, SIZE(rolecount)
+        `;
+    session.run(query).then(function (result) {
+        //console.log(result);
+        result.records.forEach(function (record) {
+            totalAmountOfRoleHavers += record["_fields"][1];
+            dataForClient.push(record["_fields"]);
+        });
+        console.log(dataForClient);
+        var params = {
+            Hater: 0.0,
+            Tagger: 0.0,
+            Painter: 0.0,
+            Pollster: 0.0,
+            Tastemaker: 0.0,
+            Explorer: 0.0,
+            Summoner: 0.0,
+            Silencer: 0.0,
+            Arbitrator: 0.0,
+            Stalker: 0.0,
+            Editor: 0.0,
+            Leader: 0.0,
+            Counselor: 0.0,
+            Founder: 0.0,
+            Algomancer: 0.0
+        };
+        dataForClient.forEach(function (role) {
+            params[role[0]] = 10 * (1.0 - role[1] / totalAmountOfRoleHavers);
+        });
+        console.log(params);
+        query2 = `
+        MATCH (e:User)
+        OPTIONAL MATCH (haters:User)-[:HASROLE]->(m0:Role {name:'Hater'}), (taggers:User)-[:HASROLE]->(m1:Role {name:'Tagger'}), (painters:User)-[:HASROLE]->(m2:Role {name:'Painter'}), (pollsters:User)-[:HASROLE]->(m3:Role {name:'Pollster'}), (tastemakers:User)-[:HASROLE]->(m4:Role {name:'Tastemaker'}), (explorers:User)-[:HASROLE]->(m5:Role {name:'Explorer'}), (summoners:User)-[:HASROLE]->(m6:Role {name:'Summoner'}), (silencers:User)-[:HASROLE]->(m7:Role {name:'Silencer'}), (arbitrators:User)-[:HASROLE]->(m8:Role {name:'Arbitrator'}), (stalkers:User)-[:HASROLE]->(m9:Role {name:'Stalker'}), (editors:User)-[:HASROLE]->(m10:Role {name:'Editor'}), (leaders:User)-[:HASROLE]->(m11:Role {name:'Leader'}), (counselors:User)-[:HASROLE]->(m12:Role {name:'Counselor'}), (founders:User)-[:HASROLE]->(m13:Role {name:'Founder'}), (algomancers:User)-[:HASROLE]->(m14:Role {name:'Algomancer'})
+        SET haters.memecoin = haters.memecoin + $Hater
+        SET taggers.memecoin = taggers.memecoin + $Tagger
+        SET painters.memecoin = painters.memecoin + $Painter
+        SET pollsters.memecoin = pollsters.memecoin + $Pollster
+        SET tastemakers.memecoin = tastemakers.memecoin + $Tastemaker
+        SET explorers.memecoin = explorers.memecoin + $Explorer
+        SET summoners.memecoin = summoners.memecoin + $Summoner
+        SET silencers.memecoin = silencers.memecoin + $Silencer
+        SET arbitrators.memecoin = arbitrators.memecoin + $Arbitrator
+        SET stalkers.memecoin = stalkers.memecoin + $Stalker
+        SET editors.memecoin = editors.memecoin + $Editor
+        SET leaders.memecoin = leaders.memecoin + $Leader
+        SET counselors.memecoin = counselors.memecoin + Counselor
+        SET founders.memecoin = founders.memecoin + $Founder
+        SET algomancers.memecoin = algomancers.memecoin + $Algomancer
+        RETURN *
+        `;
+        session.run(query2, params).then(function (result) {
+            console.log("UNIVERSAL BASIC INCOME POINTS SUCCESSFULLY DISTRIBUTED");   
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+}
+
+setInterval(intervalFunc, 86400000);//repeat task after 24 hours (in ms)
+
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
 //httpServer.listen(3030,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
 // server.listen(443,function(){console.log('Meme War app listeningn on port 443 like a prude!');});
