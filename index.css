@@ -1057,6 +1057,10 @@ select {
     }
 }*/
 
+    #bountyCreatorContainer{
+        display: none;
+    }
+
 
     canvas[resize] {
         width: 90%;
@@ -1068,10 +1072,17 @@ select {
         display: none;
     }
 
+
+    .polldiv{
+        height:fit-content;
+        display:block;
+    }
     .pollButtons {
+        float: left !important;
         padding: 0px !important;
-        min-width: 30px !important;
-        max-width: 30px !important;
+        min-width: 60px !important;
+        max-width: 20px !important;
+        max-height: 20px !important;
     }
     /*advanced post */
     #ap {
@@ -1144,6 +1155,7 @@ select {
         width: 100%;
         min-width: 1px;
     }
+
 
     @media all and (max-width: 1200px) {
         body{

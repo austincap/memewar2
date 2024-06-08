@@ -294,6 +294,7 @@ app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, ne
     var polltitle = sanitizeHtml(req.body.title);
     var polluserID = parseInt(req.body.userID);
     var polltype = req.body.type;
+    var pollreply = 42432412412; // MAYBE ALLOW REPLY POLLS?
     var pollOptions = [];
     for (let i = 1; i <= 6; i++) {
         if (req.body["pollOption" + String(i)] != null) {
@@ -314,7 +315,7 @@ app.post('/uploadpoll', upload.single('sampleFile-poll'), function (req, res, ne
         censorattempts: 0,
         shields: 0,
         memecoinsspent: 0,
-        replyto: 453453453445,
+        replyto: pollreply,
         tagupvotes: 1,
         content: pollOptions,
         optionvotes: [0, 0, 0, 0, 0, 0]
@@ -670,21 +671,22 @@ function requestTop20Posts(socket, pagenum){
             dataForClient.push(processedPostObject);
         });
         topPostsAndTags.push(dataForClient);
-          session
-            .run(topTagQuery)
-            .then(function(result){
-              var tagdataForClient = [];
-              result.records.forEach(function(record){
-                tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
-              });
-              topPostsAndTags.push(tagdataForClient);
-              console.log(topPostsAndTags);
-              console.log("POSTS "+String(PAGESIZE*pagenum)+" TO "+String(PAGESIZE*pagenum+PAGESIZE));
-              socket.emit('receiveTop20Data', topPostsAndTags);
-            })
-            .catch(function(error){
-              console.log(error);
+
+        session
+        .run(topTagQuery)
+        .then(function(result){
+            var tagdataForClient = [];
+            result.records.forEach(function(record){
+              tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
             });
+            topPostsAndTags.push(tagdataForClient);
+            console.log(topPostsAndTags);
+            console.log("POSTS "+String(PAGESIZE*pagenum)+" TO "+String(PAGESIZE*pagenum+PAGESIZE));
+            socket.emit('receiveTop20Data', topPostsAndTags);
+        })
+        .catch(function(error){
+            console.log(error);
+        });
       })
       .catch(function(error){
         console.log(error);
@@ -1214,6 +1216,20 @@ function userChecked(socket, taskname, userIDnum) {
     socket.emit('userChecked', { task: taskname, userID: userIDnum });
 }
 
+function makePollVote(socket, params, querystring) {
+    var query = querystring;
+    console.log(query);
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result.records[0]);
+        })
+        .catch(function (error) {
+            //socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+            console.log(error);
+        });
+}
+
 
 io.on('connection', function (socket) {
     console.log("connection");
@@ -1293,7 +1309,8 @@ io.on('connection', function (socket) {
         var newuserID = new ObjectId();
         newuserID = newuserID.getTimestamp();
         var query = `
-          CREATE (newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
+          MATCH (a:Role {name:$role})
+          CREATE (a)<-[:HASROLE]-(newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
           RETURN newuser
           `;
         var params = {
@@ -1301,7 +1318,8 @@ io.on('connection', function (socket) {
             userID: parseInt(newuserID),
             password: registrationData.password,
             memecoin: 200,
-            newuserRoles: registrationData.newuserRoles
+            newuserRoles: registrationData.newuserRoles,
+            role: registrationData.role
         };
         session
             .run(query, params)
@@ -1342,6 +1360,7 @@ io.on('connection', function (socket) {
     socket.on('check', function (stuffToCheck) {
         console.log("CHECKING TASK");
         console.log(stuffToCheck);
+
         var params = {
             userID: stuffToCheck.userID,
             postID: stuffToCheck.postID,
@@ -1353,9 +1372,9 @@ io.on('connection', function (socket) {
         switch (stuffToCheck.taskToCheck) {
             case 'vote':
                 query = `
-        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
-        RETURN p,u
-        `;
+                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+                RETURN p,u
+                `;
                 session
                     .run(query, params)
                     .then(function (result) {
@@ -1382,9 +1401,9 @@ io.on('connection', function (socket) {
                 break;
             case 'makeadditionalvoteup':
                 query = `
-        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
-        RETURN p,u
-        `;
+                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+                RETURN p,u
+                `;
                 session
                     .run(query, params)
                     .then(function (result) {
@@ -1553,6 +1572,40 @@ io.on('connection', function (socket) {
                     })
                     .catch(function (error) {
                         socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
+                        console.log(error);
+                    });
+                break;
+            case 'pollvote':
+                query = "MATCH (p:Post {postID:$postID})<-[v:POLLVOTE]-(u:User {userID:$userID}) RETURN p";
+                console.log(query);
+                session
+                    .run(query, params)
+                    .then(function (result) {
+                        if (result.records[0] == undefined) {
+                            console.log(result)
+                            console.log("MAKE POLL VOTE");
+                            var newparams = {
+                                userID: stuffToCheck.userID,
+                                postID: stuffToCheck.postID
+                            };
+                            var crazyPollVotingString = 'p.optionvotes[0..' + String(stuffToCheck.data.voteoptionindex) + ']+[' + String(stuffToCheck.data.voteoptiontally + 1) + '.0]+p.optionvotes[' + String(parseFloat(stuffToCheck.data.voteoptionindex) + 1.0) + '..6]';
+                            var newpollvotequery = 'MATCH (p:Post {postID:$postID}), (u:User {userID:$userID}) MERGE (p)<-[v:POLLVOTE]-(u) SET u.memecoin = u.memecoin-1 SET p.optionvotes = ' + crazyPollVotingString;
+                            session
+                                .run(newpollvotequery, newparams)
+                                .then(function (result) {
+                                    console.log("POLLVOTE MADE?");
+                                    console.log(result.records[0]);
+                                })
+                                .catch(function (error) {
+                                    console.log(error);
+                                });
+                        } else {
+                            console.log("ALREADY VOTED ON THIS POLL");
+                            socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
+                        }
+                    })
+                    .catch(function (error) {
+                        socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
                         console.log(error);
                     });
                 break;
@@ -1889,6 +1942,8 @@ io.on('connection', function (socket) {
                 break;
         }
     });
+
+
 
 
     ////////////////
@@ -2259,7 +2314,7 @@ function intervalFunc() {
     });
 }
 
-setInterval(intervalFunc, 86400000);//repeat task after 24 hours (in ms)
+setInterval(intervalFunc, 86400000); //repeat task after 24 hours (in ms) of server uptime
 
 // server.listen(80,function(){console.log('Meme War app listening on port 80 like a slut!');});
 //httpServer.listen(3030,function(){console.log('Meme War app listeningn on port 3000 like a prude!');});
