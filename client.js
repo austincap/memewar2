@@ -22,9 +22,9 @@ function onloadFunction() {
     else { console.log("NOT MOBILE"); }
 
 
-    paper.install(window);
-    paper.setup('myCanvas');
-    console.log(paper.view);
+    //paper.install(window);
+    //paper.setup('myCanvas');
+    //console.log(paper.view);
 
     if (getQueryParam("post") !== "") {
         //
@@ -55,8 +55,14 @@ function onloadFunction() {
         }
     } else if (getQueryParam("sort") == "multi") {
         socket.emit('requestMulti');
+    } else if (getQueryParam("view") == "old") {
+        console.log("OLD IS RUL#34 style");
     } else if (getQueryParam("page") !== "") {
         socket.emit('requestTop20Posts', getQueryParam("page"));
+    } else if (getQueryParam("view") == "game") {
+        openGameView();
+    } else if (getQueryParam("view") == "grid") {
+        socket.emit('retrieveDatabaseGrid');
     } else {
         socket.emit('requestTop20Posts', '0');
     }
@@ -72,14 +78,14 @@ function onloadFunction() {
 
     window.setTimeout(function () {
         console.log("TESTSETSTES");
-        if (sessionStorage.getItem('userID') !== null) {
+        if ((sessionStorage.getItem('userID')) !== (null && sessionStorage.getItem('userID') !== 'ANON')) {
             var rollString = sessionStorage.getItem('userroles');
 
             addRoles(sessionStorage.getItem('userroles'), false);
             console.log(sessionStorage.getItem('userID'));
             $('#signinstuff').css('display', 'none');
             $('#userprofilestuff').css('display', 'inline-block');
-            $('#accountButton').html("<span userid=" + sessionStorage.getItem('userID') + ">" + sessionStorage.getItem('username') + "</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>" + sessionStorage.getItem('memecoin') + "₿</span>");
+            $('#accountButton').html("<span userid=" + sessionStorage.getItem('userID') + ">" + sessionStorage.getItem('username') + "</span>&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>" + sessionStorage.getItem('memecoin').substring(0,4) + "₿</span>");
             $('#userID-newpost').val(sessionStorage.getItem('userID'));
             $('#userID-reply').val(sessionStorage.getItem('userID'));
             $('#posttype-newpost').val("text_post");
@@ -223,10 +229,8 @@ function openGameView(){
     function create() {
       // init keyboard commands
       game.input.keyboard.addCallbacks(null, null, onKeyUp);
-
       // initialize map
       initMap();
-
       // initialize ascii display
       asciidisplay = [];
       for (var y = 0; y < ROWS; y++) {
@@ -235,10 +239,8 @@ function openGameView(){
         for (var x = 0; x < COLS; x++)
           newRow.push(initCell('', x, y));
       }
-
       // initialize actors
       initActors();
-
       // draw level
       drawMap();
       drawActors();
@@ -254,25 +256,32 @@ function openGameView(){
     }
 
     function initMap() {
-      console.log(postsOnThisPage);
-      var contentBucket = '';
-      var postcount = 10;
-      for (var i=0; i<postcount; i++){
-        contentBucket += String(postsOnThisPage[i]['content']);
-      }
-      console.log(contentBucket);
-      // create a new random map
-      randommap = [];
-      for (var y = 0; y < ROWS; y++) {
-        var newRow = [];
-        for (var x = 0; x < COLS; x++) {
-          if (Math.random() > 0.8) 
-            newRow.push('#');
-          else 
-            newRow.push('.');
+        console.log(postsOnThisPage);
+        var contentBucket = '';
+        var titleBucket = '';
+        var postcount = 10;
+        randommap = [];
+        for (var i = 0; i < postcount; i++) {
+            contentBucket.concat(String(postsOnThisPage[i]['content']));
         }
-          randommap.push(newRow);
-      }
+        for (var i = 0; i < postcount; i++) {
+            titleBucket.concat(String(postsOnThisPage[i]['title']));
+        }
+        console.log("CONTENTBUCKET");
+        console.log(titleBucket);
+        // create a new random map
+            
+        for (var y = 0; y < ROWS; y++) {
+            var newRow = [];
+            for (var x = 0; x < COLS; x++) {
+                if (Math.random() > 0.75) {
+                    newRow.push('#');
+                } else {
+                    newRow.push('.');
+                }
+            }
+            randommap.push(newRow);
+        }
     }
 
     function drawMap() {
@@ -358,17 +367,17 @@ function openGameView(){
       }
       
       // enemies act every time the player does
-      if (acted)
-        for (var enemy in actorList) {
-          // skip the player
-          if(enemy==0)
-            continue;
-          
-          var e = actorList[enemy];
-          if (e != null)
-            aiAct(e);
+        if (acted) {
+            for (var enemy in actorList) {
+                // skip the player
+                if (enemy == 0)
+                    continue;
+
+                var e = actorList[enemy];
+                if (e != null)
+                    aiAct(e);
+            }
         }
-      
       // draw actors in new positions
       drawActors();
     }
@@ -436,7 +445,8 @@ function openGameView(){
       livingEnemies = ACTORS - 1;
     }
     $("#big-container").hide();
-    $( "#gameview" ).show();
+    $("#gameview").css('display', 'block');
+
     var game = new Phaser.Game(COLS * FONT * 0.6, ROWS * FONT, Phaser.AUTO, null, { create: create });
     //window.location.href = "game.html";
 }
@@ -1392,17 +1402,17 @@ function contextButtonFunction(currentContext) {
             $('#gridview').css('display', 'none');
             d3.select('svg').selectAll('*').remove();
             $('#d3frame').css('display', 'none');
-            document.getElementById('contextButton').innerHTML = 'Net';
             sessionStorage.setItem('currentPage', 'home');
             window.history.replaceState(null, null, "/?view=" + 'norm');
+            document.getElementById('contextButton').innerHTML = 'Net';
             socket.emit('requestTop20Posts', 0);
             break;
         case 'Net':
             $('#entryContainer').empty();
-            sessionStorage.setItem('currentPage', 'net');
             $('#d3frame').css('display', 'block');
-            document.getElementById('contextButton').innerHTML = 'Grid';
+            sessionStorage.setItem('currentPage', 'net');
             window.history.replaceState(null, null, "/?view=" + 'net');
+            document.getElementById('contextButton').innerHTML = 'Grid';
             socket.emit('retrieveDatabase');
             break;
         case 'Grid':
@@ -1416,27 +1426,34 @@ function contextButtonFunction(currentContext) {
             socket.emit('retrieveDatabaseGrid');
             break;
         case 'Sea':
-            $('#multiview').css('display', 'none');
-            $('#entryContainer').empty();
             showSeaOfDivs();
-            sessionStorage.setItem('currentPage', 'multi');
-            document.getElementById('contextButton').innerHTML = 'Multi';
+            //$('#entryContainer').empty();
+            $('#multiContainer').empty();
+            $('#multiContainer').css('display', 'none');
+            $('#entryContainer').css('display', 'block');
+            sessionStorage.setItem('currentPage', 'sea');
             window.history.replaceState(null, null, "/?view=" + 'sea');
+            document.getElementById('contextButton').innerHTML = 'Multi';
+            break;
         case 'Multi':
             $('#gridview').css('display', 'none');
             $('#entryContainer').empty();
             $('#multiContainer').empty();
+            $('#multiContainer').css('display', 'block');
             sessionStorage.setItem('currentPage', 'multi');
             window.history.replaceState(null, null, "/?view=" + 'multi');
+            multistreamView();
             document.getElementById('contextButton').innerHTML = 'Home';
-            socket.emit('requestMulti');
-  
-
+            break;
+        case '3D':
+            window.location.assign("taro.html");
+            break;
     }
 }
 
 
 function showSeaOfDivs() {
+    console.log('SEA VIEW');
     //window.history.replaceState(null, null, "/?view=sea");
     for (var i = 0; post = postsOnThisPage[i]; i++) {
         console.log(post.postID);
@@ -1507,7 +1524,7 @@ function visitpage(pagenum) {
 function favoritePost(postID){
   //0 favorites post, 1 favorites tag, 2 favorites user
   console.log({faveType:0, postidORtagnameORuserid:postID, userid:sessionStorage.getItem('userID')});
-  socket.emit('favorite', {faveType:0, postidORtagnameORuserid:postID, userid:sessionStorage.getItem('userID')});
+  socket.emit('favorite', {faveType:0, postidORtagnameORuserid:postID, userid:parseInt(sessionStorage.getItem('userID'))});
 
   return;
 }
@@ -1614,8 +1631,8 @@ function generateUUID(){
   return uuid;
 }
 function displayStatus(message){
-  document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">'+message+'</marquee>';
-  //document.getElementById('statusbar').innerHTML = message;
+    document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">'+message+'</marquee>';
+    console.log(message);
 }
 function gohome(){
   window.location.assign("/");
@@ -1648,7 +1665,7 @@ function dropDownFunction(){
 // POPULATING FUNCTIONS
 function populateStandardFeed(posts, tags) {
     populatePageWithPosts(posts, "#entryContainer");
-    populatePageWithTags(tags);
+    populatePageWithTags(tags, "#popular-tag-span");
 }
 function populatePageWithPosts(posts, postListContainer) {
     console.log('populatepage');
@@ -1672,11 +1689,11 @@ function populatePageWithPosts(posts, postListContainer) {
         $(postListContainer).append(html);
     });
 }
-function populatePageWithTags(tags) {
+function populatePageWithTags(tags, tagContainer) {
     //console.log(tags);
     tags.forEach(function (tag) {
         var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">' + tag[0] + '</span>&nbsp;(<span class="number-of-posts-with-tag">' + tag[1] + '</span>)</button>&nbsp;';
-        $('#popular-tag-span').append(processedTag);
+        $(tagContainer).append(processedTag);
     });
     $(".popular-tag-button").on("click", function () {
         console.log($(this).children(".tag-name").html());
@@ -1730,7 +1747,6 @@ function populateMultifeed(posts1, posts2, posts3) {
         $('#multi-right').append(html);
     });
 }
-
 
 function displayTextPost(post) {
     console.log(post);
@@ -1797,13 +1813,13 @@ function displayTextPost(post) {
               <div class='post-buttons'>
                 <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
                 <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
-                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
+                <button class='raise profallow haters-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
                 <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
                 <button class='raise anonallow' onclick='showShareBox($(this).parent().parent());'><span class='tooltiptext'>share this post</span><svg xmlns='http://www.w3.org/2000/svg' height='16' viewBox='0 0 24 24' width='24'><path d='M0 0h24v24H0z' fill='none'/><path fill='#dfe09d' d='M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z'/></svg></button>
                 <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>favorite this post</span>❤</button>
-                <button class='raise anonallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
@@ -1905,7 +1921,7 @@ function displayPollPost(post) {
                 <div class='post-buttons'>
                     <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
                     <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-                    <button class="raise profallow lurkers-not-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+                    <button class="raise profallow haters-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
                     <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
                     <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
                     <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
@@ -1933,6 +1949,7 @@ function populateGrid(postsAndAllTagData) {
     console.log(postsAndAllTagData);
     //$("#entryContainer").empty();
     postsOnThisPage = postsAndAllTagData;
+    var tags = [];
     postsAndAllTagData.forEach(function (post) {
         console.log(post);
         var date = new Date(post.postID * 1000).toDateString();
@@ -1952,6 +1969,7 @@ function populateGrid(postsAndAllTagData) {
         postsOnThisPage.push(mustacheData);
         console.log("GRID VIEW");
         console.log(mustacheData.tags);
+        tags.push(mustacheData.tags);
         var processedPostTemplate = `<div style='border-width:{{clicks}}px;' class='gridcell' postID='{{postID}}'>
                                 <div class='gridtitle'>{{title}}</div>
                                 <a id='{{postID}}' data-toggle='tooltip' title='{{title}}{{#tags}}&nbsp;{{.}}&nbsp;{{/tags}}' href='/?post={{postID}}'>
@@ -1963,6 +1981,8 @@ function populateGrid(postsAndAllTagData) {
         $('#gridview').append(html);
     });
     $('#entryContainer').append($('#gridview'));
+    $('#entryContainer').prepend($('#tagColumn'));
+    //populatePageWithTags(tags, '#tagColumn');
     // tags.forEach(function(tag){
     //   var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">'+tag[0]+'</span>&nbsp;(<span class="number-of-posts-with-tag">'+tag[1]+'</span>)</button>&nbsp;';
     //   $('#popular-tag-span').append(processedTag); 
@@ -2154,15 +2174,15 @@ socket.on('receiveSinglePostData', function(dataFromServer){
           <div class="post-buttons">
             <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
             <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
-            <button class="raise profallow" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+            <button class="raise profallow haters-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
             <span class="advancedButtons">
               <button class="raise profallow" onclick="showShieldCensorHarvestBox(2, {{postID}});"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
-              <button class="raise profallow" onclick="showShieldCensorHarvestBox(1, {{postID}});"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
-              <button class="raise profallow" onclick="showShieldCensorHarvestBox(0, {{postID}});"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
+              <button class="raise protectors-only profallow" onclick="showShieldCensorHarvestBox(1, {{postID}});"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
+              <button class="raise protectors-only profallow" onclick="showShieldCensorHarvestBox(0, {{postID}});"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
               <button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
               <button class="raise profallow" onclick="favoritePost({{postID}});"><span class="tooltiptext">favorite this post</span>❤</button>
             </span>
-            <button class="raise anonallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
+            <button class="raise taggers-only profallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
             <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
           </div>
         </div>`;
@@ -2223,7 +2243,7 @@ socket.on('loggedIn', function(loginData){
     //sessionStorage.setItem('role', loginData.role);
     $('#signinstuff').css('display', 'none');
     $('#signup-overlay-box').css('display', 'none');
-    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"></span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin')+"₿</span>");
+    $('#accountButton').html("<span userid="+sessionStorage.getItem('userID')+"></span>"+sessionStorage.getItem('username')+"&nbsp;&nbsp;&nbsp;&nbsp;<span id='memecoin-button'>"+sessionStorage.getItem('memecoin').substring(0,4)+"₿</span>");
     $('#accountButton').attr('userid', sessionStorage.getItem('userID'));
     $('#currentrole').html(getFirstRole(loginData.userroles));
 });
@@ -2390,7 +2410,11 @@ socket.on('receiveTagData', function (topPostsForTag) {
 socket.on('receiveTop20Data', function (topPostsAndTags) {
     postsOnThisPage = [];
     $('#entryContainer').empty();
-    populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
+    if (getQueryParam('view') == 'old') {
+        populateOldSchoolView(topPostsAndTags[0], topPostsAndTags[1]);
+    } else {
+        populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
+    }
 });
 //receiveRecommendedData
 socket.on('receiveRecommendedData', function (recommendedData) {
@@ -2425,6 +2449,7 @@ socket.on('receiveMultifeedData', function (results) {
     console.log(results);
     postsOnThisPage = [];
     populateMultifeed(results[0], results[1], results[2]);
+    document.getElementById('contextButton').innerHTML = 'Home';
 });
 
 

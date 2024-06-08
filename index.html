@@ -28,7 +28,7 @@
     <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
 </head>
 <body>
-    <div class="header-container">
+    <div id="header-container">
         <div id="leftist-buttons">
             <div>
                 <button id="contextButton" onclick="contextButtonFunction($(this).html());">Net</button><button id="multistreamButton" onclick="multistreamView();">Multi</button><br />
@@ -58,8 +58,8 @@
                 <div><button id="historybutton" class="raise" onclick="openHistoryView();">Open history view</button></div>
                 <div><button id="cast-algomancy" class="raise algomancers-only" onclick="showAlgomancyBox();">Practice algomancy</button></div>
                 <div><button id="show-paint" class="raise" onclick="showPaintedPosts();">Show painted posts</button></div>
-                <div><button id="arbitrator" class="raise" onclick="arbitratorSort();">View reports</button></div>
-                <div><button id="create-new-group" class="raise" onclick="showGroupCreatorBox();">Make new group</button></div>
+                <div><button id="arbitrator" class="raise arbitrators-only" onclick="arbitratorSort();"><span class='tooltiptext'>view reports</span>📥</button></div>
+                <div><button id="create-new-group" class="raise founders-only" onclick="showGroupCreatorBox();">Make new group</button></div>
                 <div><button id="view-groups" class="raise" onclick="requestGroups();">Request groups</button></div>
                 <div><button id="new-grid" class="raise" onclick="requestPileStyle();">Pile style</button></div>
                 <div><button id="show-map" class="raise" onclick="showMap();">Show map</button></div>
@@ -149,7 +149,7 @@
                         </div>
                     </div>
                     <div id="popular-tags">
-                        <!-- <span class="tooltiptext">use the input bar to filter for only that tag or click one of the popular tags to the right. the number in parentheses represents the number of posts with that tag</span> --><input type="text" id="tag-filter" placeholder="input a tag to search for" />&nbsp;<span id="popular-tag-span"><!-- <button class="fill popular-tag-button"><span class="tag-name">ff7</span>&nbsp;(<span class="number-of-posts-with-tag">37</span>)</button>&nbsp;<button class="fill popular-tag-button"><span class="tag-name">xxx</span>&nbsp;(<span class="number-of-posts-with-tag">444</span>)</button> --></span>
+                        <input type="text" id="tag-filter" placeholder="input a tag to search for" />&nbsp;<span id="popular-tag-span"></span>
                     </div>
                 </div>
             </div>
@@ -251,6 +251,11 @@
                     </div>
 
 
+                    <div id="oldSchoolContainer">
+                        <div id="oldSchoolTags"></div>
+                        <div id="oldSchoolPosts"></div>
+                    </div>
+
                     <div id="pollContainer">
                         <form ref='uploadPoll'
                               id='uploadPoll'
@@ -274,7 +279,7 @@
                             <input class="raise" type='submit' value='Submit!' />
                         </form>
                         <button id="cancelNewPost-poll" class="raise" onclick="returnPollBox();">Cancel</button>
-                        <button onclick="addPollOption()">Add Poll Option</button>
+                        <button class="raise" onclick="addPollOption()">Add Poll Option</button>
                     </div>
                     <!--
                      <br />
@@ -543,9 +548,9 @@
             </div>
 
 
-
+            <div id="tagColumn"></div>
             <div id="gridview">
-
+                
             </div>
             <div id="pileStyle">
                 <!--<script type="text/paperscript" canvas="myCanvas">

@@ -692,6 +692,59 @@ function requestTop20Posts(socket, pagenum){
         console.log(error);
       });
 }
+function requestOldSchoolFormat(socket, pagenum) {
+    console.log(String(PAGESIZE * pagenum));
+    var topPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (p:Post)
+    WITH p ORDER BY p.upvotes-p.downvotes DESC
+    OPTIONAL MATCH (p)-[ta:TAGGEDAS]->(t:Tag)
+    OPTIONAL MATCH (:Post)-[rt:REPLYTO]->(p)
+    OPTIONAL MATCH (u:User)<-[cb:CREATEDBY]-(p)
+    RETURN p AS posts, COLLECT(DISTINCT [t.name, ta.upvotes]) AS tags, COUNT(DISTINCT rt) AS replies, COLLECT(DISTINCT [u.name, u.userroles, u.userID]) AS poster
+    SKIP `+ String(PAGESIZE * pagenum) + ` LIMIT ` + String(PAGESIZE);
+    //`;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC LIMIT 10
+    `;
+    session
+        .run(topPostQuery)
+        .then(function (result) {
+            var dataForClient = [];
+            result.records.forEach(function (record) {
+                var processedPostObject = record["_fields"][0]["properties"];
+                record["_fields"][1].forEach(function (tagAndVote) {
+                    processedPostObject.tagnames = tagAndVote[0];
+                    processedPostObject.tagvotes = tagAndVote[1];
+                });
+                processedPostObject.replycount = record["_fields"][2];
+                processedPostObject.poster = record["_fields"][3];
+                dataForClient.push(processedPostObject);
+            });
+            topPostsAndTags.push(dataForClient);
+
+            session
+                .run(topTagQuery)
+                .then(function (result) {
+                    var tagdataForClient = [];
+                    result.records.forEach(function (record) {
+                        tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+                    });
+                    topPostsAndTags.push(tagdataForClient);
+                    console.log(topPostsAndTags);
+                    console.log("POSTS " + String(PAGESIZE * pagenum) + " TO " + String(PAGESIZE * pagenum + PAGESIZE));
+                    socket.emit('receiveTop20Data', topPostsAndTags);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 function requestALLPosts(socket) {
     var topPostsAndTags = [];
     var topPostQuery = `
@@ -1080,7 +1133,7 @@ function requestTop20PostsGrid(socket) {
                     });
                     topPostsAndTags.push(tagdataForClient);
                     console.log(topPostsAndTags);
-                    console.log("TOP 20 POSTS GRID");
+                    console.log("TOP 50 POSTS GRID");
                     socket.emit('receiveTop20DataGrid', topPostsAndTags);
                 })
                 .catch(function (error) {
@@ -1256,6 +1309,10 @@ io.on('connection', function (socket) {
 
     socket.on('requestMulti', function () {
         requestMultifeedPosts(socket);
+    });
+
+    socket.on('retrieveDatabaseOldSchool', function (pagenum) {
+        requestOldSchoolFormat(socket, pagenum);
     });
 
     socket.on('requestRandPosts', function (randPages, pagenum) {
