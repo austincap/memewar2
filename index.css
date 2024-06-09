@@ -31,11 +31,46 @@ h3 {
   #replyto {
     display:none !important;
   }
-  #replyContainer {
-    display:none;
+#replyContainer {
+    display: none;
     background-color: rgba(0,0,0,0.5);
     border-radius: 5px;
-  }
+    padding: 5px;
+    height: 40vh;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    --gutter: 0px;
+}
+#cancelNewPost-reply {
+    position: fixed;
+    top: 0px;
+    right: 0px;
+}
+#replyFormContainer {
+    position: relative;
+    
+}
+#tagForNewReply {
+    width: 90%;
+    max-width: 500px;
+
+}
+#uploadContent-reply {
+    height:60%;
+    min-height:140px;
+    width:100%;
+    
+    padding:10px;
+    
+}
+#sampleFile-reply{
+    max-width:50%;
+}
+.reply-element {
+    margin: auto;
+    background-color: #444444;
+}
   #uploadTitle {
     min-width:70%;
     min-height:20%;
@@ -60,10 +95,12 @@ h3 {
   #submit-reply {
     color: #dfe09d
   }
-  #cancel-reply {
-    float: right;
+#cancel-reply {
+    position: fixed;
+    top: 0px;
+    right: 0px;
     color: #dfe09d;
-  }
+}
   #temptitle{
     display:none;
   }
@@ -681,18 +718,26 @@ select {
     transition: 0.6s;
     top:0;
   }
-  .upvotes-tooltip:hover .tooltiptext {
+.upvotes-tooltip:hover .tooltiptext {
     visibility: visible;
     transform: translateY(3em);
     transition: 0.6s;
-    top:0;
-  }
-  .views-tooltip:hover .tooltiptext {
+    top: 0;
+    position: relative;
+    top: 30px;
+    left: -20px;
+    z-index: 100;
+}
+.views-tooltip:hover .tooltiptext {
     visibility: visible;
     transform: translateY(3em);
     transition: 0.6s;
-    top:0;
-  }
+    position: relative;
+    top: 30px;
+    left: -20px;
+    z-index: 100;
+}
+
   /*  #popular-tags:hover .tooltiptext {
     visibility: visible;
     transform: translateY(3em);
@@ -1040,15 +1085,11 @@ select {
         transform: translateX(250px);
         opacity: 0;
     }
-
     to {
         transform: translateX(0px);
         opacity: 1;
     }
 }
-
-
-
 
 .y {
     max-width: 200px;
@@ -1068,40 +1109,20 @@ select {
     10% {
         transform: translate( calc( 0vw), calc(5vh) );
     }
-
     30% {
         transform: translate( calc( 45vw - 200px * var(--rand)), calc(40vh ));
     }
-
     50% {
         transform: translate( calc( 80vw), calc(5vh));
     }
-
     70% {
         transform: translate(calc( 45vw - 200px * var(--rand)), calc(40vh ));
     }
-
     90% {
         transform: translate( calc(0vw), calc(5vh));
     }
 }
-        /*@keyframes x {
-        50% {
-            transform: translateX( calc((100vw - 100px * var(--rand) )/2));
-        }
-        100% {
-            transform: translateX( calc(100vw - 100px * var(--rand) ));
-        }
-    }
 
-    @keyframes y {
-        50% {
-            transform: translate( calc(800px* var(--rand) - 100px* var(--rand)), calc((1000px* var(--rand) - 100px * var(--rand))/2 ) );
-        }
-        100% {
-            transform: translate( calc(800px* var(--rand) - 100px* var(--rand)), calc(1000px* var(--rand) - 100px * var(--rand) ) );
-        }
-    }*/
 
     #bountyCreatorContainer{
         display: none;
