@@ -59,33 +59,39 @@ h3 {
 #uploadContent-reply {
     height:60%;
     min-height:140px;
-    width:100%;
+    width:90%;
     
     padding:10px;
     
 }
 #sampleFile-reply{
     max-width:50%;
+    background-color:#444444;
 }
 .reply-element {
     margin: auto;
-    background-color: #444444;
+  
 }
   #uploadTitle {
     min-width:70%;
-    min-height:20%;
+    min-height:20px;
     margin: auto 0;
     overflow:wrap;
+    padding: 4px;
+    height:20px;
   }
-  #uploadContent {
-    min-width: 70%;
-    min-height: 60% !important;
-    height: 50%;
-    margin: auto 0;
-    resize:both;
-  }
+#uploadContent {
+    height: 60%;
+    min-height: 140px;
+    width: 90%;
+    padding: 10px;
+    background-color: #444444;
+    margin: 8px;
+    resize: both;
+}
   #sampleFile {
     color: white;
+    background-color:#444444;
   }
   .not-button {
     border: none !important;
@@ -93,7 +99,8 @@ h3 {
     cursor:pointer;
   }
   #submit-reply {
-    color: #dfe09d
+    color: #dfe09d;
+    background-color:#444444;
   }
 #cancel-reply {
     position: fixed;
@@ -125,11 +132,11 @@ h3 {
     top:8vh;
     left:12vw;
     background-color:#101011;
-    padding:2vw;
     min-height: 70vh;
     max-height: 75vh;
     min-width:70vw;
     overflow-y:scroll;
+    margin-bottom:40px;
   }
   #title-of-new-post {
     margin:10px;
@@ -143,6 +150,7 @@ h3 {
   }
   #tagForNewPost {
     min-width:70%;
+    margin: 8px;
   }
     #pollContainer {
         display: none;
@@ -182,6 +190,8 @@ h3 {
 
 #map {
     height: 180px;
+    text-align:center;
+    margin: auto;
 }
 #mapDisplay{
     display:none;
@@ -325,6 +335,9 @@ select {
 .pollsters-only {
     display: none;
 }
+.founders-only{
+    display: none;
+}
 /* signin registration profile stuff */
 #signup-overlay-box {
     display: none;
@@ -337,6 +350,7 @@ select {
     opacity: .95;
     z-index: 1000;
     height: 100%;
+    font-size: calc(20px-2vh);
     place-items: center;
     background: #456173;
 }
@@ -360,7 +374,7 @@ select {
         display: grid;
         grid-gap: calc(var(--gutter) / 2);
         grid-template-columns: 10px repeat(var(--total), calc(50% - var(--gutter) * 2)) 10px;
-        grid-template-rows: minmax(450px, 1fr);
+        grid-template-rows: minmax(400px, 1fr);
         overflow-x: scroll;
         scroll-snap-type: x proximity;
         padding-bottom: calc(.75 * var(--gutter));
@@ -398,17 +412,22 @@ select {
         align-items: center;
         background: #fff;
         border-radius: 8px;
-        color: black;
+        color: #dfe09d;
+        height:90%;
+        background-color:#444444;
     }
-
+    ul.hs.full{
+        height:100%;
+    }
 
   #signout{
       min-width:100px !important;
+      float:right;
   }
   #signinstuff {
     display:none;
     position:relative;
-    float:left;
+    float:right;
   }
   #signinbutton {
     color:white;
@@ -480,10 +499,19 @@ select {
     float:right !important;
     min-width: 200px;
   }
+
+  #border-container{
+      padding-bottom:2em;
+  }
 #lower-leftist-buttons {
     display: inline;
-    width: 30%;
+    padding-bottom:50px;
 }
+#sorter{
+    margin:auto;
+    text-align:center;
+}
+
   #popular-tags {
     color:#dfe09d;
     overflow:auto;
@@ -501,6 +529,7 @@ select {
     /*        margin: auto;*/
     padding: 3vw;
     width:30%;
+    min-width:500px;
     /*        padding-right: 5vw; position: relative;*/
 }
     #pageID {
@@ -509,41 +538,92 @@ select {
             left: 50%;*/
     }
     #statusbar {
-        width: 100%;
-        padding: 2px;
+        width: 74%;
+        padding: 4px;
         border-style: groove;
         border-color: #ffd24d;
         background-color: #111111;
         color: #2d862d;
-        min-width: 200px;
+        min-width: 200px;      
+        margin: auto;
+        position: relative;
+        --gutter:0px;
+    }
+    #StickingContainer {
         top: 0px;
-        padding: 10px 0px;
+        position: sticky;
+        z-index:10;
+        margin: auto;
+        text-align: center;
     }
-    #right-buttons{
-        width:30%;
+
+    #rightist-buttons{
+        float:right;
     }
+
+#openPostMenu{
+    width:10%;
+    min-width:40px;
+    text-align:center;
+    margin: auto;
+}
+#plusemoji {
+    height: fit-content;
+    width: fit-content;
+    text-align:center;
+}
+.rotatefortyfive {
+    animation-name: rotateThePlus;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+@keyframes rotateThePlus {
+    100% {
+        transform: rotate(45deg);
+    }
+}
+
+#censorShieldHarvestContainer{
+    display:none;
+}
+
+#adminToolsContainer{
+    display:none;
+}
+
+#postclassification {
+    width: 20%;
+    background-color: #444444;
+    margin: 8px;
+}
+#postclassification-value{
+    color:#ffd24d;
+}
+
+#right-buttons {
+    width: 30%;
+}
+#accountButton{
+    float:right;
+}
+#contextButton{
+    float:right;
+}
+.inventory-toolkit {
+    grid-template-columns: auto auto auto auto auto;
+    display: inline-grid !important;
+    width: 400px;
+    overflow: scroll;
+}
+
     #test-buttons {
-        grid-template-columns: auto auto auto auto auto;
-        display: inline-grid;
-        width: 400px;
-        max-width:25vw;
-        overflow-x:scroll;
-        
+        display:none;
+        margin-top:-45px;
+        margin-left:5px;
     }
-    /*    #test-buttons {
-            flex-wrap: wrap;
-            display: flex;
-            width: 400px;
-        }
-            #test-buttons > div {
-                flex: 0 0 auto;
-            }
-                #test-buttons > div > button {
-                    width: 16vw !important;
-                    min-width: 40px !important;
-                    min-height: 40px;
-                    font-size: 2vh;
-                }*/
+
 
 #editBoxContainer{
     display:none;
@@ -555,16 +635,57 @@ select {
     display: none;
 }
 
+.standardizedUploadForms {
+    display: none;
+    position: fixed;
+    z-index: 2;
+    top: 8vh;
+    left: 12vw;
+    background-color: #101011;
+    min-height: 70vh;
+    max-height: 75vh;
+    min-width: 70vw;
+    overflow-y: scroll;
+    margin-bottom: 40px;
+    color: antiquewhite;
+}
+
+
+#bountyCreatorContainer {
+    display: none;
+    position: fixed;
+    z-index: 2;
+    top: 8vh;
+    left: 12vw;
+    background-color: #101011;
+    min-height: 70vh;
+    max-height: 75vh;
+    min-width: 70vw;
+    overflow-y: scroll;
+    margin-bottom: 40px;
+    color:antiquewhite;
+}
+#bountyreason{
+    width:50%;
+    max-width:200px;
+}
+#bountycost{
+    width:50px;
+}
+#content-bounty{
+    min-width:300px;
+    min-height:200px;
+}
 
 /* post list stuff */
-  #entryContainer {
+#entryContainer {
     border: solid;
-    padding-left: 8vw;
-    padding-right: 8vw;
+    padding-left: 5vw;
+    padding-right: 5vw;
     padding-top: 2vh;
     padding-bottom: 3vh;
-    color:white;
-  }
+    color: white;
+}
   .post {
     color: white;
     display: inline-block; 
@@ -696,6 +817,10 @@ select {
     display:none;
   }
 
+  #big-container{
+      display:inline-flex;
+  }
+
 
 /* tooltips */
   .tooltiptext {
@@ -802,6 +927,7 @@ select {
     min-width: 90px;
     min-height: 40px;
     vertical-align: middle;
+
   }
   .roleraise {
       width: 90%;
@@ -1255,14 +1381,7 @@ select {
     #advanced-post-title{
       font-size:160% !important;
     }
-    .raise{
-      min-width: 15vw;
-      min-height: 10vw;
-    }
-    #entryContainer{
-      padding-left: 0vw;
-      padding-right: 0vw;
-    }
+
   }
 
   .third{
@@ -1306,6 +1425,10 @@ select {
 /* GAME VIEW */
  #gameview {
   display: none;
+ }
+
+ #currentrole{
+     float:right;
  }
 
 /* RULE34 LAYOUT*/

@@ -95,3 +95,8 @@ function createElementFromHTML(htmlString) {
     // Change this to div.childNodes to support multiple top-level nodes.
     return div.firstChild;
 }
+
+
+function showDropInfo() {
+    $('#postclassification-value').html($('#postclassification :selected').val());
+}

@@ -82,6 +82,7 @@ function submitNewPoll() {
     $("#uploadPollOption-6").empty();
     $("#sampleFile-poll").empty();
     document.querySelector('#myimg').src = "";
+    displayStatus("Poll posted.")
     returnPollBox();
 }
 function voteForThisPollOption(postID, voteoptionindex, voteoptiontally) {
@@ -149,6 +150,7 @@ function returnPaintBox() {
 }
 function submitNewPaint() {
     console.log("SUBMIT PAINT CHANGE");
+    displayStatus("Post painted. Refresh to see changes.");
 }
 function showPaintedPosts() {
     socket.emit('requestPaint');
@@ -207,25 +209,27 @@ function returnShieldCensorHarvestBox() {
 }
 
 function showReplyBox(postElement) {
-    console.log(postElement.attr('postID'));
-    var postID = String(postElement.attr('postID'));
-    console.log($(postElement).children('.post').children('.post-helper').children('.post-title').html());
-    returnTagBox();
-    returnNewPostBox();
-    returnNewStatsBox();
-    returnShieldCensorHarvestBox();
-    returnShareBox();
-    // var fileuploader = $('#fileuploader');
-    // fileuploader.detach();
-    // fileuploader.appendTo('#replyuploaderholder');
-    // fileuploader.css('display', 'block');
-    $('#replytoPostID').val(postID);
-    console.log(String($(postElement).children('.post').children('.post-helper').children('.post-title').html()));
-    $('#title-reply').val(String($(postElement).children('.post').children('.post-helper').children('.post-title').html()));
-    var replyContainer = $('#replyContainer');
-    replyContainer.detach();
-    replyContainer.appendTo('#' + postID);
-    replyContainer.css('display', 'flex');
+    if (rotateToCloseButton()) {
+        console.log(postElement.attr('postID'));
+        var postID = String(postElement.attr('postID'));
+        console.log($(postElement).children('.post').children('.post-helper').children('.post-title').html());
+        returnTagBox();
+        returnNewPostBox();
+        returnNewStatsBox();
+        returnShieldCensorHarvestBox();
+        returnShareBox();
+        // var fileuploader = $('#fileuploader');
+        // fileuploader.detach();
+        // fileuploader.appendTo('#replyuploaderholder');
+        // fileuploader.css('display', 'block');
+        $('#replytoPostID').val(postID);
+        console.log(String($(postElement).children('.post').children('.post-helper').children('.post-title').html()));
+        $('#title-reply').val(String($(postElement).children('.post').children('.post-helper').children('.post-title').html()));
+        var replyContainer = $('#replyContainer');
+        replyContainer.detach();
+        replyContainer.appendTo('#' + postID);
+        replyContainer.css('display', 'flex');
+    }
 }
 function returnReplyBox() {
     // var fileuploader = $('#fileuploader');
@@ -239,6 +243,7 @@ function returnReplyBox() {
 }
 function submitReply(postElement) {
     console.log("submit reply");
+    displayStatus("Replied to post.");
     $('#uploadContent-reply').empty();
     //$("#entryContainer").empty();
     $('#tagForNewReply').empty();
@@ -246,34 +251,37 @@ function submitReply(postElement) {
     document.querySelector('#myimg-reply').src = "";
     returnReplyBox();
 }
+
 function showNewPostBox() {
-    returnNewStatsBox();
-    returnTagBox();
-    returnReplyBox();
-    returnShieldCensorHarvestBox();
-    returnShareBox();
-    // var fileuploader = $('#fileuploader');
-    // fileuploader.detach();
-    // fileuploader.appendTo('#newpostuploaderholder');
-    // fileuploader.css('display', 'block');
-    var newPostContainer = $('#newPostContainer');
-    newPostContainer.detach();
-    newPostContainer.appendTo('body');
-    newPostContainer.css('display', 'block');
-    $('#userroles-newpost:text').val(sessionStorage.getItem('userroles'));
-    if (sessionStorage.getItem('userroles')[11] == "1") {
-        $('#leader-newpost:text').val("leader");
+    if (rotateToCloseButton()) {
+        var newPostContainer = $('#newPostContainer');
+        // var fileuploader = $('#fileuploader');
+        // fileuploader.detach();
+        // fileuploader.appendTo('#newpostuploaderholder');
+        // fileuploader.css('display', 'block');
+        returnTagBox();
+        returnNewStatsBox();
+        returnShieldCensorHarvestBox();
+        returnReplyBox();
+        newPostContainer.detach();
+        newPostContainer.appendTo('#StickingContainer');
+        newPostContainer.css('display', 'block');
+
+        if (sessionStorage.getItem('userroles') !== null) {
+            $('#userroles-newpost:text').val(sessionStorage.getItem('userroles'));
+            if (sessionStorage.getItem('userroles')[11] == "1") {
+                $('#leader-newpost:text').val("leader");
+            }
+        }
     }
 }
 function returnNewPostBox() {
-    // var fileuploader = $('#fileuploader');
-    // fileuploader.detach();
-    // fileuploader.appendTo('#divStorage');
-    // fileuploader.css('display', 'none');
     var newPostContainer = $('#newPostContainer');
+    newPostContainer.css('display', 'none');
     newPostContainer.detach();
     newPostContainer.appendTo('#divStorage');
-    newPostContainer.css('display', 'none');
+    
+    displayStatus("RETURN NEW POST BOX");
 }
 function submitNewPost() {
     console.log("submit");
@@ -282,6 +290,7 @@ function submitNewPost() {
     $("#title-of-new-post").empty();
     $("#sampleFile").empty();
     document.querySelector('#myimg').src = "";
+    displayStatus("New post uploaded.");
     returnNewPostBox();
 }
 function previewFile() {
@@ -458,4 +467,62 @@ function followuser(userID) {
         followerID: parseInt(sessionStorage.getItem("userID"))
     };
     socket.emit("followuser", datapacket);
+}
+
+function openInventory() {
+    var element = document.getElementById("test-buttons");
+    element.classList.toggle("inventory-toolkit");
+}
+
+function showBountyCreatorBox() {
+    $('#userID_bounty').val(sessionStorage.getItem('userID'));
+    var bountyContainer = $('#bountyCreatorContainer');
+    bountyContainer.detach();
+    bountyContainer.prependTo('#StickingContainer');
+    bountyContainer.css('display', 'block');
+}
+function returnBountyBox() {
+    var bountyContainer = $('#bountyCreatorContainer');
+    bountyContainer.detach();
+    bountyContainer.appendTo('#divStorage');
+    bountyContainer.css('display', 'none');
+}
+
+function showGroupCreatorBox() {
+    $('#userID_group').val(sessionStorage.getItem('userID'));
+    var groupContainer = $('#groupCreatorContainer');
+    groupContainer.detach();
+    groupContainer.prependTo('#StickingContainer');
+    groupContainer.css('display', 'block');
+}
+function returnGroupBox() {
+    var groupContainer = $('#groupCreatorContainer');
+    groupContainer.detach();
+    groupContainer.appendTo('#divStorage');
+    groupContainer.css('display', 'none');
+}
+
+function rotateToCloseButton() {
+    var plusEmoji = $('#plusemoji');
+    if (plusEmoji.hasClass('rotatefortyfive')) {
+        returnNewPostBox();
+        returnReplyBox();
+        returnBountyBox();
+        returnAlgomancyBox();
+        returnTastemakerBox();
+        returnChooseRoleBox();
+        returnNewGroupBox();
+        returnNewStatsBox();
+        returnTagBox();
+        returnPollBox();
+        returnPaintBox();
+        returnShareBox();
+        returnShieldCensorHarvestBox();
+        returnReportBox();
+        plusEmoji.removeClass('rotatefortyfive');
+        return false;
+    } else {
+        $('#plusemoji').addClass('rotatefortyfive');
+        return true;
+    }
 }
