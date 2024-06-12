@@ -263,6 +263,7 @@ function showNewPostBox() {
         returnNewStatsBox();
         returnShieldCensorHarvestBox();
         returnReplyBox();
+        returnGroupBox();
         newPostContainer.detach();
         newPostContainer.appendTo('#StickingContainer');
         newPostContainer.css('display', 'block');
@@ -403,13 +404,12 @@ function showGroupCreatorBox() {
     reportContainer.prependTo('#entryContainer');
     reportContainer.css('display', 'block');
 }
-function returnNewGroupBox() {
-    var reportContainer = $('#groupCreatorContainer');
-    reportContainer.detach();
-    reportContainer.appendTo('#divStorage');
-    reportContainer.css('display', 'block');
+function returnGroupBox() {
+    var groupContainer = $('#groupCreatorContainer');
+    groupContainer.detach();
+    groupContainer.appendTo('#divStorage');
+    groupContainer.css('display', 'none');
 }
-
 
 function showReportBox(postID) {
     console.log("SHOW REPORT FOR");
@@ -488,19 +488,6 @@ function returnBountyBox() {
     bountyContainer.css('display', 'none');
 }
 
-function showGroupCreatorBox() {
-    $('#userID_group').val(sessionStorage.getItem('userID'));
-    var groupContainer = $('#groupCreatorContainer');
-    groupContainer.detach();
-    groupContainer.prependTo('#StickingContainer');
-    groupContainer.css('display', 'block');
-}
-function returnGroupBox() {
-    var groupContainer = $('#groupCreatorContainer');
-    groupContainer.detach();
-    groupContainer.appendTo('#divStorage');
-    groupContainer.css('display', 'none');
-}
 
 function rotateToCloseButton() {
     var plusEmoji = $('#plusemoji');
@@ -511,7 +498,7 @@ function rotateToCloseButton() {
         returnAlgomancyBox();
         returnTastemakerBox();
         returnChooseRoleBox();
-        returnNewGroupBox();
+        returnGroupBox();
         returnNewStatsBox();
         returnTagBox();
         returnPollBox();

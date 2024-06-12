@@ -26,15 +26,21 @@ function onloadFunction() {
         }
     } else if (getQueryParam("sort") == "rand") {
         if (getQueryParam("page") !== "") {
-            socket.emit('requestRandPosts', getQueryParam("rand"), getQueryParam("page"));
+            socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
         } else {
-            socket.emit('requestRandPosts', getQueryParam("rand"), "0");
+            socket.emit('requestSortedPosts', getQueryParam("rand"), "0");
         }
     } else if (getQueryParam("sort") == "recd") {
         if (getQueryParam("page") !== "") {
-            socket.emit('requestRecommendedPosts', getQueryParam("page"));
+            socket.emit('requestSortedPosts', getQueryParam("sort"), getQueryParam("page"));
         } else {
-            socket.emit('requestRecommendedPosts', "0");
+            socket.emit('requestSortedPosts', getQueryParam("sort"), "0");
+        }
+    } else if (getQueryParam("sort") == "lead") {
+        if (getQueryParam("page") !== "") {
+            socket.emit('requestSortedPosts', getQueryParam("lead"), getQueryParam("page"));
+        } else {
+            socket.emit('requestSortedPosts', "lead", "0");
         }
     } else if (getQueryParam("sort") == "multi") {
         socket.emit('requestMulti');
@@ -744,6 +750,15 @@ socket.on('receiveRecommendedData', function (recommendedData) {
     postsOnThisPage = [];
     populateStandardFeed(recommendedData[0], recommendedData[1]);
 });
+//receiveLeaderData
+socket.on('receiveLeaderData', function (topPostsAndTags) {
+    postsOnThisPage = [];
+    $('#entryContainer').empty();
+    $('#adjacentBlocks').empty();
+    console.log(topPostsAndTags);
+    populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
+});
+
 
 //sendDatabase
 socket.on('sendDatabase', function (results) {
@@ -752,6 +767,14 @@ socket.on('sendDatabase', function (results) {
     $('#adjacentBlocks').empty();
     console.log(results);
     handleRetrievedDatabase(results);
+});
+//receiveGroupData
+socket.on('receiveGroupData', function (results) {
+    postsOnThisPage = [];
+    $('#entryContainer').empty();
+    $('#adjacentBlocks').empty();
+    console.log(results);
+    populatePageWithGroups(results);
 });
 //receiveArbitrationPostsArray
 socket.on('receiveArbitrationPostsArray', function (results) {

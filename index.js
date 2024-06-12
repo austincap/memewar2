@@ -896,6 +896,54 @@ function requestRecommendedPosts(socket, pagenum) {
             console.log(error);
         });
 }
+
+
+function requestLeaderPosts(socket, pagenum) {
+    console.log("RETRIEVING LEADER POSTS");
+    var topLeaderPostsAndTags = [];
+    var topPostQuery = `
+    MATCH (p:Post)-[r:CREATEDBY]->(a:User)-[:HASROLE]->(l:Role{name:'Leader'})
+    OPTIONAL MATCH (u:User)-[:FOLLOWS]->(a)
+    RETURN COUNT(u) AS followers, p ORDER BY followers DESC SKIP `+ String(PAGESIZE * pagenum) + ` LIMIT ` + String(PAGESIZE)
+    ;
+    var topTagQuery = `
+    MATCH (t:Tag)<-[ta:TAGGEDAS]-(p:Post)
+    WITH t.name AS tag, COUNT(ta) AS tagcount 
+    RETURN tag, tagcount ORDER BY tagcount DESC
+    `;
+    session
+        .run(topPostQuery)
+        .then(function (result) {
+            var dataForClient = [];
+            result.records.forEach(function (record) {
+                //console.log(record["_fields"][0]);
+                //console.log(record["_fields"][1]);
+                var processedPostObject = record["_fields"][1]["properties"];
+                processedPostObject["followers"] = record["_fields"][0];
+                dataForClient.push(processedPostObject);
+            });
+            console.log(dataForClient);
+            topLeaderPostsAndTags.push(dataForClient);
+            session
+                .run(topTagQuery)
+                .then(function (result) {
+                    var tagdataForClient = [];
+                    result.records.forEach(function (record) {
+                        tagdataForClient.push([record["_fields"][0], record["_fields"][1]]);
+                    });
+                    topLeaderPostsAndTags.push(tagdataForClient);
+                    console.log(topLeaderPostsAndTags);
+                    console.log("LEADER POSTS " + String(PAGESIZE * pagenum) + " TO " + String(PAGESIZE * pagenum + PAGESIZE));
+                    socket.emit('receiveLeaderData', topLeaderPostsAndTags);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 function requestAlgomancerPosts(socket, pagenum) {
     console.log("pagenum " + pagenum);
     var AlgoPostsAndTags = [];
@@ -1184,6 +1232,38 @@ function retrievePostsForNetView(socket) {
 }
 
 // OTHER REQUESTS
+function requestGroups(socket) {
+    console.log("REQUEST ALL GROUPS AND THEIR TAGS");
+    var groupsAndTagsArray = [];
+    var groupsArray = [];
+    var tagsArray = [];
+    var temp = {};
+    var query = `
+    MATCH (g:Group {type:'group'})-[:CREATEDBY]->(f:User)
+    OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
+    OPTIONAL MATCH (m:User)-[:JOINED]->(g)
+    RETURN g, COUNT(p), COUNT(m), f.name
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                temp = record["_fields"][0]["properties"];
+                temp["members"] = record["_fields"][1];
+                temp["posts"] = record["_fields"][2];
+                temp["poster"] = record["_fields"][3];
+                console.log(temp);
+                groupsArray.push(temp);
+            });
+            groupsAndTagsArray.push(groupsArray);
+            console.log(groupsAndTagsArray);
+            socket.emit('receiveGroupData', groupsAndTagsArray);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
 function requestTagsForThisPost(socket, postID) {
     var params = {
         postID: parseInt(postID)
@@ -1214,13 +1294,13 @@ function requestTagsForThisPost(socket, postID) {
             console.log(error);
         });
 }
-function requestGroups(socket, pagenum) {
+function requestGroupPosts(socket, pagenum) {
     console.log("REUQEST GROUPS");
-    var paintDataArray = [];
+    var groupPostsArray = [];
     var query;
     query = `
-    MATCH (g:Tag {type:'group'})-[:CREATEDBY]->(m:User)
-    OPTIONAL MATCH (p:Post)-[POSTEDIN]->(g)
+    MATCH (g:Group {type:'group'})-[:CREATEDBY]->(m:User)
+    OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
     RETURN p, g, m
     `;
     session
@@ -1229,7 +1309,7 @@ function requestGroups(socket, pagenum) {
             result.records.forEach(function (record) {
                 paintDataArray.push(record["_fields"][1]);
             });
-            socket.emit('paintPosts', paintDataArray);
+            socket.emit('receiveGroupData', groupPostsArray);
             console.log(paintDataArray);
 
         })
@@ -1315,23 +1395,31 @@ io.on('connection', function (socket) {
         requestOldSchoolFormat(socket, pagenum);
     });
 
-    socket.on('requestRandPosts', function (randPages, pagenum) {
-        requestRandPosts(socket, "10", pagenum);
-    });
-
     socket.on('requestSortedPosts', function (sortType, pagenum) {
+        console.log("REQUEST SORTED POSTS");
+        console.log(sortType);
         switch (sortType) {
             case 'loathed':
             case 'controversial':
             case 'latest':
             case 'like':
                 requestSortedPosts(socket, sortType, pagenum);
+                break;
             case 'clks':
                 requestTop20Posts(socket, pagenum);
+                break;
             case 'rand':
                 requestRandPosts(socket, "10", pagenum);
+                break;
+            case 'recd':
+                requestRecommendedPosts(socket, pagenum);
+                break;
+            case 'lead':
+                requestLeaderPosts(socket, pagenum);
+                break;
             default:
                 requestTop20Posts(socket, pagenum);
+                break;
         }
     });
 
@@ -1341,10 +1429,6 @@ io.on('connection', function (socket) {
 
     socket.on('requestPostsForArbitration', function () {
         requestPostsForArbitration(socket);
-    });
-
-    socket.on('requestRecommendedPosts', function (pagenum) {
-        requestRecommendedPosts(socket, pagenum);
     });
 
     socket.on('requestAlgomancerPosts', function (pagenum) {

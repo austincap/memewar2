@@ -186,7 +186,9 @@ h3 {
         overflow-y: scroll;
     }
 
-
+#seaOfDivs{
+    display:none;
+}
 
 #map {
     height: 180px;
@@ -355,7 +357,7 @@ select {
     background: #456173;
 }
     :root {
-        --gutter: 20px;
+        --gutter: 0px;
     }
     .app {
         padding: var(--gutter) 0;
@@ -384,7 +386,9 @@ select {
             content: '';
         }
 
-
+.footer-container{
+    display:block;
+}
     #algomancy-overlay-box {
         display: none;
     }
@@ -568,8 +572,8 @@ select {
     margin: auto;
 }
 #plusemoji {
-    height: fit-content;
-    width: fit-content;
+/*    height: fit-content;
+    width: fit-content;*/
     text-align:center;
 }
 .rotatefortyfive {
@@ -817,9 +821,16 @@ select {
     display:none;
   }
 
-  #big-container{
-      display:inline-flex;
-  }
+    #big-container {
+        display: flex;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        margin: 0;
+        float:left;
+    }
+    #big-container > div {
+        min-width: 200px;
+    }
 
 
 /* tooltips */
@@ -922,12 +933,10 @@ select {
     --hover: #e5ff60;
     margin-left: 1%;
     margin-right: 1%;
-    /*min-width: 21vw;*/
-    width: 8%;
-    min-width: 90px;
+    width: 7%;
+    min-width: fit-content;
     min-height: 40px;
     vertical-align: middle;
-
   }
   .roleraise {
       width: 90%;
@@ -1280,35 +1289,31 @@ select {
         max-width: 20px !important;
         max-height: 20px !important;
     }
-    /*advanced post */
+ 
+  /*advanced post */
     #ap {
         display: inline;
     }
-
     .advanced-post-container {
         display: flex;
         margin-left: -8% !important;
         margin-right: -3% !important;
         width: 116%;
     }
-
     .advanced-post-container > div {
         flex: 1;
     }
-
     .advimg {
         min-height: 280px !important;
         display: block !important;
         margin-left: auto !important;
         margin-right: auto !important;
     }
-
     #advanced-post-title {
         font-size: 28px;
         width: 90%;
         padding-left: 3px;
     }
-
     #advanced-post-stats {
         float: both !important;
         max-width: 15%;
@@ -1316,12 +1321,10 @@ select {
         border: solid;
         order: 1;
     }
-
     #advanced-post {
         /*display:inline-flex;*/
         order: 2;
     }
-
     #advanced-post-tags {
         max-width: 25%;
         min-width: 25%;
@@ -1329,12 +1332,10 @@ select {
         border: solid;
         order: 3;
     }
-
     #advanced-post-content {
         padding: 5px;
         border: solid;
     }
-
     #advanced-post-favoriters {
         max-width: 100%;
         max-height: 20vw;
@@ -1342,7 +1343,6 @@ select {
         overflow-y: scroll !important;
         text-overflow: ellipsis !important;
     }
-
     .fave-container {
         overflow: hidden;
         text-overflow: ellipsis;

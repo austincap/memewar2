@@ -69,7 +69,9 @@ function randomSort() {
 function recommendedSort() {
     window.location.href = "/?sort=recd";
 }
-
+function leaderSort() {
+    window.location.href = "/?sort=lead";
+}
 
 // POPULATING FUNCTIONS
 function populateStandardFeed(posts, tags) {
@@ -89,6 +91,9 @@ function populatePageWithPosts(posts, postListContainer) {
         } else if (post.type == "directmessage") {
             var processedPostTemplate = `<span></span>`;
             console.log("DIRECT MESSAGE");
+        } else if (post.type == "group") {
+            console.log("GROUP");
+            var [mustacheData, processedPostTemplate] = displayGroup(post);
         } else {
             var processedPostTemplate = `<span></span>`;
             console.log("UNKNOWN POST TYPE");
@@ -292,8 +297,6 @@ function displayTextPost(post) {
               </div>
             </div>`;
     return [mustacheData, processedPostTemplate];
-
-
 }
 function displayPollPost(post) {
     console.log('POLL POST');
@@ -387,6 +390,81 @@ function displayPollPost(post) {
     return [mustacheData, processedPostTemplate];
 }
 
+function displayGroup(group) {
+    console.log(group);
+    var date = new Date(group.postID * 1000).toDateString();
+    var mustacheData = {
+        postID: String(group.postID),
+        profit: String(group.upvotes - group.downvotes),
+        up: String(group.upvotes),
+        down: String(group.downvotes),
+        file: String(group.file),
+        date: date,
+        clicks: String(group.clicks),
+        title: String(group.title),
+        content: String(group.content),
+        poster: "",
+        posterID: "",
+        members: String(group.members),
+        settings: String(group.settings),
+        postcount: String(group.posts),
+        members: String(group.members)
+    };
+    //CHECK IF POST HAS A LOCATION AND IS NOT DEFAULT LOCATION
+    if (group.location !== undefined && group.location !== "") {
+        console.log("POST HAS LOCATION");
+        mustacheData.location = post.location.split("+").map(element => parseFloat(element));
+        let circle = L.circle(mustacheData.location, {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.5,
+            radius: 500
+        }).addTo(mapDisplay);
+        circle.bindPopup("<a href='/?post=" + mustacheData.postID + "' onclick='viewPost(" + mustacheData.postID + ");'>" + mustacheData.title + "</a>");
+    }
+
+
+    postsOnThisPage.push(mustacheData);
+    //console.log(date);
+    var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
+              <div class='post'>
+                <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+                  <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
+                </a>
+                <div class='post-header'>
+                <span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>the number of upvotes minus the number of downvotes this post received</span>
+                  <span class='upvotecount'>{{profit}}</span>&nbsp;profit
+                </span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>{{clicks}}</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-numreplies'>{{postcount}}</span>&nbsp;posts</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span><span class='post-memcount'>{{members}}</span>&nbsp;members</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='poster-tooltip'><a href='/?user={{posterID}}'><span class='tooltiptext'>view OP</span>{{poster}}</a>&nbsp;</span>&nbsp;&nbsp;
+                  &nbsp;&nbsp;
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
+                <button class='raise profallow haters-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
+                <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
+                <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
+                <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
+                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>join this group</span>👐</button>
+                <button class='raise profallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
+                <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
+                <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
+                <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk founder</span>🔍</button>
+                <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
+                <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
+                <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+              </div>
+            </div>`;
+    return [mustacheData, processedPostTemplate];
+}
 
 //POPULATING WITH NON-POSTS
 function viewUserMessages(userID) {
@@ -427,7 +505,10 @@ function requestGroups() {
     console.log('request groups');
     socket.emit('requestGroups', 0);
 }
-
+function populatePageWithGroups(groups) {
+ 
+    populatePageWithPosts(groups[0], "#entryContainer");
+}
 
 function showSeaOfDivs() {
     console.log('SEA VIEW');

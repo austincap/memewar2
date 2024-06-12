@@ -62,10 +62,12 @@
             <div>
                 <button id="contextButton" onclick="contextButtonFunction($(this).html());">Net</button>
                 <button id="accountButton" onclick="clickAccountButton(this);">Account</button>
+                <br/>
+                <br/>
 
-                <div id="currentrole">Lurker</div>
                 <div><button id="signout" class="raise" onclick="signout(this);">Sign out</button></div>
-                
+                <div id="currentrole">Lurker</div>
+
             </div>
             <div id="signinstuff">
                 <div id="signInBox">
@@ -150,8 +152,9 @@
                     <button onclick="loathedSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-downvotes">Most loathed</button>
                     <button onclick="recentSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-time">Most recent</button>
                     <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
-                    <button onclick="recommendedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most recommended</button>
+                    <button onclick="recommendedSort()" class="w3-bar-item w3-button" id="sort-by-recd">Most recommended</button>
                     <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+                    <button onclick="leaderSort()" class="w3-bar-item w3-button" id="sort-by-followed">Most followed</button>
                 </div>
             </div>
             <div id="popular-tags">
@@ -501,8 +504,9 @@
         </div>
     </div>
 
-    <div>
-        <div class="header-container">
+   
+    <div class="footer-container">
+        <div class="footer-container">
             <div></div>
             <div>
                 <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
