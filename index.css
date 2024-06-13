@@ -340,6 +340,9 @@ select {
 .founders-only{
     display: none;
 }
+.algomancers-only{
+    display: none;
+}
 /* signin registration profile stuff */
 #signup-overlay-box {
     display: none;
@@ -572,8 +575,6 @@ select {
     margin: auto;
 }
 #plusemoji {
-/*    height: fit-content;
-    width: fit-content;*/
     text-align:center;
 }
 .rotatefortyfive {
@@ -628,6 +629,17 @@ select {
         margin-left:5px;
     }
 
+#globalInfoContainer {
+    display: inline;
+    flex-wrap: wrap;
+    margin: 0;
+   
+    max-width:100px;
+}
+    #globalInfoContainer > div {
+        min-width: 100px;
+    }
+
 
 #editBoxContainer{
     display:none;
@@ -644,14 +656,15 @@ select {
     position: fixed;
     z-index: 2;
     top: 8vh;
-    left: 12vw;
+    left: 8vw;
     background-color: #101011;
     min-height: 70vh;
     max-height: 75vh;
     min-width: 70vw;
     overflow-y: scroll;
-    margin-bottom: 40px;
     color: antiquewhite;
+    margin: 3%;
+    padding: 3px;
 }
 
 
@@ -689,6 +702,7 @@ select {
     padding-top: 2vh;
     padding-bottom: 3vh;
     color: white;
+    width:70%;
 }
   .post {
     color: white;
@@ -709,11 +723,12 @@ select {
   .post-title {
     font-size: 120% !important;
   }
-  .post-header {
-    height:10%;
-    min-height:16px;
-    padding-bottom:1vh;
-  }
+.post-header {
+    height: 8%;
+    font-size: calc(10px + 1.5vw);
+    min-height: 12px;
+    padding-bottom: 1vh;
+}
   .post-helper {
     display: flex !important;
     width:100%;
@@ -931,8 +946,8 @@ select {
   .raise {
     --color: #dfe09d;
     --hover: #e5ff60;
-    margin-left: 1%;
-    margin-right: 1%;
+    margin-left: 0.5vw;
+    margin-right: 0.5vw;
     width: 7%;
     min-width: fit-content;
     min-height: 40px;

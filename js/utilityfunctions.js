@@ -55,6 +55,7 @@ function generateUUID() {
     });
     return uuid;
 }
+
 function displayStatus(message) {
     document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">' + message + '</marquee>';
     console.log(message);

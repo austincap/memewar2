@@ -457,6 +457,15 @@ function returnTastemakerBox() {
 }
 
 
+function joinGroup(postIDofGroup) {
+
+    var datapacket = {
+        postID: postIDofGroup,
+        joinerID: sessionStorage.getItem("userID")
+    };
+    socket.emit("joingroup", datapacket);
+}
+
 function stalkPoster(postID) {
     $("#entryContainer").empty();
     socket.emit("stalkuser", parseInt(postID));

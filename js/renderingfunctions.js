@@ -389,7 +389,6 @@ function displayPollPost(post) {
             </div>`;
     return [mustacheData, processedPostTemplate];
 }
-
 function displayGroup(group) {
     console.log(group);
     var date = new Date(group.postID * 1000).toDateString();
@@ -403,8 +402,8 @@ function displayGroup(group) {
         clicks: String(group.clicks),
         title: String(group.title),
         content: String(group.content),
-        poster: "",
-        posterID: "",
+        poster: group.poster,
+        posterID: String(group.postID),
         members: String(group.members),
         settings: String(group.settings),
         postcount: String(group.posts),
@@ -429,7 +428,7 @@ function displayGroup(group) {
     var processedPostTemplate = `
             <div class='post-container' postID='{{postID}}' data-profit='{{profit}}' clicks='{{clicks}}'>
               <div class='post'>
-                <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+                <a class='post-helper' href='/?group={{postID}}' onclick='viewGroup({{postID}});'>
                   <div class='post-visual'><img class='activeimage' src='uploaded/{{file}}'/></div>
                   <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{content}}</div></div></div>
                 </a>
@@ -452,7 +451,7 @@ function displayGroup(group) {
                 <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(0, {{postID}});'><span class='tooltiptext'>attempt to censor this post</span>&#x1f4a3;</button>
-                <button class='raise profallow' onclick='favoritePost({{postID}});'><span class='tooltiptext'>join this group</span>👐</button>
+                <button class='raise profallow' onclick='joinGroup({{postID}});'><span class='tooltiptext'>join this group</span>👐</button>
                 <button class='raise profallow taggers-only' onclick='showTagBox({{postID}});'><span class='tooltiptext'>tag this post</span>🏷</button>
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
@@ -464,6 +463,10 @@ function displayGroup(group) {
               </div>
             </div>`;
     return [mustacheData, processedPostTemplate];
+}
+
+function viewGroup(groupID) {
+
 }
 
 //POPULATING WITH NON-POSTS
@@ -506,7 +509,7 @@ function requestGroups() {
     socket.emit('requestGroups', 0);
 }
 function populatePageWithGroups(groups) {
- 
+    $('#pageID').html('all groups');
     populatePageWithPosts(groups[0], "#entryContainer");
 }
 

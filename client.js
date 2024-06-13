@@ -9,7 +9,7 @@ function onloadFunction() {
     //paper.install(window);
     //paper.setup('myCanvas');
     //console.log(paper.view);
-    if (getQueryParam("post") !== "") {
+    if (getQueryParam("post") !== "" || getQueryParam("group") !== "") {
         //
         socket.emit("viewpost", getQueryParam("post"));
     } else if (getQueryParam("user") !== "") {
@@ -457,6 +457,92 @@ socket.on('userChecked', function(resultOfCheck){
       break;
   }
 });
+//receiveSingleGroupsData
+socket.on('receiveSingleGroupsData', function (dataFromServer) {
+    postsOnThisPage = [];
+    console.log("receiveSingleGroupsData");
+    console.log(dataFromServer);
+    var viewedPost = dataFromServer[0];
+    var repliesToPost = dataFromServer[1];
+    var tags = dataFromServer[2];
+    var viewedPostData = new Date(viewedPost.postID * 1000).toDateString();
+    var viewedPostMustacheData = {
+        postID: viewedPost.postID,
+        up: String(viewedPost.upvotes),
+        down: String(viewedPost.downvotes),
+        clicks: String(viewedPost.clicks),
+        title: String(viewedPost.title),
+        memecoinsspent: String(viewedPost.memecoinsspent),
+        date: viewedPostData,
+        content: String(viewedPost.content),
+        file: String(viewedPost.file)
+    };
+    var processedViewedPostTemplate = `
+        <div>
+          <div class="advanced-post-container" postID="{{postID}}" data-profit="{{profit}}" clicks="{{clicks}}">
+            <div id="advanced-post-stats">
+              <span id="advanced-post-upvotes">{{up}}</span>&nbsp;upvotes<br/>
+              <span id="advanced-post-downvotes">{{down}}</span>&nbsp;downvotes<br/>
+              <span id="advanced-post-clicks">{{clicks}}</span>&nbsp;clicks<br/>
+              <span id="advanced-post-mcspent">{{memecoinsspent}}</span>&nbsp;memecoins spent on post<br/>
+              <span id="advanced-post-date">{{date}}</span>&nbsp;post was created<br/>
+              <span id="advanced-post-id">{{postID}}</span>&nbsp;is post's id#
+              <hr/>
+              favorited by:<br/>
+              <div id="advanced-post-favoriters"></div>
+            </div>
+            <div id="advanced-post">
+              <img class="activeimage advimg" src="uploaded/{{file}}"/>
+              <div id="advanced-post-title">{{title}}</div>
+            </div>
+            <div id="advanced-post-tags">
+            </div>
+          </div>
+          <div id="advanced-post-content">{{content}}</div>
+          <div class="post-buttons">
+            <button class="raise anonallow" onclick="showReplyBox($(this).parent().parent());"><span class="tooltiptext">quick reply</span>&#x1f5e8;</button>
+            <button class="raise profallow" onclick="showVoteBox({{postID}}, true);"><span class="tooltiptext">upvote</span><span style="filter:sepia(100%);">🔺</span></button>
+            <button class="raise profallow haters-only" onclick="showVoteBox({{postID}}, false);"><span class="tooltiptext">downvote</span><span style="filter:sepia(100%);">🔻</span></button>
+            <span class="advancedButtons">
+              <button class="raise profallow" onclick="showShieldCensorHarvestBox(2, {{postID}});"><span class="tooltiptext">convert this post's profit into memecoin, then delete post</span>♻</button>
+              <button class="raise protectors-only profallow" onclick="showShieldCensorHarvestBox(1, {{postID}});"><span class="tooltiptext">add a free speech shield to this post</span>🛡</button>
+              <button class="raise protectors-only profallow" onclick="showShieldCensorHarvestBox(0, {{postID}});"><span class="tooltiptext">attempt to censor this post</span>&#x1f4a3;</button>
+              <button class="raise anonallow" onclick="showShareBox($(this).parent().parent());"><span class="tooltiptext">share this post</span><svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path fill="#dfe09d" d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg></button>
+              <button class="raise profallow" onclick="favoritePost({{postID}});"><span class="tooltiptext">favorite this post</span>❤</button>
+            </span>
+            <button class="raise taggers-only profallow" onclick="showTagBox({{postID}});"><span class="tooltiptext">tag this post</span>🏷</button>
+            <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
+          </div>
+        </div>`;
+    var html = Mustache.render(processedViewedPostTemplate, viewedPostMustacheData);
+    //$('#result').html( html );
+    $('#entryContainer').append(html);
+    if (is_url(viewedPost.content)) {
+        $('#advanced-post-content').empty();
+        var urlIframe = "<iframe src='https://web.archive.org/web/" + viewedPost.content + "' height='300px' width='500px' sandbox='allow-same-origin'></iframe>";
+        $('#advanced-post-content').append(urlIframe);
+    }
+    viewedPost.favoritedBy.forEach(function (userWhoFaved) {
+        $('#advanced-post-favoriters').append('<button class="raise" onclick="viewProfilePage(' + String(userWhoFaved[0]) + ')">' + userWhoFaved[1] + '</button>');
+    });
+    console.log("TESTS");
+    postsOnThisPage.push(viewedPostMustacheData);
+    console.log(postsOnThisPage);
+    populatePageWithPosts(repliesToPost, "#entryContainer");
+    console.log(postsOnThisPage);
+    $('#popular-tag-span').empty();
+    if (tags.length == (undefined || 0)) {
+        tags.forEach(function (tag) {
+            var processedTag = '<button class="fill popular-tag-button"><span class="tag-name">' + tag[0] + '</span>&nbsp;(<span class="number-of-posts-with-tag">' + tag[1] + '</span>)</button>&nbsp;';
+            $('#popular-tag-span').append(processedTag);
+        });
+        $(".popular-tag-button").on("click", function () {
+            console.log($(this).children(".tag-name").html());
+            $("#entryContainer").empty();
+            socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
+        });
+    }
+});
 //receiveSinglePostData
 socket.on('receiveSinglePostData', function(dataFromServer){
   postsOnThisPage = [];
@@ -542,7 +628,6 @@ socket.on('receiveSinglePostData', function(dataFromServer){
             socket.emit('requestPostsWithTag', $(this).children(".tag-name").html());
         });
   }
-
 });
 //paintPosts
 socket.on('paintPosts', function (paintDataArray) {

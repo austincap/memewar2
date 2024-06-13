@@ -9,11 +9,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.1/socket.io.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/4.0.1/mustache.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-dispatch@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-quadtree@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-timer@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3-force@3"></script>
-    <script type="text/javascript" src="https://d3js.org/d3.v6.js"></script>
 
     <script type="text/javascript" src="js/rhill-voronoi-core.js"></script>
     <script type="text/javascript" src="js/topojson.v1.min.js"></script>
@@ -28,7 +23,11 @@
     <!-- <link rel="shortcut icon" href="../images/favicon.ico"><link/> -->
 </head>
 <body>
-    <div id="StickingContainer"><marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to tomoni!</marquee><button id="openPostMenu" class="raise" onclick="showNewPostBox();"><span class='tooltiptext'>make a post</span><div id="plusemoji">➕</div><span></span></button></div>
+    <div id="StickingContainer">
+        <marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">Welcome to tomoni!</marquee>
+        <button id="openPostMenu" class="raise" onclick="showNewPostBox();"><span class='tooltiptext'>make a post</span><div id="plusemoji">➕</div><span></span></button>
+    </div>
+
     <div id="header-container">
 
         <div id="right-buttons">
@@ -53,7 +52,6 @@
             </div>
         </div>
 
-
         <div id="centerstage">
             <button onclick="gohome();"><h1 id="pageID">tomoni<span id="pageID-tagname"></span></h1></button>
         </div>
@@ -62,13 +60,12 @@
             <div>
                 <button id="contextButton" onclick="contextButtonFunction($(this).html());">Net</button>
                 <button id="accountButton" onclick="clickAccountButton(this);">Account</button>
-                <br/>
-                <br/>
-
+                <br />
+                <br />
                 <div><button id="signout" class="raise" onclick="signout(this);">Sign out</button></div>
                 <div id="currentrole">Lurker</div>
-
             </div>
+
             <div id="signinstuff">
                 <div id="signInBox">
                     <div><input id="signInName" placeholder="username" type="text" /></div>
@@ -77,13 +74,13 @@
                 </div>
             </div>
         </div>
+
     </div>
 
 
     <div id="signup-overlay-box">
         <div class="app">
             <h1>Choose your role!</h1>
-
             <ul class="hs full">
                 <li class="item roleraise" onclick="selectThisRole('Hater');"><h2>Hater</h2><div>You can downvote.<br />You are not here to make friends.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Tagger');"><h2>Tagger</h2><div>Add a tag to threads or individual comments.<br />You enjoy bringing order to the world.</div></li>
@@ -101,7 +98,6 @@
                 <li class="item roleraise" onclick="selectThisRole('Founder');"><h2>Founder</h2><div>Create and manage groups.<br />You don't mind responsibility.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Algomancer');"><h2>Algomancer</h2><div>Edit the collective custom algorithm how you see fit.<br />You like to tinker.</div></li>
             </ul>
-
             <div class="container">
                 <div class="item">
                     <button><h3>Select the role <span id="submitRoleButton"></span></h3></button>
@@ -163,38 +159,81 @@
         </div>
     </div>
 
+    <div style="display:block;">
+        <div id="big-container">
+            <div id="d3frame">
+                <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+                <svg id="svg"></svg>
+            </div>
 
-    <div id="big-container">
+            <div id="seaOfDivs">
 
-        <div id="d3frame">
-            <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
-            <svg id="svg"></svg>
+            </div>
+
+            <div id="globalInfoContainer">
+                <div><button id="browse-groups" class="raise" onclick="requestGroups();">Browse groups</button></div>
+                <div><button id="global-stats" class="raise" onclick="checkGlobalStats();">Check stats</button></div>
+                <div><button id="about" class="raise" onclick="window.location.href='about.html';">About site</button></div>
+                <div>Today's basic income:<span if="todaysBasicIncome"></span></div>
+
+            </div>
+
+            <div id="entryContainer">
+
+            </div>
+            <div></div>
+            <div id="multiContainer">
+                <div id="multi-left"></div>
+                <div id="multi-center"></div>
+                <div id="multi-right"></div>
+            </div>
         </div>
 
-        <div id="seaOfDivs">
 
+        <div class="footer-container">
+            <div>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
+                <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
+            </div>
         </div>
-
-
-        <div id="globalInfoContainer">
-            <div><button id="view-groups" class="raise" onclick="requestGroups();">Browse groups</button></div>
-            <div id="totalPosts"></div>
-            <div id="todaysBasicIncome"></div>
-
-        </div>
-
-        <div id="entryContainer">
-
-        </div>
-
-        <div id="multiContainer">
-            <div id="multi-left"></div>
-            <div id="multi-center"></div>
-            <div id="multi-right"></div>
-        </div>
-
-
     </div>
+
+    <div id="adjacentblocks">
+        <div id="previewframe">
+            <div id="previewframeTopSpace"></div>
+            <div id="postNameInModalPostOnly"></div>
+            <button id="upvote" onclick="upvotePost()">Upvote it</button>
+            <button id="downvote">Hate it</button>
+            <button id="tagIt" onclick="tagPost()">Tag it</button>
+            <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+            <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)" /></div>
+            <br />
+            <hr />
+            <div id="previewContent">test</div>
+        </div>
+
+        <div id="upvoteTagModal">
+            <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
+            <div id="contentInModal"></div>
+            <hr />
+            <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
+            <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
+        </div>
+
+        <div id="submitnew">
+            <input type="text" id="nodename" maxlength="150" class="submissionslot" placeholder="post title goes here" />
+            <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here" /><br />
+            <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)" /><br />
+            <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)" /><br />
+            <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
+        </div>
+    </div>
+
 
     <div id="divStorage">
 
@@ -234,11 +273,15 @@
                 <br />
                 <textarea type="text" placeholder="your post content can be a link, a goddamn 3,000 word essay, or nothing at all" id="uploadContent" name="content" maxlength="25000"></textarea>
                 <br />
-                *<select id="postclassification" name="postclassification" onchange="showDropInfo()">
+                <select id="postclassification" name="postclassification" onchange="showDropInfo()">
                     <option value="discuss" title="classify as discussion">😄</option>
                     <option value="news" title="classify as news">📰</option>
-                    <option value="biz" title="classify as business">💵</option>
+                    <option value="ideology" title="classify as ideology">🎓</option>
                     <option value="porn" title="classify as porn">🔞</option>
+                    <option value="question" title="classify as question">🤔</option>
+                    <option value="memes" title="classify as memes">💩</option>
+                    <option value="media" title="classify as media">🎮</option>
+                    <option value="personal" title="=classify as personal">💌</option>
                 </select>
                 <span id="postclassification-value">classify as</span>
                 <br />
@@ -445,11 +488,11 @@
                     <label for="groupname">Group name:</label><input type="text" id="group_name" name="groupname" minlength="4" maxlength="32" required placeholder="make it catchy"><br />
                     <label for="groupfocus">What will the focus of this group be?</label>
                     <select id="group_focus" name="groupfocus">
-                        <option value="general">General</option>
+                        <option value="whatever">Whatever</option>
                         <option value="ideology">Ideology</option>
                         <option value="porn">Porn</option>
                         <option value="news">News</option>
-                        <option value="inquiry">Inquiry</option>
+                        <option value="question">Question</option>
                         <option value="memes">Memes</option>
                         <option value="media">Media</option>
                         <option value="personal">Personal</option>
@@ -460,6 +503,9 @@
                     <label for="groupsettings">Select any additional settings for your group you want:</label><br />
                     <label for="byinvite">Invite only:</label><input type="checkbox" id="byinvite_group" name="byinvite" value="no" checked><br />
                     <label for="nolinks">No links:</label><input type="checkbox" id="nolinks_group" name="nolinks" value="no" checked><br />
+                    <br />
+                    <img id="myimg_group" src="" height="150" alt="Image preview..." />
+                    <input type="file" id="sampleFile-group" name="sampleFile-group" onchange="previewFile();" />
                     <br />
                     <input class="raise" type="submit" value="Submit" />
                 </form>
@@ -486,7 +532,7 @@
                     <option value="defend">Defend user</option>
                     <option value="subversive">Subversive</option>
                     <option value="spam">Spam</option>
-                </select><br/>
+                </select><br />
                 *<textarea required id="content-bounty" name="content-bounty" type="text" minlength="20" maxlength="800" placeholder="provide a detailed description for what you want using at least 20 characters"></textarea><br />
                 *<label for="bountycost">What will you set the bounty at?</label>
                 <input required type="number" id="bountycost" name="bountycost" min="0" max="100"><br />
@@ -503,57 +549,6 @@
 
         </div>
     </div>
-
-   
-    <div class="footer-container">
-        <div class="footer-container">
-            <div></div>
-            <div>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
-            </div>
-            <div></div>
-        </div>
-
-
-        <div id="adjacentblocks">
-            <div id="previewframe">
-                <div id="previewframeTopSpace"></div>
-                <div id="postNameInModalPostOnly"></div>
-                <button id="upvote" onclick="upvotePost()">Upvote it</button>
-                <button id="downvote">Hate it</button>
-                <button id="tagIt" onclick="tagPost()">Tag it</button>
-                <button id="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-                <div class="autocomplete" style="width:300px;"><input type="text" id="newTagInput" maxlength="20" placeholder="enter your tag (autolowercase)" /></div>
-                <br />
-                <hr />
-                <div id="previewContent">test</div>
-            </div>
-
-
-            <div id="upvoteTagModal">
-                <span>Upvote&nbsp;</span><span id="tagNameInModal"></span><span>&nbsp;tag on post&nbsp;</span><span id="postNameInModal"></span><span>&nbsp;?</span>
-                <div id="contentInModal"></div>
-                <hr />
-                <button id="upvoteTag" onclick="upvoteTag()">Upvote tag?</button>
-                <button class="closeWindow" onclick="closeAllFrames();document.getElementById('uploadNewPostButton').innerHTML='+';clickOnAddNewPost=false;">Close</button>
-            </div>
-
-            <div id="submitnew">
-                <input type="text" id="nodename" maxlength="150" class="submissionslot" placeholder="post title goes here" />
-                <input type="text" id="userInputtedContent" class="submissionslot" placeholder="link goes here" /><br />
-                <input type="text" id="tag1" maxlength="20" class="submissionslot" placeholder="tag1 (must fill!)" /><br />
-                <input type="text" id="tag2" maxlength="20" placeholder="tag2 (optional)" /><br />
-                <button id="upload" onclick="sendNewPostToServer()" disabled="disabled">Upload</button>
-            </div>
-        </div>
-    </div>
-
 
     <div id="tagColumn"></div>
     <div id="gridview">
@@ -594,7 +589,12 @@
     <script type="text/javascript" src="views/bubbleview.js"></script>
     <script type="text/javascript" src="views/paperscript.js"></script>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/d3-dispatch@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-quadtree@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-timer@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-force@3"></script>
 
+<script src="https://d3js.org/d3.v6.js"></script>
 <!--<script src="js/phaser.min.js"></script>
 <script src="blockchain.js"></script>-->
 </html>

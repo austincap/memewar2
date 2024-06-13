@@ -8,6 +8,8 @@ var clickOnAddNewTag = false;
 var clickOnAddNewPost = false;
 var existingTagArray = [];
 
+const s = d3.forceSimulation(nodes);
+
 linkifyOptions = {
     attributes: null,
     className: 'linkified',
@@ -38,11 +40,6 @@ function clickNewPostButton() {
         document.getElementById('uploadNewPostButton').innerHTML = "+";
         clickOnAddNewPost = false;
     }
-}
-
-function displayStatus(message) {
-    //
-    document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">' + message + '</marquee>';
 }
 
 function sendNewPostToServer() {
@@ -161,32 +158,32 @@ inputs.change(function () {
     }
 });
 
-var text_truncate = function (str, length, ending) {
-    if (length == null) {
-        length = 100;
-    }
-    if (ending == null) {
-        ending = '...';
-    }
-    //console.log(String(str));
-    if (str !== null) {
-        //console.log("STRING IS NOT NULL");
-        if (str.length > length) {
-            //console.log(str.substring(0, length - ending.length) + ending);
-            return str.substring(0, length - ending.length) + ending;
-        } else {
-            return str;
-        }
-    } else {
-        //console.log("STRING IS NULL");
-        return "null";
-    }
-};
+
 
 var previewContent = document.getElementById("previewContent");
 
 function handleRetrievedDatabase(results) {
-
+    var text_truncate = function (str, length, ending) {
+        if (length == null) {
+            length = 100;
+        }
+        if (ending == null) {
+            ending = '...';
+        }
+        //console.log(String(str));
+        if (str !== null) {
+            //console.log("STRING IS NOT NULL");
+            if (str.length > length) {
+                //console.log(str.substring(0, length - ending.length) + ending);
+                return str.substring(0, length - ending.length) + ending;
+            } else {
+                return str;
+            }
+        } else {
+            //console.log("STRING IS NULL");
+            return "null";
+        }
+    };
     var promise1 = new Promise(function (resolve, reject) {
         console.log("DBRESULTSNODES");
         console.log(dbresults.nodes);
@@ -232,11 +229,8 @@ function handleRetrievedDatabase(results) {
 
         resolve(dbresults);
     });
-
-
-
+    
     promise1.then(function (data) {
-
         var margin = { top: 10, right: 40, bottom: 30, left: 30 },
             width = 450 - margin.left - margin.right,
             height = 400 - margin.top - margin.bottom;
@@ -347,24 +341,11 @@ function handleRetrievedDatabase(results) {
             .force("charge", d3.forceManyBody().strength(-400).distanceMin(13))
             .force("center", d3.forceCenter(600, 600));
 
-        function ticked() {
-            node.attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; });
-            postTitle.attr("x", function (d) { return d.x; }).attr("y", function (d) { return d.y; });
-            link
-                .attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-            path.attr("d", function (d) {
-                var dx = d.target.x - d.source.x,
-                    dy = d.target.y - d.source.y;
-                return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
-            });
-        }
+
 
         simulation.nodes(nodes).on("tick", ticked);
         console.log(links);
-
+        console.log("PSOTITEL");
         var postTitle = svg.selectAll(".mytext")
             .data(nodes)
             .enter().append("text")
@@ -382,7 +363,20 @@ function handleRetrievedDatabase(results) {
         //   .attr("y", function(d){return d.y;})
         //   .attr("width", "50")
         //   .attr("height", "50");
-
+        function ticked() {
+            node.attr("cx", function (d) { return d.x; }).attr("cy", function (d) { return d.y; });
+            postTitle.attr("x", function (d) { return d.x; }).attr("y", function (d) { return d.y; });
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+            path.attr("d", function (d) {
+                var dx = d.target.x - d.source.x,
+                    dy = d.target.y - d.source.y;
+                return "M " + d.source.x + " " + d.source.y + " L " + d.target.x + " " + d.target.y;
+            });
+        }
 
         // Define drag beavior
         function dragstarted(d) {
@@ -476,7 +470,6 @@ function handleRetrievedDatabase(results) {
                 .links(data.links);
         }
 
-
         svg
             .call(drag);
         function dragstarted() {
@@ -491,7 +484,6 @@ function handleRetrievedDatabase(results) {
         function dragended() {
             g.attr("cursor", "grab");
         }
-
 
     });
 }

@@ -502,8 +502,9 @@ app.post('/uploadnewgroup', upload.single('sampleFile-group'), function (req, re
     };
     query = `
     MATCH (whomadeit:User {userID:$userID})
-    MERGE (newgroup:Group {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, settings:$settings, focus:$focus})
+    MERGE (newgroup:Post {postID:$postID, upvotes:$upvotes, downvotes:$downvotes, type:$type, title:$title, content:$content, file:$file, clicks:$clicks, settings:$settings, focus:$focus})
     MERGE (newgroup)-[cb:CREATEDBY]->(whomadeit)
+    MERGE (whomadeit)-[ad:MEMBEROF]->(newgroup)
     RETURN newgroup
     `;
 
@@ -1239,10 +1240,10 @@ function requestGroups(socket) {
     var tagsArray = [];
     var temp = {};
     var query = `
-    MATCH (g:Group {type:'group'})-[:CREATEDBY]->(f:User)
+    MATCH (g:Post {type:'group'})-[:CREATEDBY]->(f:User)
     OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
-    OPTIONAL MATCH (m:User)-[:JOINED]->(g)
-    RETURN g, COUNT(p), COUNT(m), f.name
+    OPTIONAL MATCH (m:User)-[:MEMBEROF]->(g)
+    RETURN g, COUNT(p), COUNT(m), f.name, f.userID
     `;
     session
         .run(query)
@@ -1252,6 +1253,7 @@ function requestGroups(socket) {
                 temp["members"] = record["_fields"][1];
                 temp["posts"] = record["_fields"][2];
                 temp["poster"] = record["_fields"][3];
+                temp["posterID"] = record["_fields"][4];
                 console.log(temp);
                 groupsArray.push(temp);
             });
@@ -1299,7 +1301,7 @@ function requestGroupPosts(socket, pagenum) {
     var groupPostsArray = [];
     var query;
     query = `
-    MATCH (g:Group {type:'group'})-[:CREATEDBY]->(m:User)
+    MATCH (g:Post {type:'group'})-[:CREATEDBY]->(m:User)
     OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
     RETURN p, g, m
     `;
@@ -1317,6 +1319,28 @@ function requestGroupPosts(socket, pagenum) {
             console.log(error);
         });
 }
+
+
+function joinGroup(socket, postIDjoinerID) {
+    var params = {
+        groupID: postIDjoinerID.postID,
+        joinerID: postIDjoinerID.joinerID
+    };
+    var query = `
+    MATCH (g:Post {type:'group', postID:$groupID}), (u:User {type:'group', userID:$joinerID})
+    MERGE (u)-[:MEMBEROF]->(g)
+    `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log("IS NOW MEMBER OF");
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
+
 function followLeader(socket, idarray) {
     var dataForClient = [];
     console.log(typeof (idarray));
@@ -1437,6 +1461,10 @@ io.on('connection', function (socket) {
 
     socket.on('requestGroups', function (pagenum) {
         requestGroups(socket, pagenum);
+    });
+
+    socket.on('joingroup', function (datapacket) {
+        joinGroup(socket, datapacket);
     });
 
     socket.on('blockchaintx', function (transaction) {
@@ -1997,6 +2025,33 @@ io.on('connection', function (socket) {
                 console.log(error);
             });
     });
+
+    function requestPostsFromSingleGroup(socket, groupdata) {
+        console.log("REUQEST GROUPS");
+        var groupPostsArray = [];
+        var query;
+        var params = {
+
+        };
+        query = `
+        MATCH (g:Group {type:'group', postID:$})-[:CREATEDBY]->(m:User)
+        OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
+        RETURN p, g, m
+        `;
+        session
+            .run(query, params)
+            .then(function (result) {
+                result.records.forEach(function (record) {
+                    paintDataArray.push(record["_fields"][1]);
+                });
+                socket.emit('receiveGroupData', groupPostsArray);
+                console.log(paintDataArray);
+
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
 
     
     /////////////
