@@ -282,7 +282,7 @@ function returnNewPostBox() {
     newPostContainer.detach();
     newPostContainer.appendTo('#divStorage');
     
-    displayStatus("RETURN NEW POST BOX");
+    //displayStatus("RETURN NEW POSTRETURN NEW POST BOX");
 }
 function submitNewPost() {
     console.log("submit");
@@ -321,24 +321,31 @@ function previewFile() {
 function showVoteBox(postID, upIfTrue) {
     var postID = parseInt(postID);
     var userID = parseInt(sessionStorage.getItem('userID'));
+    var newVotingMethodology = true;
     var userrole = sessionStorage.getItem('role');
     returnTagBox();
     returnReplyBox();
     returnNewPostBox();
     returnShieldCensorHarvestBox();
     returnShareBox();
-    var newStatsContainer = $('#newStatsContainer');
-    newStatsContainer.detach();
-    newStatsContainer.appendTo('#' + String(postID));
-    console.log(postsOnThisPage);
-    console.log('show vote box');
-    var postData = postsOnThisPage.find(obj => { return obj.postID === String(postID) });
-    console.log(postData);
-    newStatsContainer.css('display', 'block');
-    $('#upvotestat').html(postData.up);
-    $('#downvotestat').html(postData.down);
-    console.log(userID, postID, upIfTrue)
-    socket.emit('check', { taskToCheck: 'vote', userID: userID, postID: postID, data: upIfTrue, role: userrole });
+    if (newVotingMethodology) {
+        socket.emit('check', { taskToCheck: 'newvote', userID: userID, postID: postID, data: upIfTrue});
+    } else {
+        var newStatsContainer = $('#newStatsContainer');
+        newStatsContainer.detach();
+        newStatsContainer.appendTo('#' + String(postID));
+        console.log(postsOnThisPage);
+        console.log('show vote box');
+        var postData = postsOnThisPage.find(obj => { return obj.postID === String(postID) });
+        console.log(postData);
+        newStatsContainer.css('display', 'block');
+        $('#upvotestat').html(postData.up);
+        $('#downvotestat').html(postData.down);
+        console.log(userID, postID, upIfTrue);
+        socket.emit('check', { taskToCheck: 'vote', userID: userID, postID: postID, data: upIfTrue, role: userrole });
+    }
+
+
 }
 function submitVote(postID, option) {
     console.log(postID);
@@ -478,10 +485,6 @@ function followuser(userID) {
     socket.emit("followuser", datapacket);
 }
 
-function openInventory() {
-    var element = document.getElementById("test-buttons");
-    element.classList.toggle("inventory-toolkit");
-}
 
 function showBountyCreatorBox() {
     $('#userID_bounty').val(sessionStorage.getItem('userID'));
@@ -497,6 +500,11 @@ function returnBountyBox() {
     bountyContainer.css('display', 'none');
 }
 
+
+function openInventory() {
+    var element = document.getElementById("test-buttons");
+    element.classList.toggle("inventory-toolkit");
+}
 
 function rotateToCloseButton() {
     var plusEmoji = $('#plusemoji');
@@ -520,5 +528,61 @@ function rotateToCloseButton() {
     } else {
         $('#plusemoji').addClass('rotatefortyfive');
         return true;
+    }
+}
+
+function contextButtonFunction(currentContext) {
+    console.log(currentContext);
+    switch (currentContext) {
+        case 'Home':
+            $('#gridview').css('display', 'none');
+            d3.select('svg').selectAll('*').remove();
+            $('#d3frame').css('display', 'none');
+            sessionStorage.setItem('currentPage', 'home');
+            window.history.replaceState(null, null, "/?view=" + 'norm');
+            document.getElementById('contextButton').innerHTML = 'Net';
+            socket.emit('requestTop20Posts', 0);
+            break;
+        case 'Net':
+            $('#entryContainer').empty();
+            $('#d3frame').css('display', 'block');
+            sessionStorage.setItem('currentPage', 'net');
+            window.history.replaceState(null, null, "/?view=" + 'net');
+            document.getElementById('contextButton').innerHTML = 'Grid';
+            socket.emit('retrieveDatabase');
+            break;
+        case 'Grid':
+            $('#entryContainer').empty();
+            d3.select('svg').selectAll('*').remove();
+            $('#d3frame').css('display', 'none');
+            $('#gridview').css('display', 'grid');
+            sessionStorage.setItem('currentPage', 'grid');
+            window.history.replaceState(null, null, "/?view=" + 'grid');
+            document.getElementById('contextButton').innerHTML = 'Sea';
+            socket.emit('retrieveDatabaseGrid');
+            break;
+        case 'Sea':
+            showSeaOfDivs();
+            //$('#entryContainer').empty();
+            $('#multiContainer').empty();
+            $('#multiContainer').css('display', 'none');
+            $('#entryContainer').css('display', 'block');
+            sessionStorage.setItem('currentPage', 'sea');
+            window.history.replaceState(null, null, "/?view=" + 'sea');
+            document.getElementById('contextButton').innerHTML = 'Multi';
+            break;
+        case 'Multi':
+            $('#gridview').css('display', 'none');
+            $('#entryContainer').empty();
+            $('#multiContainer').empty();
+            $('#multiContainer').css('display', 'block');
+            sessionStorage.setItem('currentPage', 'multi');
+            window.history.replaceState(null, null, "/?view=" + 'multi');
+            multistreamView();
+            document.getElementById('contextButton').innerHTML = 'Home';
+            break;
+        case '3D':
+            window.location.assign("taro.html");
+            break;
     }
 }

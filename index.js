@@ -1387,6 +1387,364 @@ function makePollVote(socket, params, querystring) {
         });
 }
 
+function makenewvote(socket, makenewvotestuff) {
+    var query;
+    var params = {
+        userID: makenewvotestuff.userID,
+        postID: makenewvotestuff.postID,
+        upIfTrue: makenewvotestuff.upIfTrue,
+        task: "successfulnewvote"
+    };
+    if (makenewvotestuff.upIfTrue) {
+        query = `
+                MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
+                MERGE (u)-[v:VOTEDON]->(p)
+                SET p.upvotes = p.upvotes + 1
+                SET u.memecoin = u.memecoin - 1
+                `;
+        session.run(query, params)
+            .then(function (result) {
+                socket.emit('userChecked', params);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    } else {
+        query = `
+                MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
+                MERGE (u)-[v:VOTEDON]->(p)
+                SET p.downvotes = p.downvotes + 1
+                SET u.memecoin = u.memecoin - 1
+                `;
+        session.run(query, params)
+            .then(function (result) {
+                socket.emit('userChecked', params);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+}
+
+function checkFunction(socket, stuffToCheck) {
+    console.log("CHECKING TASK");
+    console.log(stuffToCheck);
+
+    var params = {
+        userID: stuffToCheck.userID,
+        postID: stuffToCheck.postID,
+        data: stuffToCheck.data,
+        role: stuffToCheck.role
+    };
+    var query;
+    console.log(params);
+    switch (stuffToCheck.taskToCheck) {
+        case 'newvote':
+            query = `
+                MATCH (u:User {userID:$userID})
+                RETURN u.memecoin, u.userroles
+                `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records[0]);
+                    //if user and post exist
+                    if (result.records[0] != null) {
+                        //if user has at least 1 memecoin for voting
+                        if (result.records[0]["_fields"][0] >= 1) {
+                            //if user wants to upvote
+                            if (params.data == true) {
+                                makenewvote(socket, { userID: params.userID, postID: params.postID, upIfTrue: true });
+                            } else {
+                                //if user is a hater and wants to downvote
+                                if (result.records[0]["_fields"][1][0] == "1") {
+                                    makenewvote(socket, { userID: params.userID, postID: params.postID, upIfTrue: false });
+                                } else {
+                                    console.log("NOT A HATER");
+                                    socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                                }
+                            }
+                        }
+                    } else {
+                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    console.log(error);
+                });
+            return;
+        case 'vote':
+            query = `
+                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+                RETURN p,u
+                `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    if (result.records[0] == null) {
+                        console.log("FIRST VOTE");
+                        if (stuffToCheck.data == true) {
+                            socket.emit('userChecked', { task: 'firstvoteup', userID: params.userID, postID: params.postID, cost: 1 });
+                        } else {
+                            socket.emit('userChecked', { task: 'firstvotedown', userID: params.userID, postID: params.postID, cost: 1 });
+                        }
+                    } else {
+                        console.log("ADDITIONAL VOTE");
+                        if (stuffToCheck.data == true) {
+                            socket.emit('userChecked', { task: 'additionalvoteup', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
+                        } else {
+                            socket.emit('userChecked', { task: 'additionalvotedown', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    console.log(error);
+                });
+            break;
+        case 'makeadditionalvoteup':
+            query = `
+                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+                RETURN p,u
+                `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
+                    console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
+                    if (result.records[0]["_fields"][1]["properties"]["memecoin"] > stuffToCheck.data) {
+                        console.log("YES");
+                        socket.emit('userChecked', { task: 'madeadditionalvoteup', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
+                    } else {
+                        console.log('NO');
+                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    console.log(error);
+                });
+            break;
+        case 'makeadditionalvotedown':
+            query = `
+        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
+        RETURN p,u
+        `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
+                    console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
+                    if (result.records[0]["_fields"][1]["properties"]["memecoin"] > stuffToCheck.data) {
+                        console.log("YES");
+                        socket.emit('userChecked', { task: 'madeadditionalvotedown', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
+                    } else {
+                        console.log('NO');
+                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
+                    console.log(error);
+                });
+            break;
+        case 'harvest':
+            query = `
+        MATCH (p:Post {postID:$postID})-[c:CREATEDBY]->(u:User {userID:$userID})
+        RETURN p
+        `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records);
+                    if (result.records[0] == null) {
+                        socket.emit('userChecked', { task: 'failedHarvest', userID: params.userID, postID: params.postID, cost: 0 });
+                        console.log("user doesnt own it");
+                    } else {
+                        var post = result.records[0]["_fields"][0]["properties"];
+                        var profit = ((post.upvotes - post.downvotes) > 0) ? (post.upvotes - post.downvotes) : 0;
+                        socket.emit('userChecked', { task: 'ableToHarvestPost', userID: params.userID, postID: params.postID, cost: profit });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedHarvest', userID: params.userID, postID: params.postID, cost: 0 });
+                    console.log(error);
+                });
+            break;
+        case 'shield':
+            query = `
+        MATCH (n:User {userID:$userID})
+        RETURN n.memecoin
+        `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records);
+                    if (result.records[0] == null) {
+                        console.log('NO USER WITH THAT ID');
+                        socket.emit('userChecked', { task: 'failedShielding', userID: params.userID, postID: params.postID, cost: 0 });
+                    } else {
+                        console.log("USER EXISTED");
+                        var memecoin = parseInt(result.records[0]['_fields'][0]);
+                        if (memecoin > 50) {
+                            console.log("MORE THAN 50");
+                            socket.emit('userChecked', { task: 'ableToApplyShield', userID: params.userID, postID: params.postID, cost: 25 });
+                        } else {
+                            socket.emit('userChecked', { task: 'failedCensoring', userID: params.userID, postID: params.postID, cost: 0 });
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedShielding', userID: params.userID, postID: params.postID, cost: 0 });
+                    console.log(error);
+                });
+            break;
+        case 'censor':
+            query = `
+        MATCH (n:User {userID:$userID}), (p:Post {postID:$postID})
+        RETURN n.memecoin, p.censorattempts
+        `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records);
+                    if (result.records[0] == null) {
+                        console.log('NO USER WITH THAT ID');
+                        socket.emit('userChecked', { task: 'failedCensoringCauseOther', userID: params.userID, postID: params.postID, cost: 0 });
+                    } else {
+                        var memecoin = parseInt(result.records[0]['_fields'][0]);
+                        var attempts = parseInt(result.records[0]['_fields'][1]);
+                        if (memecoin > 50) {
+                            console.log("MORE THAN 50");
+                            socket.emit('userChecked', { task: 'ableToCensorPost', userID: params.userID, postID: params.postID, cost: attempts });
+                        } else {
+                            console.log("LESS THAN 50");
+                            socket.emit('userChecked', { task: 'failedCensoringCauseTooPoor', userID: params.userID, postID: params.postID, cost: 0 });
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            break;
+        case 'upvotetag':
+            query = `
+        MATCH (u:User {userID:$userID})
+        RETURN u.memecoin
+        `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records);
+                    if (result.records[0] == null) {
+                        socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: 0 });
+                        console.log("user doesnt exist");
+                    } else {
+                        var memecoin = parseInt(result.records[0]['_fields'][0]);
+                        if (memecoin >= 1) {
+                            console.log("user has enough memecoin to upvote tag");
+                            socket.emit('userChecked', { task: 'ableToUpvoteTag', userID: params.userID, postID: params.postID, cost: stuffToCheck.data });
+                        } else {
+                            socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: -1 });
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: 0 });
+                    console.log(error);
+                });
+            break;
+        case 'arbitrate':
+            query = `
+            MATCH (u:User {userID:$userID})-[:HASROLE]->(r:Role {name:"Juror"})
+            OPTIONAL MATCH (p:Post {type:"dispute"})
+            RETURN p
+            `;
+            session
+                .run(query, params)
+                .then(function (result) {
+                    console.log(result.records);
+                    if (result.records[0] == null) {
+                        socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
+                        console.log("user doesnt exist or isn't a juror");
+                    } else {
+                        var memecoin = parseInt(result.records[0]['_fields'][0]);
+                        console.log("user can receive dispute list");
+                        socket.emit('userChecked', { task: 'successfulDisputeReq', userID: params.userID, posts: params.p });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
+                    console.log(error);
+                });
+            break;
+        case 'pollvote':
+            query = "MATCH (p:Post {postID:$postID})<-[v:POLLVOTE]-(u:User {userID:$userID}) RETURN p";
+            console.log(query);
+            session
+                .run(query, params)
+                .then(function (result) {
+                    if (result.records[0] == undefined) {
+                        console.log(result)
+                        console.log("MAKE POLL VOTE");
+                        var newparams = {
+                            userID: stuffToCheck.userID,
+                            postID: stuffToCheck.postID
+                        };
+                        var crazyPollVotingString = 'p.optionvotes[0..' + String(stuffToCheck.data.voteoptionindex) + ']+[' + String(stuffToCheck.data.voteoptiontally + 1) + '.0]+p.optionvotes[' + String(parseFloat(stuffToCheck.data.voteoptionindex) + 1.0) + '..6]';
+                        var newpollvotequery = 'MATCH (p:Post {postID:$postID}), (u:User {userID:$userID}) MERGE (p)<-[v:POLLVOTE]-(u) SET u.memecoin = u.memecoin-1 SET p.optionvotes = ' + crazyPollVotingString;
+                        session
+                            .run(newpollvotequery, newparams)
+                            .then(function (result) {
+                                console.log("POLLVOTE MADE?");
+                                console.log(result.records[0]);
+                            })
+                            .catch(function (error) {
+                                console.log(error);
+                            });
+                    } else {
+                        console.log("ALREADY VOTED ON THIS POLL");
+                        socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
+                    }
+                })
+                .catch(function (error) {
+                    socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
+                    console.log(error);
+                });
+            break;
+        default:
+            break;
+    }
+}
+
+function requestPostsFromSingleGroup(socket, groupdata) {
+    console.log("REUQEST GROUPS");
+    var groupPostsArray = [];
+    var query;
+    var params = {
+        groupID: groupdata.postID
+    };
+    query = `
+        MATCH (g:Post {type:'group', postID:$groupID})-[:CREATEDBY]->(f:User)
+        OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
+        OPTIONAL MATCH (m:User)-[:MEMBEROF]->(g)
+        RETURN p, g, m
+        `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('receiveGroupData', groupPostsArray);
+            console.log(paintDataArray);
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 
 io.on('connection', function (socket) {
     console.log("connection");
@@ -1479,7 +1837,7 @@ io.on('connection', function (socket) {
         newuserID = newuserID.getTimestamp();
         var query = `
           MATCH (a:Role {name:$role})
-          CREATE (a)<-[:HASROLE]-(newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
+          MERGE (a)<-[:HASROLE]-(newuser:User {name:$username, userID:$userID, password:$password, memecoin:$memecoin, userroles:$newuserRoles})
           RETURN newuser
           `;
         var params = {
@@ -1494,6 +1852,7 @@ io.on('connection', function (socket) {
             .run(query, params)
             .then(function (result) {
                 console.log("REGISTERED USER");
+                console.log(result.records[0]);
                 var logindata = result.records[0]["_fields"][0]["properties"];
                 socket.emit('loggedIn', logindata);
                 //console.log(result.records[0]["_fields"][0]);
@@ -1527,260 +1886,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('check', function (stuffToCheck) {
-        console.log("CHECKING TASK");
-        console.log(stuffToCheck);
-
-        var params = {
-            userID: stuffToCheck.userID,
-            postID: stuffToCheck.postID,
-            data: stuffToCheck.data,
-            role: stuffToCheck.role
-        };
-        var query;
-        console.log(params);
-        switch (stuffToCheck.taskToCheck) {
-            case 'vote':
-                query = `
-                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
-                RETURN p,u
-                `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        if (result.records[0] == null) {
-                            console.log("FIRST VOTE");
-                            if (stuffToCheck.data == true) {
-                                socket.emit('userChecked', { task: 'firstvoteup', userID: params.userID, postID: params.postID, cost: 1 });
-                            } else {
-                                socket.emit('userChecked', { task: 'firstvotedown', userID: params.userID, postID: params.postID, cost: 1 });
-                            }
-                        } else {
-                            console.log("ADDITIONAL VOTE");
-                            if (stuffToCheck.data == true) {
-                                socket.emit('userChecked', { task: 'additionalvoteup', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
-                            } else {
-                                socket.emit('userChecked', { task: 'additionalvotedown', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-                        console.log(error);
-                    });
-                break;
-            case 'makeadditionalvoteup':
-                query = `
-                MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
-                RETURN p,u
-                `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
-                        console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
-                        if (result.records[0]["_fields"][1]["properties"]["memecoin"] > stuffToCheck.data) {
-                            console.log("YES");
-                            socket.emit('userChecked', { task: 'madeadditionalvoteup', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
-                        } else {
-                            console.log('NO');
-                            socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-                        console.log(error);
-                    });
-                break;
-            case 'makeadditionalvotedown':
-                query = `
-        MATCH (p:Post {postID:$postID})<-[v:VOTEDON]-(u:User {userID:$userID})
-        RETURN p,u
-        `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records[0]["_fields"][1]["properties"]["memecoin"]);
-                        console.log("HAVE ENOUGH FOR ADDITIONAL VOTE?");
-                        if (result.records[0]["_fields"][1]["properties"]["memecoin"] > stuffToCheck.data) {
-                            console.log("YES");
-                            socket.emit('userChecked', { task: 'madeadditionalvotedown', userID: params.userID, postID: params.postID, cost: Math.pow(2, (result.records[0]["_fields"][0]["properties"]["upvotes"] + result.records[0]["_fields"][0]["properties"]["downvotes"])) });
-                        } else {
-                            console.log('NO');
-                            socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-                        console.log(error);
-                    });
-                break;
-            case 'harvest':
-                query = `
-        MATCH (p:Post {postID:$postID})-[c:CREATEDBY]->(u:User {userID:$userID})
-        RETURN p
-        `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records);
-                        if (result.records[0] == null) {
-                            socket.emit('userChecked', { task: 'failedHarvest', userID: params.userID, postID: params.postID, cost: 0 });
-                            console.log("user doesnt own it");
-                        } else {
-                            var post = result.records[0]["_fields"][0]["properties"];
-                            var profit = ((post.upvotes - post.downvotes) > 0) ? (post.upvotes - post.downvotes) : 0;
-                            socket.emit('userChecked', { task: 'ableToHarvestPost', userID: params.userID, postID: params.postID, cost: profit });
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedHarvest', userID: params.userID, postID: params.postID, cost: 0 });
-                        console.log(error);
-                    });
-                break;
-            case 'shield':
-                query = `
-        MATCH (n:User {userID:$userID})
-        RETURN n.memecoin
-        `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records);
-                        if (result.records[0] == null) {
-                            console.log('NO USER WITH THAT ID');
-                            socket.emit('userChecked', { task: 'failedShielding', userID: params.userID, postID: params.postID, cost: 0 });
-                        } else {
-                            console.log("USER EXISTED");
-                            var memecoin = parseInt(result.records[0]['_fields'][0]);
-                            if (memecoin > 50) {
-                                console.log("MORE THAN 50");
-                                socket.emit('userChecked', { task: 'ableToApplyShield', userID: params.userID, postID: params.postID, cost: 25 });
-                            } else {
-                                socket.emit('userChecked', { task: 'failedCensoring', userID: params.userID, postID: params.postID, cost: 0 });
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedShielding', userID: params.userID, postID: params.postID, cost: 0 });
-                        console.log(error);
-                    });
-                break;
-            case 'censor':
-                query = `
-        MATCH (n:User {userID:$userID}), (p:Post {postID:$postID})
-        RETURN n.memecoin, p.censorattempts
-        `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records);
-                        if (result.records[0] == null) {
-                            console.log('NO USER WITH THAT ID');
-                            socket.emit('userChecked', { task: 'failedCensoringCauseOther', userID: params.userID, postID: params.postID, cost: 0 });
-                        } else {
-                            var memecoin = parseInt(result.records[0]['_fields'][0]);
-                            var attempts = parseInt(result.records[0]['_fields'][1]);
-                            if (memecoin > 50) {
-                                console.log("MORE THAN 50");
-                                socket.emit('userChecked', { task: 'ableToCensorPost', userID: params.userID, postID: params.postID, cost: attempts });
-                            } else {
-                                console.log("LESS THAN 50");
-                                socket.emit('userChecked', { task: 'failedCensoringCauseTooPoor', userID: params.userID, postID: params.postID, cost: 0 });
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-                break;
-            case 'upvotetag':
-                query = `
-        MATCH (u:User {userID:$userID})
-        RETURN u.memecoin
-        `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records);
-                        if (result.records[0] == null) {
-                            socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: 0 });
-                            console.log("user doesnt exist");
-                        } else {
-                            var memecoin = parseInt(result.records[0]['_fields'][0]);
-                            if (memecoin >= 1) {
-                                console.log("user has enough memecoin to upvote tag");
-                                socket.emit('userChecked', { task: 'ableToUpvoteTag', userID: params.userID, postID: params.postID, cost: stuffToCheck.data });
-                            } else {
-                                socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: -1 });
-                            }
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedTagUpvote', userID: params.userID, postID: params.postID, cost: 0 });
-                        console.log(error);
-                    });
-                break;
-            case 'arbitrate':
-                query = `
-            MATCH (u:User {userID:$userID})-[:HASROLE]->(r:Role {name:"Juror"})
-            OPTIONAL MATCH (p:Post {type:"dispute"})
-            RETURN p
-            `;
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        console.log(result.records);
-                        if (result.records[0] == null) {
-                            socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
-                            console.log("user doesnt exist or isn't a juror");
-                        } else {
-                            var memecoin = parseInt(result.records[0]['_fields'][0]);
-                            console.log("user can receive dispute list");
-                            socket.emit('userChecked', { task: 'successfulDisputeReq', userID: params.userID, posts: params.p });
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedDisputeReq', userID: params.userID, postID: params.postID, cost: 0 });
-                        console.log(error);
-                    });
-                break;
-            case 'pollvote':
-                query = "MATCH (p:Post {postID:$postID})<-[v:POLLVOTE]-(u:User {userID:$userID}) RETURN p";
-                console.log(query);
-                session
-                    .run(query, params)
-                    .then(function (result) {
-                        if (result.records[0] == undefined) {
-                            console.log(result)
-                            console.log("MAKE POLL VOTE");
-                            var newparams = {
-                                userID: stuffToCheck.userID,
-                                postID: stuffToCheck.postID
-                            };
-                            var crazyPollVotingString = 'p.optionvotes[0..' + String(stuffToCheck.data.voteoptionindex) + ']+[' + String(stuffToCheck.data.voteoptiontally + 1) + '.0]+p.optionvotes[' + String(parseFloat(stuffToCheck.data.voteoptionindex) + 1.0) + '..6]';
-                            var newpollvotequery = 'MATCH (p:Post {postID:$postID}), (u:User {userID:$userID}) MERGE (p)<-[v:POLLVOTE]-(u) SET u.memecoin = u.memecoin-1 SET p.optionvotes = ' + crazyPollVotingString;
-                            session
-                                .run(newpollvotequery, newparams)
-                                .then(function (result) {
-                                    console.log("POLLVOTE MADE?");
-                                    console.log(result.records[0]);
-                                })
-                                .catch(function (error) {
-                                    console.log(error);
-                                });
-                        } else {
-                            console.log("ALREADY VOTED ON THIS POLL");
-                            socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
-                        }
-                    })
-                    .catch(function (error) {
-                        socket.emit('userChecked', { task: 'failedPollVote', userID: params.userID, postID: params.postID, cost: 0 });
-                        console.log(error);
-                    });
-                break;
-            default:
-                break;
-        }
+        checkFunction(socket, stuffToCheck);
     });
 
 
@@ -2026,32 +2132,9 @@ io.on('connection', function (socket) {
             });
     });
 
-    function requestPostsFromSingleGroup(socket, groupdata) {
-        console.log("REUQEST GROUPS");
-        var groupPostsArray = [];
-        var query;
-        var params = {
-
-        };
-        query = `
-        MATCH (g:Group {type:'group', postID:$})-[:CREATEDBY]->(m:User)
-        OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
-        RETURN p, g, m
-        `;
-        session
-            .run(query, params)
-            .then(function (result) {
-                result.records.forEach(function (record) {
-                    paintDataArray.push(record["_fields"][1]);
-                });
-                socket.emit('receiveGroupData', groupPostsArray);
-                console.log(paintDataArray);
-
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    }
+    socket.on('viewgroup', function (postID) {
+        requestPostsFromSingleGroup(socket, postID);
+    });
 
     
     /////////////
@@ -2389,6 +2472,40 @@ io.on('connection', function (socket) {
         
     });
 
+    socket.on('superblock', function (dataFromClient) {
+
+    });
+
+    socket.on('block', function (dataFromClient) {
+        var params = {
+            blockingUserID: dataFromClient.blockingUserID,
+            blockedUserID: dataFromClient.blockedUserID
+        };
+        var query = `
+        MATCH (b:User {userID:$blockingUserID}), (t:User {userID:$blockedUserID})
+        MERGE (b)-[:BLOCKED]->(t)
+
+        `;
+    });
+
+    socket.on('getBlockedPosts', function (dataFromClient) {
+        var params = {
+            blockingUserID: dataFromClient.blockingUserID,
+            blockedUserID: dataFromClient.blockedUserID
+        };
+        var query = `
+        MATCH (p:Post)<-[:CREATEDBY]-(t:User {userID:$blockedUserID})
+        RETURN p.postID
+        `;
+        session
+            .run(query, params)
+            .then(function (result) {
+                console.log(result);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
 
     //////
     //GET 3 RANDOM USERS

@@ -20,7 +20,7 @@ h3 {
   .profallow {
   }
   .permahidden {
-    display:none;
+    display:none !important;
   }
   .nomargin {
     margin-left: 0px !important;
@@ -703,6 +703,7 @@ select {
     padding-bottom: 3vh;
     color: white;
     width:70%;
+
 }
   .post {
     color: white;

@@ -279,7 +279,7 @@ function displayTextPost(post) {
               </div>
               <div class='post-buttons'>
                 <button class='raise anonallow' onclick='showReplyBox($(this).parent().parent());'><span class='tooltiptext'>quick reply</span>&#x1f5e8;</button>  
-                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
+                <button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
                 <button class='raise profallow haters-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
                 <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
@@ -389,6 +389,49 @@ function displayPollPost(post) {
             </div>`;
     return [mustacheData, processedPostTemplate];
 }
+
+
+
+//POPULATING WITH NON-POSTS
+function viewUserMessages(userID) {
+    socket.emit('viewmessages', userID);
+}
+function populateMessages(messages) {
+    console.log(messages);
+}
+function populatePageWithReports(reportarray) {
+    var html = `<table>
+              <tr>
+                <th>PostID</th>
+                <th>Title</th>
+                <th>Reasons</th>
+                <th>Upvotes</th>
+              </tr>`;
+    $('#entryContainer').append(html);
+    reportarray.forEach(function (post) {
+        var mustacheData = {
+            postID: String(post[0]),
+            title: post[1],
+            reasons: post[2],
+            upvotes: post[3]
+        }
+        postsOnThisPage.push(mustacheData);
+        //console.log(date);
+        var processedPostTemplate = `
+            <tr>
+            <td>{{postID}}</td><td>{{title}}</td><td>{{reasons}}</td><td>{{upvotes}}</td>
+            </tr>
+        `;
+        html = Mustache.render(processedPostTemplate, mustacheData);
+        $('#entryContainer').append(html);
+    });
+    $('#entryContainer').append('</table>');
+}
+
+
+//GROUP NONSENSE
+function viewGroup(groupID) {
+}
 function displayGroup(group) {
     console.log(group);
     var date = new Date(group.postID * 1000).toDateString();
@@ -446,7 +489,7 @@ function displayGroup(group) {
                 </div>
               </div>
               <div class='post-buttons'>
-                <button class='raise profallow lurkers-not-only' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
+                <button class='raise profallow' onclick='showVoteBox({{postID}}, true);'><span class='tooltiptext'>upvote</span><span style='filter:sepia(100%);'>🔺</span></button>
                 <button class='raise profallow haters-only' onclick='showVoteBox({{postID}}, false);'><span class='tooltiptext'>downvote</span><span style='filter:sepia(100%);'>🔻</span></button>
                 <button class='raise profallow' onclick='showShieldCensorHarvestBox(2, {{postID}});'><span class='tooltiptext'>convert this posts profit into memecoin, then delete post</span>♻</button>
                 <button class='raise profallow protectors-only' onclick='showShieldCensorHarvestBox(1, {{postID}});'><span class='tooltiptext'>add a free speech shield to this post</span>🛡</button>
@@ -464,46 +507,6 @@ function displayGroup(group) {
             </div>`;
     return [mustacheData, processedPostTemplate];
 }
-
-function viewGroup(groupID) {
-
-}
-
-//POPULATING WITH NON-POSTS
-function viewUserMessages(userID) {
-    socket.emit('viewmessages', userID);
-}
-function populateMessages(messages) {
-    console.log(messages);
-}
-function populatePageWithReports(reportarray) {
-    var html = `<table>
-              <tr>
-                <th>PostID</th>
-                <th>Title</th>
-                <th>Reasons</th>
-                <th>Upvotes</th>
-              </tr>`;
-    $('#entryContainer').append(html);
-    reportarray.forEach(function (post) {
-        var mustacheData = {
-            postID: String(post[0]),
-            title: post[1],
-            reasons: post[2],
-            upvotes: post[3]
-        }
-        postsOnThisPage.push(mustacheData);
-        //console.log(date);
-        var processedPostTemplate = `
-            <tr>
-            <td>{{postID}}</td><td>{{title}}</td><td>{{reasons}}</td><td>{{upvotes}}</td>
-            </tr>
-        `;
-        html = Mustache.render(processedPostTemplate, mustacheData);
-        $('#entryContainer').append(html);
-    });
-    $('#entryContainer').append('</table>');
-}
 function requestGroups() {
     console.log('request groups');
     socket.emit('requestGroups', 0);
@@ -512,6 +515,7 @@ function populatePageWithGroups(groups) {
     $('#pageID').html('all groups');
     populatePageWithPosts(groups[0], "#entryContainer");
 }
+
 
 function showSeaOfDivs() {
     console.log('SEA VIEW');
