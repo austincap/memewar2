@@ -156,6 +156,16 @@ function showPaintedPosts() {
     socket.emit('requestPaint');
 }
 
+
+function confirmShield(postID) {
+    if (sessionStorage.getItem('memecoin') > 50) {
+        var dataPacket = {
+            userID: parseInt(sessionStorage.getItem('userID')),
+            postID: postID
+        };
+        socket.emit('shieldPost', dataPacket);
+    }
+}
 function confirmCensor(postID) {
     if (sessionStorage.getItem('memecoin') > 50) {
         var dataPacket = {
@@ -172,6 +182,7 @@ function confirmHarvest(postElement) {
 }
 function showShieldCensorHarvestBox(zeroIsCensorOneIsShieldTwoIsHarvest, postElement) {
     var userID = (sessionStorage.getItem('userID') !== null) ? sessionStorage.getItem('userID') : "ANON";
+    userID = parseInt(userID);
     console.log(userID);
     returnTagBox();
     returnNewPostBox();

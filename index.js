@@ -898,7 +898,7 @@ function requestRecommendedPosts(socket, pagenum) {
         });
 }
 
-
+// SORT REQUESTS
 function requestLeaderPosts(socket, pagenum) {
     console.log("RETRIEVING LEADER POSTS");
     var topLeaderPostsAndTags = [];
@@ -1232,7 +1232,7 @@ function retrievePostsForNetView(socket) {
         });
 }
 
-// OTHER REQUESTS
+// GROUP REQUESTS
 function requestGroups(socket) {
     console.log("REQUEST ALL GROUPS AND THEIR TAGS");
     var groupsAndTagsArray = [];
@@ -1260,6 +1260,74 @@ function requestGroups(socket) {
             groupsAndTagsArray.push(groupsArray);
             console.log(groupsAndTagsArray);
             socket.emit('receiveGroupData', groupsAndTagsArray);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+function requestGroupPosts(socket, pagenum) {
+    console.log("REUQEST GROUPS");
+    var groupPostsArray = [];
+    var query;
+    query = `
+    MATCH (g:Post {type:'group'})-[:CREATEDBY]->(m:User)
+    OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
+    RETURN p, g, m
+    `;
+    session
+        .run(query)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('receiveGroupData', groupPostsArray);
+            console.log(paintDataArray);
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+function requestPostsFromSingleGroup(socket, groupdata) {
+    console.log("REUQEST GROUPS");
+    var groupPostsArray = [];
+    var query;
+    var params = {
+        groupID: groupdata.postID
+    };
+    query = `
+        MATCH (g:Post {type:'group', postID:$groupID})-[:CREATEDBY]->(f:User)
+        OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
+        OPTIONAL MATCH (m:User)-[:MEMBEROF]->(g)
+        RETURN p, g, m
+        `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            result.records.forEach(function (record) {
+                paintDataArray.push(record["_fields"][1]);
+            });
+            socket.emit('receiveGroupData', groupPostsArray);
+            console.log(paintDataArray);
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+function joinGroup(socket, postIDjoinerID) {
+    var params = {
+        groupID: postIDjoinerID.postID,
+        joinerID: postIDjoinerID.joinerID
+    };
+    var query = `
+    MATCH (g:Post {type:'group', postID:$groupID}), (u:User {type:'group', userID:$joinerID})
+    MERGE (u)-[:MEMBEROF]->(g)
+    `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log("IS NOW MEMBER OF");
         })
         .catch(function (error) {
             console.log(error);
@@ -1296,51 +1364,6 @@ function requestTagsForThisPost(socket, postID) {
             console.log(error);
         });
 }
-function requestGroupPosts(socket, pagenum) {
-    console.log("REUQEST GROUPS");
-    var groupPostsArray = [];
-    var query;
-    query = `
-    MATCH (g:Post {type:'group'})-[:CREATEDBY]->(m:User)
-    OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
-    RETURN p, g, m
-    `;
-    session
-        .run(query)
-        .then(function (result) {
-            result.records.forEach(function (record) {
-                paintDataArray.push(record["_fields"][1]);
-            });
-            socket.emit('receiveGroupData', groupPostsArray);
-            console.log(paintDataArray);
-
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
-
-function joinGroup(socket, postIDjoinerID) {
-    var params = {
-        groupID: postIDjoinerID.postID,
-        joinerID: postIDjoinerID.joinerID
-    };
-    var query = `
-    MATCH (g:Post {type:'group', postID:$groupID}), (u:User {type:'group', userID:$joinerID})
-    MERGE (u)-[:MEMBEROF]->(g)
-    `;
-    session
-        .run(query, params)
-        .then(function (result) {
-            console.log("IS NOW MEMBER OF");
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
-
 function followLeader(socket, idarray) {
     var dataForClient = [];
     console.log(typeof (idarray));
@@ -1428,8 +1451,6 @@ function makenewvote(socket, makenewvotestuff) {
 
 function checkFunction(socket, stuffToCheck) {
     console.log("CHECKING TASK");
-    console.log(stuffToCheck);
-
     var params = {
         userID: stuffToCheck.userID,
         postID: stuffToCheck.postID,
@@ -1718,34 +1739,6 @@ function checkFunction(socket, stuffToCheck) {
     }
 }
 
-function requestPostsFromSingleGroup(socket, groupdata) {
-    console.log("REUQEST GROUPS");
-    var groupPostsArray = [];
-    var query;
-    var params = {
-        groupID: groupdata.postID
-    };
-    query = `
-        MATCH (g:Post {type:'group', postID:$groupID})-[:CREATEDBY]->(f:User)
-        OPTIONAL MATCH (p:Post)-[:POSTEDIN]->(g)
-        OPTIONAL MATCH (m:User)-[:MEMBEROF]->(g)
-        RETURN p, g, m
-        `;
-    session
-        .run(query, params)
-        .then(function (result) {
-            result.records.forEach(function (record) {
-                paintDataArray.push(record["_fields"][1]);
-            });
-            socket.emit('receiveGroupData', groupPostsArray);
-            console.log(paintDataArray);
-
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-}
-
 io.on('connection', function (socket) {
     console.log("connection");
 
@@ -2019,65 +2012,6 @@ io.on('connection', function (socket) {
             });
     });
 
-    socket.on('stalkuser', function (postID) {
-        var query = `
-      MATCH (u:User)<-[:CREATEDBY]-(stalked:Post {postID:$postID})
-      OPTIONAL MATCH (u)-[:TAGGEDAS]->(t:Tag)
-      WITH u, COLLECT(DISTINCT t.name) AS tags
-      OPTIONAL MATCH (u)<-[:CREATEDBY]-(p:Post)
-      WITH u, tags, COLLECT(DISTINCT p) AS posts
-      OPTIONAL MATCH (u)-[:FAVORITED]->(f:Post)
-      WITH posts, u, tags, COLLECT(DISTINCT f) AS faves
-      OPTIONAL MATCH (u)-[:SUMMONEDTO]->(s:Post)
-      WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
-      OPTIONAL MATCH (u)-[d:VOTEDON]->(v:Post)
-      WITH summons, posts, u, tags, faves, COLLECT(DISTINCT v.postID) AS voted, SUM(d.upvotes) AS upvotes, SUM(d.downvotes) AS downvotes
-      OPTIONAL MATCH (u)<-[:FOLLOWS]-(x)
-      WITH u, tags, posts, faves, summons, voted, upvotes, downvotes, COUNT(x) AS follows
-      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes, follows
-      `;
-        session
-            .run(query, { postID: postID })
-            .then(function (result) {
-                if (result.records[0] == null) {
-                    socket.emit('noDataFound', 'no user found');
-                    console.log('NULL');
-                } else {
-                    console.log("USER FOUND");
-                    //[userdata, tags, upvotes dealt, downvotes dealt, follows]
-                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5]];
-                    dataForClient[0]["upvotes"] = result.records[0]["_fields"][6];
-                    dataForClient[0]["downvotes"] = result.records[0]["_fields"][7];
-                    dataForClient[0]["follows"] = result.records[0]["_fields"][8];
-                    let tempData = [];
-                    //posts
-                    result.records[0]["_fields"][2].forEach(function (record) {
-                        tempData.push(record["properties"]);
-                    });
-                    dataForClient.push(tempData);
-                    tempData = [];
-                    //faves
-                    result.records[0]["_fields"][3].forEach(function (record) {
-                        console.log(record.properties); console.log("record.properties");
-                        tempData.push(record["properties"]);
-                    });
-                    dataForClient.push(tempData);
-                    tempData = [];
-                    //summons
-                    result.records[0]["_fields"][4].forEach(function (record) {
-                        console.log(record.properties); console.log("record.properties");
-                        tempData.push(record["properties"]);
-                    });
-                    dataForClient.push(tempData);
-                    console.log(dataForClient);
-                    socket.emit('userDataFound', dataForClient);
-                }
-            })
-            .catch(function (error) {
-                console.log(error);
-            });
-    });
-
     socket.on('viewpost', function (postID) {
         var query = `
       MATCH (p:Post {postID:$postID})
@@ -2138,7 +2072,7 @@ io.on('connection', function (socket) {
 
     
     /////////////
-    //VOTING
+    //LEGACY VOTING
     ///////////
     socket.on('makevote', function (makevotestuff) {
         var query;
@@ -2303,21 +2237,24 @@ io.on('connection', function (socket) {
     socket.on('harvestPost', function (postID, userID) {
         console.log("HARVEST POST");
         var params = {
-            postID: postID,
-            userID: userID
+            postID: parseInt(postID),
+            userID: parseInt(userID),
+            reward: 1
         };
         var query = `
     MATCH (u:User {userID:$userID}), (p:Post {postID:$postID})
     SET u.memecoin = u.memecoin + abs(p.upvotes-p.downvotes)
     DETACH DELETE p
+    RETURN u.memecoin
     `;
         session
             .run(query, params)
             .then(function (result) {
                 result.records.forEach(function (record) {
-                    console.log(record);
+                    console.log(record["_fields"]);
+                    params.reward = record["_fields"][0];
                 });
-                socket.emit('postHarvested');
+                socket.emit('userChecked', {task:"postHarvested", data:params.reward, userID:params.userID, postID:params.postID});
                 // session.close();
             })
             .catch(function (error) {
@@ -2406,8 +2343,8 @@ io.on('connection', function (socket) {
             .run(query, params)
             .then(function (result) {
                 console.log(result);
-                socket.emit('appliedShield', result);
-                console.log(result.records[0]["_fields"][1]);
+                socket.emit('userChecked', { postID: params.postID, userID: params.userID, task:'successfulShielding' });
+                //console.log(result.records[0]["_fields"][1]);
                 //session.close();
             })
             .catch(function (error) {
@@ -2449,10 +2386,6 @@ io.on('connection', function (socket) {
     socket.on('deletePost', function (dataFromClient) {
         console.log(dataFromClient);
     });
-
-    ///////////////////
-    //REPORT
-    //TAKEN CARE OF IN POST SECTION
 
     //////////////////
     //SEND MESSAGE TO COUNSELOR
@@ -2530,8 +2463,66 @@ io.on('connection', function (socket) {
     });
 
     ////////////////
-    //VIEW USER INFO
+    //STALK
 
+    socket.on('stalkuser', function (postID) {
+        var query = `
+      MATCH (u:User)<-[:CREATEDBY]-(stalked:Post {postID:$postID})
+      OPTIONAL MATCH (u)-[:TAGGEDAS]->(t:Tag)
+      WITH u, COLLECT(DISTINCT t.name) AS tags
+      OPTIONAL MATCH (u)<-[:CREATEDBY]-(p:Post)
+      WITH u, tags, COLLECT(DISTINCT p) AS posts
+      OPTIONAL MATCH (u)-[:FAVORITED]->(f:Post)
+      WITH posts, u, tags, COLLECT(DISTINCT f) AS faves
+      OPTIONAL MATCH (u)-[:SUMMONEDTO]->(s:Post)
+      WITH posts, u, tags, faves, COLLECT(DISTINCT s) AS summons
+      OPTIONAL MATCH (u)-[d:VOTEDON]->(v:Post)
+      WITH summons, posts, u, tags, faves, COLLECT(DISTINCT v.postID) AS voted, SUM(d.upvotes) AS upvotes, SUM(d.downvotes) AS downvotes
+      OPTIONAL MATCH (u)<-[:FOLLOWS]-(x)
+      WITH u, tags, posts, faves, summons, voted, upvotes, downvotes, COUNT(x) AS follows
+      RETURN u, tags, posts, faves, summons, voted, upvotes, downvotes, follows
+      `;
+        session
+            .run(query, { postID: postID })
+            .then(function (result) {
+                if (result.records[0] == null) {
+                    socket.emit('noDataFound', 'no user found');
+                    console.log('NULL');
+                } else {
+                    console.log("USER FOUND");
+                    //[userdata, tags, upvotes dealt, downvotes dealt, follows]
+                    var dataForClient = [result.records[0]["_fields"][0]["properties"], result.records[0]["_fields"][1], result.records[0]["_fields"][5]];
+                    dataForClient[0]["upvotes"] = result.records[0]["_fields"][6];
+                    dataForClient[0]["downvotes"] = result.records[0]["_fields"][7];
+                    dataForClient[0]["follows"] = result.records[0]["_fields"][8];
+                    let tempData = [];
+                    //posts
+                    result.records[0]["_fields"][2].forEach(function (record) {
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    //faves
+                    result.records[0]["_fields"][3].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    tempData = [];
+                    //summons
+                    result.records[0]["_fields"][4].forEach(function (record) {
+                        console.log(record.properties); console.log("record.properties");
+                        tempData.push(record["properties"]);
+                    });
+                    dataForClient.push(tempData);
+                    console.log(dataForClient);
+                    socket.emit('userDataFound', dataForClient);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
 
 
     ///////////////////////

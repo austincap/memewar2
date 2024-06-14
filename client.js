@@ -150,14 +150,21 @@ socket.on('userChecked', function(resultOfCheck){
     case 'failedAdditionalVote':
       console.log('you need more memecoins to vote on this post, but posting on a different one is free!');
       break;
-    case 'ableToHarvestPost':
-      //socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
-      $('#harvestmessage-span').html("you'll get "+resultOfCheck.cost+" memecoin from harvesting this post");
-      break;
-    case 'failedHarvest':
-      $('#harvestmessage').html('you cant harvest posts you dont own!');
-      console.log('you cant harvest posts you dont own!');
-      break;
+      case 'ableToHarvestPost':
+          $('#confirmHarvest').css('display', 'inline');
+          //socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+          $('#harvestmessage-span').html("You'll get "+resultOfCheck.cost+" memecoin from harvesting this post");
+          break;
+      case 'failedHarvest':
+          $('#confirmHarvest').css('display', 'none');
+          $('#harvestmessage-span').text('You cant harvest posts you dont own!');
+          displayStatus("Can't harvest");
+          break;
+      case 'postHarvested':
+          memecoinElement.text(String(parseInt(memecoinElement.text()) - resultOfCheck.data));
+          $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+          displayStatus("Post harvested");
+          $('[postid=' + resultOfCheck.postID + ']').addClass('zoop');
     case 'ableToCensorPost':
       $('#confirmCensor').prop('disabled', false);
       $('#censormessage-span').html("there are have been "+resultOfCheck.cost+" attempts to censor this post so far, and if there's at least 1 shield you'll waste your memecoin too");
@@ -179,9 +186,11 @@ socket.on('userChecked', function(resultOfCheck){
     case 'failedCensoringCauseOther':
       console.log('no idea');
       break;
-    case 'ableToApplyShield':
-      $('#confirmShield').prop('disabled', false);
-      //socket.emit('shieldPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
+    case 'successfulShielding':
+          $('#confirmShield').prop('disabled', false);
+          displayStatus("Free speech shield applied to post");
+          $('[postid=' + resultOfCheck.postID + ']').addClass('shield-animation');
+          $('#censorShieldHarvestContainer').css('display', 'none');
       break;
     case 'failedShielding':
       $('#confirmShield').prop('disabled', true);

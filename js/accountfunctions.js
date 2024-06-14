@@ -12,8 +12,8 @@ function registerNewUser() {
     var registrationData = {
         username: $('#signInName').val(),
         password: $('#passwordvalue').val(),
-        newuserRoles: $('#rolenumbers').html(),
-        role: $('#submitRoleButton').html()
+        newuserRoles: $('#rolenumbers').text(),
+        role: $('#submitRoleButton').text()
     };
     socket.emit('registerNewUser', registrationData);
 }
@@ -39,7 +39,6 @@ function clickAccountButton(thisButton) {
         viewProfilePage(sessionStorage.getItem('userID'));
     }
 }
-
 function loggedIn(loginData) {
     sessionStorage.setItem('userID', loginData.userID);
     sessionStorage.setItem('username', loginData.name);
@@ -147,7 +146,7 @@ function getFirstRole(rollString) {
                 case 6:
                     return "Summoner";
                 case 7:
-                    return "Silencer";
+                    return "Censorer";
                 case 8:
                     return "Arbitrator";
                 case 9:
@@ -193,7 +192,7 @@ function selectThisRole(roleName) {
         case "Summoner":
             rolenumber = '000000100000000';
             break;
-        case "Protector":
+        case "Censorer":
             rolenumber = '000000010000000';
             break;
         case "Arbitrator":
