@@ -475,6 +475,14 @@ function returnTastemakerBox() {
 }
 
 
+function showOfferBox(postID) {
+    var offerBox = $('#offerBoxContainer');
+    offerBox.detach();
+    offerBox.appendTo('#' + postID);
+    offerBox.css('display', 'block');
+}
+
+
 function joinGroup(postIDofGroup) {
 
     var datapacket = {

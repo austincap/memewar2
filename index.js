@@ -538,17 +538,13 @@ app.post('/sendmessage', upload.single('sampleFile-message'), function (req, res
     };
     var query = `
         MATCH(fromuser:User {userID:$userID}), (touser:User {name:$tousername})
-        MERGE (fromuser)-[a:SENTMSG]->(m:Post {postID:$postID, title:$title, type:$type, content:$content })-[b:RECEIVEDMSG]->(touser)
+        MERGE (fromuser)-[a:SENTMSG]->(m:Msg {postID:$postID, title:$title, type:$type, content:$content })-[b:RECEIVEDMSG]->(touser)
         RETURN fromuser, a, m, b, touser
         `;
     session
         .run(query, params)
         .then(function (result) {
-            console.log(result);
-            // result.records[0]["_fields"].forEach(function(record){
-            //   console.log(record);
-            // });
-            // session.close();
+            console.log(result);  
         })
         .catch(function (error) {
             console.log(error);
@@ -576,6 +572,40 @@ app.post('/uploadreport', upload.single('sampleFile-none'), function (req, res, 
         RETURN origPost, re, whomadeit
         `;
      session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result);
+            // result.records[0]["_fields"].forEach(function(record){
+            //   console.log(record);
+            // });
+            // session.close();
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+    res.redirect('/');
+});
+//uploadoffer
+app.post('/uploadoffer', function (req, res, next) {
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var query;
+    var postId = parseInt(blockId.getTimestamp());
+    var params = {
+        postID: postId,
+        offer: parseInt(req.body.amountOffered),
+        title: "Offer: sell #"+String(req.body.postIDoffer)+" for "+String(req.body.amountOffered),
+        userID: parseInt(req.body.offerUserId),
+        forpost: parseInt(req.body.postIDreport),
+        type: "tradeoffer",
+        content: "Someone wants to buy your post #"+String(req.body.postIDoffer)+" for "+String(req.body.amountOffered)
+    };
+    var query = `
+        MATCH (fromuser:User {userID:$userID}), (forpost:Post {postID:$forpost})-[:CREATEDBY]->(touser:User)
+        MERGE (fromuser)-[a:SENTMSG]->(m:Msg {postID:$postID, title:$title, content:$contnet, type:$type, forpost:$forpost, offer:$offer})-[b:RECEIVEDMSG]->(touser)
+        RETURN touser
+        `;
+    session
         .run(query, params)
         .then(function (result) {
             console.log(result);
@@ -1927,8 +1957,8 @@ io.on('connection', function (socket) {
     socket.on('viewmessages', function (userID) {
         var query = `
         MATCH (recipient:User {userID:$userID})
-        OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(r:MSG)<-[:SENTMSG]-(fromuser)
-        OPTIONAL MATCH (recipient)-[:SENTMSG]->(s:MSG)->[:RECEIVEDMSG]->(otheruser:User)
+        OPTIONAL MATCH (recipient)<-[:RECEIVEDMSG]-(r:Msg)<-[:SENTMSG]-(fromuser)
+        OPTIONAL MATCH (recipient)-[:SENTMSG]->(s:Msg)->[:RECEIVEDMSG]->(otheruser:User)
         RETURN recipient.name, r.title, r.content, fromuser.name
         `;
         session
@@ -2261,6 +2291,9 @@ io.on('connection', function (socket) {
                 console.log(error);
             });
     });
+
+
+   
 
     ////////////////////     (u:User {userID:$userID})
     // SET u.memecoin = u.memecoin - 50

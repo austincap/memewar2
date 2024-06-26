@@ -4,6 +4,7 @@
 body {
     background-color: #222222;
     font-size: clamp(1.5rem, calc(20px-40vw), 2rem) !important;
+    margin:5px;
 }
 h1 {
   margin: auto;
@@ -337,6 +338,9 @@ select {
 .pollsters-only {
     display: none;
 }
+.traders-only{
+    display: none;
+}
 .founders-only{
     display: none;
 }
@@ -357,13 +361,14 @@ select {
     height: 100%;
     font-size: calc(20px-2vh);
     place-items: center;
-    background: #456173;
+    background: #DBD0BC;
+    overflow: hidden;
+    padding: 5px;
 }
     :root {
         --gutter: 0px;
     }
     .app {
-        padding: var(--gutter) 0;
         display: grid;
         grid-gap: var(--gutter) 0;
         grid-template-columns: var(--gutter) 1fr var(--gutter);
@@ -389,8 +394,20 @@ select {
             content: '';
         }
 
-.footer-container{
+.footer-container {
     display:block;
+    width: 100%;
+    float:left;
+}
+.footer-conter > div {
+    display: relative;
+    margin: auto;
+}
+#footer-helper {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    text-align: center;
 }
     #algomancy-overlay-box {
         display: none;
@@ -399,20 +416,20 @@ select {
 
     ul {
         list-style: none;
-        padding: 0;
+        padding: 0px;
     }
     h1, h2,  h3 {
         margin: 0;
     }
     .app {
         width: 575px;
-        height: 667px;
+        height: 100%;
         background: #DBD0BC;
-        overflow-y: scroll;
+        overflow-y: inherit;
     }
     .hs > li, .item {
         scroll-snap-align: center;
-        padding: calc(var(--gutter) / 2 * 1.5);
+        padding: 4px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -519,18 +536,17 @@ select {
     text-align:center;
 }
 
-  #popular-tags {
-    color:#dfe09d;
-    overflow:auto;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    display:block;
-    width:90vw;
-   /* min-width:75vw;*/
-    float:right;
-  }
+#popular-tags {
+    color: #dfe09d;
+    overflow: auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    width: 90vw;
+    max-width: 80vw;
+    float: left;
+}
   #popular-tag-span {
-    
   }
 #centerstage {
     /*        margin: auto;*/
@@ -662,17 +678,6 @@ select {
         margin-left:5px;
     }
 
-#globalInfoContainer {
-    display: inline;
-    flex-wrap: wrap;
-    margin: 0;
-   
-    max-width:100px;
-}
-    #globalInfoContainer > div {
-        min-width: 100px;
-    }
-
 
 #editBoxContainer{
     display:none;
@@ -727,49 +732,114 @@ select {
     min-height:200px;
 }
 
+
+#offerBoxContainer{
+    display: none;
+}
+
+
+#big-container {
+    display: flex;
+
+    margin: 0;
+    float: left;
+}
+
+    #big-container > div {
+        min-width: 200px;
+    }
+
+#globalInfoContainer {
+    grid-column-start: 1;
+    grid-column-end: 1;
+    margin: 0;
+    max-width: 100px;
+}
+
+    #globalInfoContainer > div {
+        min-width: 100px;
+    }
+
+@media (max-width: 900px) {
+    #big-container{
+        display:block;
+    }
+    #entryContainer {
+        flex: 100%;
+    }
+    #globalInfoContainer{
+        display: inline;
+        flex:100%;
+    }
+    .post-header{
+        display: none;
+    }
+    .post-content{
+        overflow-x:hidden;
+        text-overflow:ellipsis;
+        overflow-y:auto;
+        height:100%;
+    }
+
+}
+
 /* post list stuff */
 #entryContainer {
     border: solid;
     padding-left: 5vw;
     padding-right: 5vw;
     padding-top: 2vh;
-    padding-bottom: 3vh;
+    padding-bottom: 1vh;
     color: white;
-    width:70%;
-
+    width: 100%;
+    flex: 100%;
+    flex-grow: 0.5;
+    overflow-x: hidden;
+    grid-column-start: 2;
+    grid-column-end: 3;
 }
-  .post {
+.post {
     color: white;
-    display: inline-block; 
+    display: inline-block;
     max-height: 120px;
-    width:100%;
-  }
+    max-width: 1200px;
+    min-width: 320px;
+}
   .post-visual {
     padding-right:1vh;
   }
-  .post-title-helper {
-    overflow-y:hidden;
-    overflow-x:hidden !important;
+.post-title-helper {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
     min-width: 300px;
     max-height: 140px;
-    font-size:150% !important;
-  }
+    font-size: 140% !important;
+}
   .post-title {
     font-size: 120% !important;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
   }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 900px) {
     .post-header {
         height: 7%;
         font-size: calc(10px + 0.8vw);
         min-height: 12px;
         padding-bottom: 1vh;
     }
+    .post-helper {
+        display: flex !important;
+        width: 90%;
+    }
 }
 
     .post-helper {
         display: flex !important;
-        width: 100%;
+        width: max-content;
+        overflow-x:hidden;
+        text-overflow:ellipsis;
     }
+
 
     .post-maintext {
         height: 70%;
@@ -781,15 +851,14 @@ select {
     }
 
     .post-content {
-        overflow-y: ellipsis !important;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
         font-size: 70%;
-        max-height: 20%;
     }
 
     .post-content-span {
-        overflow-y: ellipsis !important;
-        overflow-x: ellipsis !important;
-        max-height: 20%;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
     }
 
     .post-buttons {
@@ -805,6 +874,8 @@ select {
         border: solid 1px;
         margin-bottom: 2vh;
         margin-top: 4vh;
+        min-width: max-content;
+        width: 100%;
         /*overflow-x:auto;*/
     }
 
@@ -888,18 +959,6 @@ select {
     #censorShieldContainer {
         display: none;
     }
-
-    #big-container {
-        display: flex;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        margin: 0;
-        float: left;
-    }
-
-        #big-container > div {
-            min-width: 200px;
-        }
 
 
     /* tooltips */

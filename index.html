@@ -94,7 +94,7 @@
                 <li class="item roleraise" onclick="selectThisRole('Stalker');"><h2>Stalker</h2><div>View the likes and bios of private users.<br />You prefer to know more about people than they know about you.</div></li>
                 <li class="item roleraise permahidden" onclick="selectThisRole('Editor');"><h2>Editor</h2><div>Suggest edits to any post.<br />You always see room for improvement.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Leader');"><h2>Leader</h2><div>Other users can follow you.<br />You relish the spotlight.</div></li>
-                <li class="item roleraise permahidden" onclick="selectThisRole('Deceiver');"><h2>Deceiver</h2><div>Change role at will with no abilities.<br /></div></li>
+                <li class="item roleraise" onclick="selectThisRole('Trader');"><h2>Trader</h2><div>Buy the rights to other people's posts.<br /></div></li>
                 <li class="item roleraise permahidden" onclick="selectThisRole('Founder');"><h2>Founder</h2><div>Create and manage groups.<br />You don't mind responsibility.</div></li>
                 <li class="item roleraise" onclick="selectThisRole('Algomancer');"><h2>Algomancer</h2><div>Edit the collective custom algorithm how you see fit.<br />You like to tinker.</div></li>
             </ul>
@@ -138,69 +138,71 @@
 
 
     <div id="border-container">
-        <div id="lower-leftist-buttons">
-            <div class="w3-dropdown-click">
-                <button onclick="dropDownFunction()" id="sorter" class="w3-button w3-black">Sort by</button>
-                <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
-                    <button onclick="algomancerSort()" class="w3-bar-item w3-button" id="sort-by-random">Algomancer</button>
-                    <button onclick="controversialSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-controversial">Most controversial</button>
-                    <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
-                    <button onclick="loathedSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-downvotes">Most loathed</button>
-                    <button onclick="recentSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-time">Most recent</button>
-                    <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
-                    <button onclick="recommendedSort()" class="w3-bar-item w3-button" id="sort-by-recd">Most recommended</button>
-                    <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
-                    <button onclick="leaderSort()" class="w3-bar-item w3-button" id="sort-by-followed">Most followed</button>
-                </div>
+        <div class="w3-dropdown-click">
+            <button onclick="dropDownFunction()" id="sorter" class="w3-button w3-black">Sort by</button>
+            <div id="Demo" class="w3-dropdown-content w3-bar-block w3-border">
+                <button onclick="algomancerSort()" class="w3-bar-item w3-button" id="sort-by-random">Algomancer</button>
+                <button onclick="controversialSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-controversial">Most controversial</button>
+                <button onclick="likedSort()" class="w3-bar-item w3-button" id="sort-by-upvotes">Most liked</button>
+                <button onclick="loathedSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-downvotes">Most loathed</button>
+                <button onclick="recentSort()" class="w3-bar-item w3-button explorers-only" id="sort-by-time">Most recent</button>
+                <button onclick="viewedSort()" class="w3-bar-item w3-button" id="sort-by-clicks">Most viewed</button>
+                <button onclick="recommendedSort()" class="w3-bar-item w3-button" id="sort-by-recd">Most recommended</button>
+                <button onclick="randomSort()" class="w3-bar-item w3-button" id="sort-by-random">Random sample</button>
+                <button onclick="leaderSort()" class="w3-bar-item w3-button" id="sort-by-followed">Most followed</button>
             </div>
+        </div>
+        <div id="lower-leftist-buttons">
             <div id="popular-tags">
                 <input type="text" id="tag-filter" placeholder="input a tag to search for" />&nbsp;<span id="popular-tag-span"></span>
             </div>
+
         </div>
     </div>
 
-    <div style="display:block;">
-        <div id="big-container">
-            <div id="d3frame">
-                <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
-                <svg id="svg"></svg>
-            </div>
+    <div id="big-container">
 
-            <div id="seaOfDivs">
-
-            </div>
-
-            <div id="globalInfoContainer">
-                <div><button id="browse-groups" class="raise" onclick="requestGroups();">Browse groups</button></div>
-                <div><button id="global-stats" class="raise" onclick="checkGlobalStats();">Check stats</button></div>
-                <div><button id="about" class="raise" onclick="window.location.href='about.html';">About site</button></div>
-                <div>Today's basic income:<span if="todaysBasicIncome"></span></div>
-
-            </div>
-
-            <div id="entryContainer">
-
-            </div>
-            <div></div>
-            <div id="multiContainer">
-                <div id="multi-left"></div>
-                <div id="multi-center"></div>
-                <div id="multi-right"></div>
-            </div>
+        <div id="d3frame">
+            <button id="uploadNewPostButton" onclick="clickNewPostButton()">+</button>
+            <svg id="svg"></svg>
         </div>
 
-        <div class="footer-container">
-            <div>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
-                <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
-            </div>
+        <div id="seaOfDivs">
+        </div>
+
+        <div id="globalInfoContainer">
+            <button id="browse-groups" class="raise" onclick="requestGroups();">Browse groups</button>
+            <button id="global-stats" class="raise" onclick="checkGlobalStats();">Check stats</button>
+            <button id="about" class="raise" onclick="window.location.href='about.html';">About site</button>
+            <div>Today's basic income:<span if="todaysBasicIncome"></span></div>
+        </div>
+
+        <div id="entryContainer">
+        </div>
+
+
+
+        <div id="multiContainer">
+            <div id="multi-left"></div>
+            <div id="multi-center"></div>
+            <div id="multi-right"></div>
+        </div>
+
+    </div>
+
+    <div class="footer-container">
+        <div id="footer-helper">
+            <button class="paginator" onclick="visitpage($(this).html())" id="page0">0</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page1">1</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page2">2</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page3">3</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page4">4</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page5">5</button>
+            <button class="paginator" onclick="visitpage($(this).html())" id="page6">6</button>
         </div>
     </div>
+
+  
 
     <div id="adjacentblocks">
         <div id="previewframe">
@@ -512,6 +514,16 @@
             </div>
         </div>
 
+        <div id="offerBoxContainer">
+            <form ref="makeOffer" id="makeOfferForm" action="/uploadoffer" onsubmit='submitOffer();'>
+                <input type="text" class="permahidden" id="offerPostId" name="offerPostId" />
+                <input type="text" class="permahidden" id="offerUserId" name="offerUserId" />
+                <label for="amountOffered">How much are you willing to purchase this meme for?</label>
+                <input type="number" name="amountOffered" min="0" max="20" />
+                <input class="raise" type="submit" value="Submit" />
+            </form>
+        </div>
+
         <div id="adminToolsContainer">
             <div>
                 <button id="deletebutton" onclick="deleteThisPost($(this).parent().parent().parent().parent().parent().attr('postID'));">delete</button>
@@ -521,16 +533,14 @@
 
         <div id="bountyCreatorContainer">
             <form ref='uploadBounty' id='uploadBounty' action='/uploadbounty' onsubmit='submitbounty();' method='post' encType='multipart/form-data'>
-                <input class="permahidden" id="bountyID" name="bountyID" />
-                <input class="permahidden" id="userID_bounty" name="userIDbounty" />
+                <input type="text" class="permahidden" id="bountyID" name="bountyID" />
+                <input type="text" class="permahidden" id="userID_bounty" name="userIDbounty" />
                 *<label for="reportreason">What you're posting a bounty for:</label>
                 <select required id="bountyreason" name="bountyreason">
                     <option value="find">Find content</option>
                     <option value="answer">Answer question</option>
                     <option value="ability">Use ability</option>
                     <option value="defend">Defend user</option>
-                    <option value="subversive">Subversive</option>
-                    <option value="spam">Spam</option>
                 </select><br />
                 *<textarea required id="content-bounty" name="content-bounty" type="text" minlength="20" maxlength="800" placeholder="provide a detailed description for what you want using at least 20 characters"></textarea><br />
                 *<label for="bountycost">What will you set the bounty at?</label>

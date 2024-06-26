@@ -290,6 +290,7 @@ function displayTextPost(post) {
                 <button class='raise profallow painters-only' onclick='showPaintBox({{postID}});'><span class='tooltiptext'>paint this post</span>🎨</button>
                 <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                 <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
+                <button class='raise profallow traders-only' onclick='showOfferBox({{postID}});'><span class='tooltiptext'>purchase this post</span>⚖️</button>
                 <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
                 <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                 <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
@@ -382,6 +383,7 @@ function displayPollPost(post) {
                     <button class='raise profallow tastemakers-only' onclick='showRecommendBox({{postID}});'><span class='tooltiptext'>recommend this post</span>👌</button>
                     <button class='raise profallow summoners-only' onclick='showSummonBox({{postID}});'><span class='tooltiptext'>summon user</span>🤝</button>
                     <button class='raise profallow stalkers-only' onclick='stalkPoster({{postID}});'><span class='tooltiptext'>stalk user</span>🔍</button>
+                    <button class='raise profallow traders-only' onclick='showOfferBox({{postID}});'><span class='tooltiptext'>purchase this post</span>⚖️</button>
                     <button class='raise anonallow' onclick='showReportBox({{postID}});'><span class='tooltiptext'>report this post</span>⚠️</button>
                     <button class='raise profallow' onclick='showAdminBox({{postID}});'><span class='tooltiptext'>admin tools</span>🛠️</button>
                     <div class='statusdiv' id='{{postID}}' up='{{up}}' down='{{down}}'></div>
