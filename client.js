@@ -152,55 +152,66 @@ socket.on('userChecked', function(resultOfCheck){
       break;
       case 'ableToHarvestPost':
           $('#confirmHarvest').css('display', 'inline');
-          //socket.emit('harvestPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
           $('#harvestmessage-span').html("You'll get "+resultOfCheck.cost+" memecoin from harvesting this post");
           break;
       case 'failedHarvest':
           $('#confirmHarvest').css('display', 'none');
           $('#harvestmessage-span').text('You cant harvest posts you dont own!');
-          displayStatus("Can't harvest");
+          displayStatus('You cant harvest posts you dont own!');
           break;
       case 'postHarvested':
           memecoinElement.text(String(parseInt(memecoinElement.text()) - resultOfCheck.data));
           $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
           displayStatus("Post harvested");
           $('[postid=' + resultOfCheck.postID + ']').addClass('zoop');
+          break;
     case 'ableToCensorPost':
       $('#confirmCensor').prop('disabled', false);
       $('#censormessage-span').html("there are have been "+resultOfCheck.cost+" attempts to censor this post so far, and if there's at least 1 shield you'll waste your memecoin too");
-      //socket.emit('censorPost', {userID:resultOfCheck.userID, postID:resultOfCheck.postID});
       break;
     case 'failedCensoringCauseTooPoor':
-      $('#confirmCensor').prop('disabled', true);
-      $('#censormessage-span').html("you need more memecoins to censor this post. consider just getting over it?");
-      console.log('you need more memecoin to censor this post. consider just getting over it?');
-      break;
+          $('#confirmCensor').prop('disabled', true);
+          $('#censormessage-span').html("you need more memecoins to censor this post. consider just getting over it?");
+          displayStatus("you need more memecoins to censor this post. consider just getting over it?");
+          console.log('you need more memecoin to censor this post. consider just getting over it?');
+          break;
     case 'successfulCensoring':
-      $('#censormessage-span').html("success! you will be the last person to ever see this post! reload the page to wipe it from the net completely");
-      $('#confirmCensor').prop('disabled', true);
-      socket.emit('censorSuccess', {userID:resultOfCheck.userID, postID:resultOfCheck.postID, cost:resultOfCheck.cost});
-      break;
+          $('#censormessage-span').html("success! you will be the last person to ever see this post! reload the page to wipe it from the net completely");
+          $('#confirmCensor').prop('disabled', true);
+          socket.emit('censorSuccess', { userID: resultOfCheck.userID, postID: resultOfCheck.postID, cost: resultOfCheck.cost });
+          memecoinElement.text(String(parseInt(memecoinElement.text()) - 50));
+          $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+          displayStatus("success! you will be the last person to ever see this post! reload the page to wipe it from the net completely");
+          break;
     case 'failedCensoringCauseShield':
-      $('#censormessage-span').html("your attempt to censor this post has failed, but there are merely "+resultOfCheck.cost+" free speech shields remaining");
-      break;
+          $('#censormessage-span').html("your attempt to censor this post has failed, but there are merely " + resultOfCheck.cost + " free speech shields remaining");
+          displayStatus("your attempt to censor this post has failed, but there are merely " + String(resultOfCheck.cost) + " free speech shields remaining");
+          memecoinElement.text(String(parseInt(memecoinElement.text()) - 50));
+          $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+          break;
     case 'failedCensoringCauseOther':
-      console.log('no idea');
-      break;
+          console.log('no idea');
+          displayStatus('Censoring failed but cause of some weird error');
+          break;
     case 'successfulShielding':
           $('#confirmShield').prop('disabled', false);
           displayStatus("Free speech shield applied to post");
           $('[postid=' + resultOfCheck.postID + ']').addClass('shield-animation');
+          socket.emit('shieldSuccess', { userID: resultOfCheck.userID, postID: resultOfCheck.postID, cost: resultOfCheck.cost });
+          memecoinElement.text(String(parseInt(memecoinElement.text()) - 25));
+          $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
           $('#censorShieldHarvestContainer').css('display', 'none');
-      break;
+          break;
     case 'failedShielding':
-      $('#confirmShield').prop('disabled', true);
-      $('#shieldmessage-span').html("you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!");
-      console.log('you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!');
-      break;
+          $('#confirmShield').prop('disabled', true);
+          displayStatus("you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!");
+          $('#shieldmessage-span').html("you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!");
+          console.log('you need more memecoins to shield this post. for more memecoins, try harvesting one of your successful posts!');
+          break;
     case 'ableToUpvoteTag':
           socket.emit('upvoteTag', { userID: resultOfCheck.userID, postID: resultOfCheck.postID, tagname: resultOfCheck.cost });
           displayStatus("Tag upvoted successfully");
-      break;
+          break;
     case 'failedTagUpvote':
       if (resultOfCheck.cost == -1){
         console.log('you need at least 1 memecoin to strengthen the link between a particular post and a tag, but you can make a new one for free');
@@ -215,11 +226,12 @@ socket.on('userChecked', function(resultOfCheck){
           displayStatus('Successfully cast ballot in poll.');
           memecoinElement.text(String(parseInt(memecoinElement.text()) - 1));
           $('#accountButton').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
-      console.log('successfulPollVote');
-      break;
-    case 'failedPollVote':
-      console.log('not enough memecoin to vote');
-      break;
+          console.log('successfulPollVote');
+          break;
+      case 'failedPollVote':
+          displayStatus('You cant vote on this poll');
+          console.log('not enough memecoin to vote');
+          break;
     default:
       break;
   }
@@ -598,7 +610,10 @@ socket.on('receiveLeaderData', function (topPostsAndTags) {
     console.log(topPostsAndTags);
     populateStandardFeed(topPostsAndTags[0], topPostsAndTags[1]);
 });
-
+//receiveBountiesData
+socket.on('receiveBountyData', function (bounties) {
+    console.log(bounties);
+});
 
 //sendDatabase
 socket.on('sendDatabase', function (results) {

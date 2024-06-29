@@ -429,6 +429,9 @@ function populatePageWithReports(reportarray) {
     });
     $('#entryContainer').append('</table>');
 }
+function requestBounties(messages) {
+    socket.emit('requestBounties', 0);
+}
 
 
 //GROUP NONSENSE

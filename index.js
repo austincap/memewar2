@@ -619,6 +619,34 @@ app.post('/uploadoffer', function (req, res, next) {
         });
     res.redirect('/');
 });
+//uploadbounty
+app.post('/uploadbounty', upload.single('sampleFile-message'), function (req, res, next) {
+    console.log(req.body);
+    var blockId = new ObjectId();
+    var postId = parseInt(blockId.getTimestamp());
+    var params = {
+        userID: parseInt(req.body.userIDbounty),
+        bountyreason: req.body.bountyreason,
+        title: req.body.content_bounty,
+        bountycost: req.body.bountycost,
+        postID: postId,
+        type: 'bounty'
+    };
+    var query = `
+        MATCH(u:User {userID:$userID})
+        MERGE (u)<-[a:CREATEDBY]-(b:Bounty {postID:$postID, title:$title, type:$type, bountycost:$bountycost, type:$type, bountyreason:$bountyreason })
+        SET u.memecoin = u.memecoin-`+params.bountycost+`
+        RETURN u, a, b
+        `;
+    session
+        .run(query, params)
+        .then(function (result) {
+            console.log(result.records);
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+});
 
 ///////////////
 // REQUEST FUNCTIONS
@@ -1262,6 +1290,35 @@ function retrievePostsForNetView(socket) {
         });
 }
 
+
+function requestBounties(socket, pagenum) {
+    var query = `
+        MATCH (b:Bounty)-[:CREATEDBY]->(u:User)
+        RETURN b.postID, b.bountyreason, b.title, b.bountycost, u.name, u.userID
+        `;
+    session
+        .run(query)
+        .then(function (result) {
+            var dataForClient = [];
+            console.log(result);
+            if (result.records[0] == null) {
+                socket.emit('noBountiesFound', 'no messages found');
+                console.log('NULL');
+            } else {
+                console.log("NOT null");
+                console.log(result.records[0]["_fields"]);
+                result.records.forEach(function (record) {
+                    console.log(record["_fields"]);
+                    dataForClient.push(record["_fields"]);
+                });
+                socket.emit('receiveBountyData', dataForClient);
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
+
 // GROUP REQUESTS
 function requestGroups(socket) {
     console.log("REQUEST ALL GROUPS AND THEIR TAGS");
@@ -1426,20 +1483,6 @@ function userChecked(socket, taskname, userIDnum) {
     socket.emit('userChecked', { task: taskname, userID: userIDnum });
 }
 
-function makePollVote(socket, params, querystring) {
-    var query = querystring;
-    console.log(query);
-    session
-        .run(query, params)
-        .then(function (result) {
-            console.log(result.records[0]);
-        })
-        .catch(function (error) {
-            //socket.emit('userChecked', { task: 'failedAdditionalVote', userID: params.userID, postID: params.postID, cost: -1 });
-            console.log(error);
-        });
-}
-
 function makenewvote(socket, makenewvotestuff) {
     var query;
     var params = {
@@ -1602,9 +1645,9 @@ function checkFunction(socket, stuffToCheck) {
             break;
         case 'harvest':
             query = `
-        MATCH (p:Post {postID:$postID})-[c:CREATEDBY]->(u:User {userID:$userID})
-        RETURN p
-        `;
+            MATCH (p:Post {postID:$postID})-[c:CREATEDBY]->(u:User {userID:$userID})
+            RETURN p
+            `;
             session
                 .run(query, params)
                 .then(function (result) {
@@ -1615,6 +1658,11 @@ function checkFunction(socket, stuffToCheck) {
                     } else {
                         var post = result.records[0]["_fields"][0]["properties"];
                         var profit = ((post.upvotes - post.downvotes) > 0) ? (post.upvotes - post.downvotes) : 0;
+                        if (post.type == 'poll_post') {
+                            for (let i = 0; i < post.optionvotes.length; i++) {
+                                profit += post.optionvotes[i];
+                            }
+                        }
                         socket.emit('userChecked', { task: 'ableToHarvestPost', userID: params.userID, postID: params.postID, cost: profit });
                     }
                 })
@@ -1625,9 +1673,9 @@ function checkFunction(socket, stuffToCheck) {
             break;
         case 'shield':
             query = `
-        MATCH (n:User {userID:$userID})
-        RETURN n.memecoin
-        `;
+            MATCH (n:User {userID:$userID})
+            RETURN n.memecoin
+            `;
             session
                 .run(query, params)
                 .then(function (result) {
@@ -1638,11 +1686,11 @@ function checkFunction(socket, stuffToCheck) {
                     } else {
                         console.log("USER EXISTED");
                         var memecoin = parseInt(result.records[0]['_fields'][0]);
-                        if (memecoin > 50) {
-                            console.log("MORE THAN 50");
-                            socket.emit('userChecked', { task: 'ableToApplyShield', userID: params.userID, postID: params.postID, cost: 25 });
+                        if (memecoin > 25) {
+                            console.log("MORE THAN 25");
+                            socket.emit('userChecked', { task: 'successfulShielding', userID: params.userID, postID: params.postID, cost: 25 });
                         } else {
-                            socket.emit('userChecked', { task: 'failedCensoring', userID: params.userID, postID: params.postID, cost: 0 });
+                            socket.emit('userChecked', { task: 'failedShielding', userID: params.userID, postID: params.postID, cost: 0 });
                         }
                     }
                 })
@@ -1653,9 +1701,9 @@ function checkFunction(socket, stuffToCheck) {
             break;
         case 'censor':
             query = `
-        MATCH (n:User {userID:$userID}), (p:Post {postID:$postID})
-        RETURN n.memecoin, p.censorattempts
-        `;
+            MATCH (n:User {userID:$userID}), (p:Post {postID:$postID})
+            RETURN n.memecoin, p.censorattempts
+            `;
             session
                 .run(query, params)
                 .then(function (result) {
@@ -1681,9 +1729,9 @@ function checkFunction(socket, stuffToCheck) {
             break;
         case 'upvotetag':
             query = `
-        MATCH (u:User {userID:$userID})
-        RETURN u.memecoin
-        `;
+            MATCH (u:User {userID:$userID})
+            RETURN u.memecoin
+            `;
             session
                 .run(query, params)
                 .then(function (result) {
@@ -1738,7 +1786,7 @@ function checkFunction(socket, stuffToCheck) {
                 .then(function (result) {
                     if (result.records[0] == undefined) {
                         console.log(result)
-                        console.log("MAKE POLL VOTE");
+                        console.log("MAKE POLL VOTE CAUSE ONE DOES NOT EXIST FOR THIS USER");
                         var newparams = {
                             userID: stuffToCheck.userID,
                             postID: stuffToCheck.postID
@@ -1750,6 +1798,7 @@ function checkFunction(socket, stuffToCheck) {
                             .then(function (result) {
                                 console.log("POLLVOTE MADE?");
                                 console.log(result.records[0]);
+                                socket.emit('userChecked', { task: 'successfulPollVote', userID: params.userID, postID: params.postID, cost: 0 });
                             })
                             .catch(function (error) {
                                 console.log(error);
@@ -1838,6 +1887,10 @@ io.on('connection', function (socket) {
 
     socket.on('requestAlgomancerPosts', function (pagenum) {
         requestAlgomancerPosts(socket, pagenum);
+    });
+
+    socket.on('requestBounties', function (pagenum) {
+        requestBounties(socket, pagenum);
     });
 
     socket.on('requestGroups', function (pagenum) {
@@ -2295,23 +2348,23 @@ io.on('connection', function (socket) {
 
    
 
-    ////////////////////     (u:User {userID:$userID})
+    ////////////////////    need this additional listener to check for existing shields basically
     // SET u.memecoin = u.memecoin - 50
     //CURRENT CENSOR COST = 50
     ///////////////////
-    socket.on('censorAttempt', function (dataFromClient) {
+     socket.on('censorAttempt', function (dataFromClient) {
         console.log("ATTEMPT CENSOR POST");
         var params = {
             postID: parseInt(dataFromClient.postID),
             userID: parseInt(dataFromClient.userID)
         };
         var query = `
-    MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
-    SET p.shields = p.shields - 1
-    SET p.memecoinsspent = p.memecoinsspent + 50
-    SET u.memecoin = u.memecoin - 50
-    RETURN p.shields
-    `;
+            MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
+            SET p.shields = p.shields - 1
+            SET p.memecoinsspent = p.memecoinsspent + 50
+            SET u.memecoin = u.memecoin - 50
+            RETURN p.shields
+            `;
         session
             .run(query, params)
             .then(function (result) {
@@ -2343,13 +2396,13 @@ io.on('connection', function (socket) {
             userID: parseInt(dataFromClient.userID)
         };
         var query = `
-    MATCH (p:Post {postID:$postID})
-    DETACH DELETE p
-    `;
+            MATCH (p:Post {postID:$postID})
+            DETACH DELETE p
+            `;
         session
             .run(query, params)
             .then(function (result) {
-                console.log("DELETED POST FROM DATBASE")
+                console.log("DELETED POST FROM DATBASE");
             })
             .catch(function (error) {
                 console.log(error);
@@ -2360,25 +2413,22 @@ io.on('connection', function (socket) {
     ///////////////////////
     //CURRENT SHIELD COST = 25
     /////////////////////
-    socket.on('shieldPost', function (dataFromClient) {
+    socket.on('shieldSuccess', function (dataFromClient) {
         var params = {
             postID: parseInt(dataFromClient.postID),
             userID: parseInt(dataFromClient.userID)
         };
         var query = `
-      MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
-      SET p.shields = p.shields + 1
-      SET p.memecoinsspent = p.memecoinsspent + 25
-      SET u.memecoin = u.memecoin - 25
-      RETURN p, u
-      `;
+          MATCH (p:Post {postID:$postID}), (u:User {userID:$userID})
+          SET p.shields = p.shields + 1
+          SET p.memecoinsspent = p.memecoinsspent + 25
+          SET u.memecoin = u.memecoin - 25
+          RETURN p, u
+          `;
         session
             .run(query, params)
             .then(function (result) {
                 console.log(result);
-                socket.emit('userChecked', { postID: params.postID, userID: params.userID, task:'successfulShielding' });
-                //console.log(result.records[0]["_fields"][1]);
-                //session.close();
             })
             .catch(function (error) {
                 console.log(error);

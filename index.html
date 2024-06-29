@@ -172,6 +172,7 @@
 
         <div id="globalInfoContainer">
             <button id="browse-groups" class="raise" onclick="requestGroups();">Browse groups</button>
+            <button id="view-bounties" class="raise" onclick="requestBounties();">View bounties</button>
             <button id="global-stats" class="raise" onclick="checkGlobalStats();">Check stats</button>
             <button id="about" class="raise" onclick="window.location.href='about.html';">About site</button>
             <div>Today's basic income:<span if="todaysBasicIncome"></span></div>
@@ -535,19 +536,20 @@
             <form ref='uploadBounty' id='uploadBounty' action='/uploadbounty' onsubmit='submitbounty();' method='post' encType='multipart/form-data'>
                 <input type="text" class="permahidden" id="bountyID" name="bountyID" />
                 <input type="text" class="permahidden" id="userID_bounty" name="userIDbounty" />
-                *<label for="reportreason">What you're posting a bounty for:</label>
+                *<label for="bountyreason">What you're posting a bounty for:</label>
                 <select required id="bountyreason" name="bountyreason">
                     <option value="find">Find content</option>
                     <option value="answer">Answer question</option>
                     <option value="ability">Use ability</option>
                     <option value="defend">Defend user</option>
                 </select><br />
-                *<textarea required id="content-bounty" name="content-bounty" type="text" minlength="20" maxlength="800" placeholder="provide a detailed description for what you want using at least 20 characters"></textarea><br />
+                *<textarea required id="content_bounty" name="content_bounty" type="text" minlength="20" maxlength="800" placeholder="provide a detailed description for what you want using at least 20 characters"></textarea><br />
                 *<label for="bountycost">What will you set the bounty at?</label>
                 <input required type="number" id="bountycost" name="bountycost" min="0" max="100"><br />
-                <input class="raise" type="submit" value="Submit" />
+                <input class="raise" type="submit" value="Submit" onclick="returnBountyBox(true);"/>
+                <p>NOTE: once a bounty is set, you cannot get your memecoin in escrow back. It can only be released to another user who satisfies your requirements.</p>
             </form>
-            <button id="cancelBounty" class="raise" onclick="returnBountyBox();">Cancel</button>
+            <button id="cancelBounty" class="raise" onclick="returnBountyBox(false);">Cancel</button>
         </div>
 
         <div id="mapDisplay" style="width: 600px; height: 400px;">

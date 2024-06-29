@@ -512,11 +512,14 @@ function showBountyCreatorBox() {
     bountyContainer.prependTo('#StickingContainer');
     bountyContainer.css('display', 'block');
 }
-function returnBountyBox() {
+function returnBountyBox(submitIfTrue) {
     var bountyContainer = $('#bountyCreatorContainer');
     bountyContainer.detach();
     bountyContainer.appendTo('#divStorage');
     bountyContainer.css('display', 'none');
+    if (submitIfTrue) {
+        displayStatus("Bounty posted!");
+    }
 }
 
 
