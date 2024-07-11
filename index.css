@@ -774,11 +774,12 @@ select {
     .post-header{
         display: none;
     }
-    .post-content{
-        overflow-x:hidden;
-        text-overflow:ellipsis;
-        overflow-y:auto;
-        height:100%;
+    .post-content {
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        overflow-y: auto;
+        height: 100%;
+        max-width: calc(100% - 20vw) !important;
     }
 
 }
@@ -791,7 +792,7 @@ select {
     padding-top: 2vh;
     padding-bottom: 1vh;
     color: white;
-    width: 100%;
+    width: calc(100% - 11vw);
     flex: 100%;
     flex-grow: 0.5;
     overflow-x: hidden;
@@ -802,7 +803,9 @@ select {
     color: white;
     display: inline-block;
     max-height: 120px;
-    max-width: 1200px;
+    max-width: 92vw;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
     min-width: 320px;
 }
   .post-visual {
@@ -813,6 +816,7 @@ select {
     text-overflow: ellipsis;
     min-width: 300px;
     max-height: 140px;
+    max-width:max-content;
     font-size: 140% !important;
 }
   .post-title {
@@ -830,12 +834,16 @@ select {
     .post-helper {
         display: flex !important;
         width: 90%;
+        max-width:90vw;
+        overflow: hidden;
+        text-overflow:ellipsis;
     }
 }
 
     .post-helper {
         display: flex !important;
-        width: max-content;
+        width: 100%;
+        max-width:100%;
         overflow-x:hidden;
         text-overflow:ellipsis;
     }
@@ -874,8 +882,9 @@ select {
         border: solid 1px;
         margin-bottom: 2vh;
         margin-top: 4vh;
-        min-width: max-content;
+        min-width: 400px;
         width: 100%;
+        max-width: 98vw;
         /*overflow-x:auto;*/
     }
 

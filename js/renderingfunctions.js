@@ -94,6 +94,8 @@ function populatePageWithPosts(posts, postListContainer) {
         } else if (post.type == "group") {
             console.log("GROUP");
             var [mustacheData, processedPostTemplate] = displayGroup(post);
+        } else if (post.type == "bounty") {
+            var [mustacheData, processedPostTemplate] = displayBounty(post);
         } else {
             var processedPostTemplate = `<span></span>`;
             console.log("UNKNOWN POST TYPE");
@@ -391,7 +393,49 @@ function displayPollPost(post) {
             </div>`;
     return [mustacheData, processedPostTemplate];
 }
-
+function displayBounty(post) {
+    console.log(post);
+    var date = new Date(post.postID * 1000).toDateString();
+    var mustacheData = {
+        postID: String(post.postID),
+        bounty: String(post.bountycost),
+        date: date,
+        title: post.title,
+        reason: String(post.bountyreason),
+        poster: post.poster,
+        posterID: String(post.posterID),
+        userID: 'ANON'
+    };
+    if (sessionStorage.getItem('userID') != undefined) {
+        mustacheData["userID"] = String(sessionStorage.getItem('userID'));
+    }
+    postsOnThisPage.push(mustacheData);
+    //console.log(date);
+    var processedPostTemplate = `
+            <div class='post-container' postID='{{postID}}' data-profit='0' clicks='0'>
+              <div class='post'>
+                <a class='post-helper' href='/?post={{postID}}' onclick='viewPost({{postID}});'>
+                  <div class='post-title-helper'><span class='post-title'>{{title}}</span><br/><div class="post-content"><div class="post-content-span">{{reason}}</div></div></div>
+                </a>
+                <div class='post-header'>
+                <span>{{reason}}</span>&nbsp;&nbsp;|
+                <span class='upvotes-tooltip'>
+                  <span class='tooltiptext'>amount of memecoin you can get by completing the bounty</span>
+                  <span class='upvotecount'>{{bounty}}</span>&nbsp;bounty
+                </span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='views-tooltip'><span class='tooltiptext'>the number of times someone actually clicked on this post</span><span class='viewcount'>0</span>&nbsp;clicks</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='post-date'>{{date}}</span>&nbsp;&nbsp;|
+                  &nbsp;&nbsp;<span class='poster-tooltip'><a href='/?user={{posterID}}'><span class='tooltiptext'>view OP</span>{{poster}}</a>&nbsp;</span>&nbsp;&nbsp;
+                  &nbsp;&nbsp;<!--<span>reply to&nbsp;<span class='replyToId'></span>-->
+                </div>
+              </div>
+              <div class='post-buttons'>
+                <button class='profallow'>indicate interest</button>
+                <button class='profallow' onclick='completeBounty({{postID}}, {{userID}}, {{posterID}});'>complete bounty</button>
+              </div>
+            </div>`;
+    return [mustacheData, processedPostTemplate];
+}
 
 
 //POPULATING WITH NON-POSTS
@@ -429,8 +473,9 @@ function populatePageWithReports(reportarray) {
     });
     $('#entryContainer').append('</table>');
 }
-function requestBounties(messages) {
+function requestBounties() {
     socket.emit('requestBounties', 0);
+    $('#entryContainer').empty();
 }
 
 

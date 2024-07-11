@@ -57,7 +57,7 @@ function generateUUID() {
 }
 
 function displayStatus(message) {
-    document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="20" id="statusbar">' + message + '</marquee>';
+    document.getElementById("statusbar").outerHTML = '<marquee behavior="slide" direction="left" scrollamount="35" loop="1" id="statusbar">&nbsp;&nbsp;&nbsp;&nbsp;' + message + '</marquee>';
     console.log(message);
 }
 function gohome() {
@@ -66,8 +66,9 @@ function gohome() {
 //subtitle function
 $(function () {
     $.getJSON('subtitles.json', function (data) {
-        $('#statusbar').html(data[getRandomInt(0, Object.keys(data).length)]['text']);
-        $('#sub-title').append(data[getRandomInt(0, Object.keys(data).length)]['text']);
+        displayStatus(data[getRandomInt(0, Object.keys(data).length)]['text']);
+        //$('#statusbar').html(data[getRandomInt(0, Object.keys(data).length)]['text']);
+        //$('#sub-title').append(data[getRandomInt(0, Object.keys(data).length)]['text']);
     });
 });
 //change board by typing it in

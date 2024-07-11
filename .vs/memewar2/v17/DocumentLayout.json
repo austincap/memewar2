@@ -3,32 +3,32 @@
   "WorkspaceRootPath": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\makeactionfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\makeactionfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\client.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:client.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\renderingfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\renderingfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\client.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:client.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\utilityfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\utilityfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\renderingfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\renderingfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\makeactionfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:js\\makeactionfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\accountfunctions.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
@@ -50,7 +50,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 164,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -70,18 +70,17 @@
               "RelativeToolTip": "views\\bubbleview.js",
               "ViewState": "AQIAAEQAAAAAAAAAAAAqwGgAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-06-09T21:33:44.769Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-06-09T21:33:44.769Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
               "Title": "utilityfunctions.js",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\utilityfunctions.js",
               "RelativeDocumentMoniker": "js\\utilityfunctions.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\utilityfunctions.js",
               "RelativeToolTip": "js\\utilityfunctions.js",
-              "ViewState": "AQIAAA0AAAAAAAAAAAAhwB0AAAAmAAAA",
+              "ViewState": "AQIAACMAAAAAAAAAAAAmwDsAAAB7AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2024-06-09T14:56:14.752Z",
               "EditorCaption": ""
@@ -96,31 +95,29 @@
               "RelativeToolTip": "views\\mapview.js",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAkAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-06-09T01:01:03.484Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-06-09T01:01:03.484Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 6,
               "Title": "makeactionfunctions.js",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\makeactionfunctions.js",
               "RelativeDocumentMoniker": "js\\makeactionfunctions.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\makeactionfunctions.js",
               "RelativeToolTip": "js\\makeactionfunctions.js",
-              "ViewState": "AQIAANwBAAAAAAAAAAAUwP4BAAAdAAAA",
+              "ViewState": "AQIAAJMBAAAAAAAAAAAmwPsBAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-06-08T23:46:53.896Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-06-08T23:46:53.896Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 0,
               "Title": "index.css",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.css",
               "RelativeDocumentMoniker": "index.css",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.css",
               "RelativeToolTip": "index.css",
-              "ViewState": "AQIAAG0DAAAAAAAAAAAvwMEDAAAAAAAA",
+              "ViewState": "AQIAADADAAAAAAAAAAAvwEoDAAASAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
               "WhenOpened": "2023-11-19T17:44:17.819Z",
               "EditorCaption": ""
@@ -129,17 +126,17 @@
         },
         {
           "DockedWidth": 236,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 3,
               "Title": "index.js",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.js",
               "RelativeDocumentMoniker": "index.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.js",
               "RelativeToolTip": "index.js",
-              "ViewState": "AQIAAO0DAAAAAAAAAAAawB8FAAAmAAAA",
+              "ViewState": "AQIAAA8FAAAAAAAAAAAowHEFAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2023-04-01T23:40:45.915Z",
               "IsPinned": true,
@@ -153,7 +150,7 @@
               "RelativeDocumentMoniker": "client.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\client.js",
               "RelativeToolTip": "client.js",
-              "ViewState": "AQIAAEUBAAAAAAAAAAArwGcCAAADAAAA",
+              "ViewState": "AQIAAIIAAAAAAAAAAAAowCoCAABcAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2023-04-01T23:41:41.582Z",
               "IsPinned": true,
@@ -161,13 +158,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "index.html",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.html",
               "RelativeDocumentMoniker": "index.html",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\index.html",
               "RelativeToolTip": "index.html",
-              "ViewState": "AQIAAAoCAAAAAAAAAAAAACQCAABfAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAAAGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
               "WhenOpened": "2023-04-01T23:44:53.715Z",
               "EditorCaption": ""
@@ -180,20 +177,19 @@
               "RelativeDocumentMoniker": "js\\accountfunctions.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\accountfunctions.js",
               "RelativeToolTip": "js\\accountfunctions.js",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAOEAAAABAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAADcAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2024-06-13T17:03:26.178Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-06-13T17:03:26.178Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "renderingfunctions.js",
               "DocumentMoniker": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\renderingfunctions.js",
               "RelativeDocumentMoniker": "js\\renderingfunctions.js",
               "ToolTip": "C:\\Users\\Austin\\Documents\\GitHub\\memewar2\\js\\renderingfunctions.js",
               "RelativeToolTip": "js\\renderingfunctions.js",
-              "ViewState": "AQIAAKUAAAAAAAAAAAAAALABAAAgAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAJ8BAAAgAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
               "WhenOpened": "2024-06-09T00:50:26.197Z",
               "EditorCaption": ""

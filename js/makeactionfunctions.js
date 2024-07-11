@@ -521,7 +521,9 @@ function returnBountyBox(submitIfTrue) {
         displayStatus("Bounty posted!");
     }
 }
-
+function completeBounty(bountyID, hunterID, clientID) {
+    socket.emit('completeBounty' bountyID, hunterID, clientID);
+}
 
 function openInventory() {
     var element = document.getElementById("test-buttons");

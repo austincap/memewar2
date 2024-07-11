@@ -613,6 +613,7 @@ socket.on('receiveLeaderData', function (topPostsAndTags) {
 //receiveBountiesData
 socket.on('receiveBountyData', function (bounties) {
     console.log(bounties);
+    populatePageWithPosts(bounties, "#entryContainer");
 });
 
 //sendDatabase

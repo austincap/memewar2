@@ -1294,23 +1294,25 @@ function retrievePostsForNetView(socket) {
 function requestBounties(socket, pagenum) {
     var query = `
         MATCH (b:Bounty)-[:CREATEDBY]->(u:User)
-        RETURN b.postID, b.bountyreason, b.title, b.bountycost, u.name, u.userID
+        RETURN  b, u.name, u.userID
         `;
     session
         .run(query)
         .then(function (result) {
             var dataForClient = [];
+            var temp = {};
             console.log(result);
             if (result.records[0] == null) {
                 socket.emit('noBountiesFound', 'no messages found');
-                console.log('NULL');
+                console.log('NO BOUNTIES');
             } else {
-                console.log("NOT null");
-                console.log(result.records[0]["_fields"]);
                 result.records.forEach(function (record) {
-                    console.log(record["_fields"]);
-                    dataForClient.push(record["_fields"]);
+                    temp = record["_fields"][0]["properties"];
+                    temp["poster"] = record["_fields"][1];
+                    temp["posterID"] = record["_fields"][2];
+                    dataForClient.push(temp);
                 });
+                console.log(dataForClient);
                 socket.emit('receiveBountyData', dataForClient);
             }
         })
@@ -1375,12 +1377,12 @@ function requestGroupPosts(socket, pagenum) {
             console.log(error);
         });
 }
-function requestPostsFromSingleGroup(socket, groupdata) {
+function requestPostsFromSingleGroup(socket, groupID) {
     console.log("REUQEST GROUPS");
     var groupPostsArray = [];
     var query;
     var params = {
-        groupID: groupdata.postID
+        groupID: groupID
     };
     query = `
         MATCH (g:Post {type:'group', postID:$groupID})-[:CREATEDBY]->(f:User)
@@ -2472,7 +2474,36 @@ io.on('connection', function (socket) {
 
     //////////////////
     //SEND MESSAGE TO COUNSELOR
-
+    //////////////////
+    //SEND MESSAGE TO BOUNTY CLIENT
+    socket.on('completeBounty', function (bountyID, hunterID, clientID) {
+        console.log(req.body);
+        var blockId = new ObjectId();
+        var query;
+        var postId = parseInt(blockId.getTimestamp());
+        var params = {
+            hunterID: parseInt(hunterID),
+            title: "A user claims to have completed your bounty",
+            bountyID: bountyID,
+            clientID: clientID,
+            postID: postId,
+            type: 'directmessage'
+        };
+        var query = `
+        MATCH(fromuser:User {userID:$hunterID}), (touser:User {userID:$clientID})
+        MERGE (fromuser)-[a:SENTMSG]->(m:Msg {postID:$postID, title:$title, type:$type, content:$content })-[b:RECEIVEDMSG]->(touser)
+        RETURN fromuser, a, m, b, touser
+        `;
+        session
+            .run(query, params)
+            .then(function (result) {
+                console.log(result);
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    });
+    
 
 
     ////////////
